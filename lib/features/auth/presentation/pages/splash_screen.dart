@@ -28,9 +28,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return AppScaffold(
       title: 'Surabhi',
-      actions: [
-        AppBarActions.loginButton(context),
-      ],
+      actions: [AppBarActions.loginButton(context)],
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
@@ -46,11 +44,7 @@ class _SplashScreenState extends State<SplashScreen> {
         child: const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 20),
-              Text('Checking authentication status...'),
-            ],
+            children: [CircularProgressIndicator(), SizedBox(height: 20), Text('Checking authentication status...')],
           ),
         ),
       ),

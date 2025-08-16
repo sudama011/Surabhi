@@ -44,35 +44,12 @@ class AppRouter {
     initialLocation: '/',
     debugLogDiagnostics: kDebugMode,
     routes: [
-      GoRoute(
-        path: '/',
-        builder: (context, state) => const SplashScreen(),
-      ),
-      GoRoute(
-        path: '/login',
-        name: 'login',
-        builder: (context, state) => const LoginPage(),
-      ),
-      GoRoute(
-        path: '/home',
-        name: 'home',
-        builder: (context, state) => const HomePage(),
-      ),
-      GoRoute(
-        path: '/2fa/choice',
-        name: 'twofa-choice',
-        builder: (context, state) => const TwoFAChoicePage(),
-      ),
-      GoRoute(
-        path: '/2fa/verify',
-        name: 'twofa-verify',
-        builder: (context, state) => const TwoFAVerifyPage(),
-      ),
-      GoRoute(
-        path: '/admin-dashboard',
-        name: 'admin-dashboard',
-        builder: (context, state) => const AdminDashboard(),
-      ),
+      GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
+      GoRoute(path: '/login', name: 'login', builder: (context, state) => const LoginPage()),
+      GoRoute(path: '/home', name: 'home', builder: (context, state) => const HomePage()),
+      GoRoute(path: '/2fa/choice', name: 'twofa-choice', builder: (context, state) => const TwoFAChoicePage()),
+      GoRoute(path: '/2fa/verify', name: 'twofa-verify', builder: (context, state) => const TwoFAVerifyPage()),
+      GoRoute(path: '/admin-dashboard', name: 'admin-dashboard', builder: (context, state) => const AdminDashboard()),
       GoRoute(
         path: '/employee-dashboard',
         name: 'employee-dashboard',
@@ -103,7 +80,7 @@ class AppRouter {
     refreshListenable: GoRouterRefreshStream(authBloc.stream),
     redirect: (context, state) {
       final authState = authBloc.state; // Access the bloc instance directly
-      
+
       final bool isAuthenticated = authState is AuthAuthenticated;
       final bool isUnauthenticated = authState is AuthUnauthenticated;
       final bool isLoading = authState is AuthLoading || authState is AuthInitial;

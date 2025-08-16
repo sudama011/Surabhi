@@ -1,6 +1,5 @@
 // lib/core/constants/role_constants.dart
 
-
 class RoleConstants {
   RoleConstants._();
 
@@ -10,13 +9,7 @@ class RoleConstants {
   static const String approver = 'approver';
   static const String volunteer = 'volunteer';
 
-  static const List<String> roles = [
-    admin,
-    employee,
-    preacher,
-    approver,
-    volunteer,
-  ];
+  static const List<String> roles = [admin, employee, preacher, approver, volunteer];
 
   static bool isValidRole(String role) {
     return roles.contains(role);

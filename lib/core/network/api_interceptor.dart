@@ -11,20 +11,14 @@ class ApiInterceptor extends Interceptor {
   final Dio _dio;
   final PreferencesService _preferencesService;
   // A dedicated Dio instance for refresh token requests, without interceptors
-  final Dio _tokenDio; 
+  final Dio _tokenDio;
   bool _isRefreshing = false;
   final Completer<void> _refreshCompleter = Completer<void>();
 
-  ApiInterceptor({
-    required Dio dio, 
-    required PreferencesService preferencesService,
-  })  : _dio = dio,
-        _preferencesService = preferencesService,
-        _tokenDio = Dio(
-          BaseOptions(
-            baseUrl: '${ApiConstants.baseApiUrl}${ApiConstants.apiVersionPath}',
-          ),
-        );
+  ApiInterceptor({required Dio dio, required PreferencesService preferencesService})
+    : _dio = dio,
+      _preferencesService = preferencesService,
+      _tokenDio = Dio(BaseOptions(baseUrl: '${ApiConstants.baseApiUrl}${ApiConstants.apiVersionPath}'));
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
@@ -54,7 +48,7 @@ class ApiInterceptor extends Interceptor {
     if (err.response?.statusCode == 401 && requiresAuth) {
       if (!_isRefreshing) {
         _isRefreshing = true;
-        
+
         try {
           final refreshResponse = await _refreshAccessToken();
           final newAccessToken = refreshResponse['access_token'];
@@ -70,23 +64,19 @@ class ApiInterceptor extends Interceptor {
           } else {
             // Failed to get a new token, clear auth data and reject.
             await _preferencesService.clearAuthData();
-            _refreshCompleter.completeError(
-              const AuthException(message: 'Failed to get new access token.'),
-            );
+            _refreshCompleter.completeError(const AuthException(message: 'Failed to get new access token.'));
             return handler.reject(err);
           }
         } catch (e) {
           // Refresh token API call itself failed.
           await _preferencesService.clearAuthData();
-          _refreshCompleter.completeError(
-            const AuthException(message: 'Session expired. Please log in again.'),
-          );
+          _refreshCompleter.completeError(const AuthException(message: 'Session expired. Please log in again.'));
           return handler.reject(err);
         }
       } else {
         // If a refresh is already in progress, wait for it to complete.
         await _refreshCompleter.future;
-        
+
         // Retry the original request with the new token
         final newAccessToken = await _preferencesService.getAccessToken();
         if (newAccessToken != null) {
@@ -112,10 +102,7 @@ class ApiInterceptor extends Interceptor {
     final body = json.encode({'refresh_token': refreshToken});
 
     try {
-      final response = await _tokenDio.post(
-        ApiConstants.refreshPath,
-        data: body,
-      );
+      final response = await _tokenDio.post(ApiConstants.refreshPath, data: body);
 
       if (response.statusCode == 200) {
         return response.data as Map<String, dynamic>;

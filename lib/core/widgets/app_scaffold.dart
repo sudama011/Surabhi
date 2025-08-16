@@ -11,13 +11,7 @@ class AppScaffold extends StatelessWidget {
   final List<Widget>? actions;
   final VoidCallback? onLeadingPressed;
 
-  const AppScaffold({
-    super.key,
-    required this.body,
-    required this.title,
-    this.actions,
-    this.onLeadingPressed,
-  });
+  const AppScaffold({super.key, required this.body, required this.title, this.actions, this.onLeadingPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -28,18 +22,14 @@ class AppScaffold extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.notifications),
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Notifications coming soon')),
-              );
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Notifications coming soon')));
             },
           ),
           ...(actions ?? []),
         ],
         onLeadingPressed: onLeadingPressed,
       ),
-      drawer: Drawer(
-        child: _RoleAwareDrawer(),
-      ),
+      drawer: Drawer(child: _RoleAwareDrawer()),
       body: body,
     );
   }
@@ -59,36 +49,26 @@ class _RoleAwareDrawer extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Image.asset(
-                  'lib/assets/images/hkmistamp.png',
-                  width: 48,
-                  height: 48,
-                  fit: BoxFit.cover,
-                ),
+                child: Image.asset('lib/assets/images/hkmistamp.png', width: 48, height: 48, fit: BoxFit.cover),
               ),
               const SizedBox(width: 12),
               const Expanded(
-                child: Text('Menu', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                child: Text(
+                  'Menu',
+                  style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),
         ),
-        ListTile(
-          leading: const Icon(Icons.home),
-          title: const Text('Home'),
-          onTap: () => context.go('/home'),
-        ),
+        ListTile(leading: const Icon(Icons.home), title: const Text('Home'), onTap: () => context.go('/home')),
         if (isAdmin)
           ListTile(
             leading: const Icon(Icons.person_add),
             title: const Text('Register User'),
             onTap: () => context.push('/admin/create-user'),
           ),
-        ListTile(
-          leading: const Icon(Icons.settings),
-          title: const Text('Settings'),
-          onTap: () {},
-        ),
+        ListTile(leading: const Icon(Icons.settings), title: const Text('Settings'), onTap: () {}),
         ListTile(
           leading: const Icon(Icons.logout),
           title: const Text('Logout'),
@@ -96,9 +76,7 @@ class _RoleAwareDrawer extends StatelessWidget {
             // Close the drawer first
             Navigator.of(context).pop();
             // Show confirmation early
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Logged out successfully')),
-            );
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Logged out successfully')));
             // Dispatch logout; router redirect will navigate to login
             context.read<AuthBloc>().add(LogoutRequested());
           },

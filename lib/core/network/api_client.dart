@@ -13,10 +13,7 @@ class ApiClient {
     _dio.options.connectTimeout = const Duration(seconds: 30);
     _dio.options.sendTimeout = const Duration(seconds: 30);
     _dio.options.receiveTimeout = const Duration(seconds: 30);
-    _dio.options.headers = {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    };
+    _dio.options.headers = {'Accept': 'application/json', 'Content-Type': 'application/json'};
     _dio.options.followRedirects = false;
     _dio.options.receiveDataWhenStatusError = true;
 
@@ -24,13 +21,7 @@ class ApiClient {
     if (!_dio.interceptors.contains(apiInterceptor)) {
       _dio.interceptors.add(apiInterceptor);
     }
-    _dio.interceptors.add(
-      PrettyDioLogger(
-        requestHeader: true,
-        requestBody: true,
-        responseHeader: true,
-      ),
-    );
+    _dio.interceptors.add(PrettyDioLogger(requestHeader: true, requestBody: true, responseHeader: true));
   }
 
   Dio get dio => _dio;

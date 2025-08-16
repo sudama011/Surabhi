@@ -7,4 +7,3 @@ class UsersRepository {
 
   Future<PaginatedUsers> getUsers({int page = 1, int size = 20}) => remote.getUsers(page: page, size: size);
 }
-

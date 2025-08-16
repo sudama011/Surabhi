@@ -23,9 +23,8 @@ class UserEntity extends Equatable {
 
   @JsonKey(name: 'phone_number')
   final String? phoneNumber;
-  
-  final String? image;
 
+  final String? image;
 
   const UserEntity({
     required this.userId,
@@ -39,14 +38,5 @@ class UserEntity extends Equatable {
   });
 
   @override
-  List<Object?> get props => [
-    userId,
-    firstName,
-    lastName,
-    email,
-    phoneNumber,
-    image,
-    role,
-    is2faEnabled,
-  ];
+  List<Object?> get props => [userId, firstName, lastName, email, phoneNumber, image, role, is2faEnabled];
 }

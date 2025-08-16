@@ -7,7 +7,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:surabhi/features/users/data/repositories/users_repository.dart';
 import 'package:surabhi/features/users/data/datasources/users_remote_datasource.dart';
 
-
 class AdminDashboard extends StatelessWidget {
   const AdminDashboard({super.key});
 
@@ -24,10 +23,7 @@ class AdminDashboard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Users', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                ElevatedButton(
-                  onPressed: () => context.go('/admin/create-user'),
-                  child: const Text('Register User'),
-                ),
+                ElevatedButton(onPressed: () => context.go('/admin/create-user'), child: const Text('Register User')),
               ],
             ),
             const SizedBox(height: 12),
@@ -136,10 +132,8 @@ class _UsersPagerState extends State<_UsersPager> {
               ),
             ],
           ),
-        )
+        ),
       ],
     );
   }
 }
-
-

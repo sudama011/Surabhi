@@ -12,9 +12,7 @@ class AppBarActions {
       tooltip: 'Logout',
       onPressed: () {
         BlocProvider.of<AuthBloc>(context).add(LogoutRequested());
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Logging out...')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Logging out...')));
       },
     );
   }
@@ -29,7 +27,6 @@ class AppBarActions {
     );
   }
 
-
   // Example: General settings button (could be conditional)
   static Widget generalSettingsButton(BuildContext context) {
     return IconButton(
@@ -38,9 +35,7 @@ class AppBarActions {
       onPressed: () {
         // Navigate to general settings
         // context.go('/settings');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('General Settings')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('General Settings')));
       },
     );
   }

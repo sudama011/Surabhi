@@ -10,28 +10,24 @@ import 'package:surabhi/features/auth/domain/entities/user_entity.dart';
 import 'package:surabhi/features/auth/domain/usecases/login_usecase.dart';
 import 'package:surabhi/features/auth/domain/repositories/auth_repository.dart';
 
-
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
   final PreferencesService preferencesService;
 
-  AuthRepositoryImpl({
-    required this.remoteDataSource,
-    required this.preferencesService,
-  });
+  AuthRepositoryImpl({required this.remoteDataSource, required this.preferencesService});
 
   @override
   Future<Either<Failure, UserEntity>> login(LoginParams params) async {
     try {
       final authResponse = await remoteDataSource.login(params);
-      
+
       await preferencesService.saveAccessToken(authResponse.accessToken);
       await preferencesService.saveRefreshToken(authResponse.refreshToken);
       final userJson = json.encode(authResponse.user.toJson());
       await preferencesService.saveUserJson(userJson);
-      
+
       final userEntity = authResponse.user;
-      
+
       return Right(userEntity);
     } on AuthException catch (e) {
       return Left(AuthFailure(message: e.message));
@@ -60,7 +56,7 @@ class AuthRepositoryImpl implements AuthRepository {
     if (userJson == null) {
       return Left(const AuthFailure(message: 'No user data found.'));
     }
-    
+
     try {
       final Map<String, dynamic> userMap = json.decode(userJson);
       final userModel = UserModel.fromJson(userMap);

@@ -18,4 +18,3 @@ class ApiConstants {
     return '$baseApiUrl$apiVersionPath$path';
   }
 }
-

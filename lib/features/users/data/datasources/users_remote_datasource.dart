@@ -48,4 +48,3 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
     );
   }
 }
-

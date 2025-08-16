@@ -30,12 +30,9 @@ class _LoginPageState extends State<LoginPage> {
 
   void _login() {
     if (_formKey.currentState!.validate()) {
-      BlocProvider.of<AuthBloc>(context).add(
-        LoginRequested(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-        ),
-      );
+      BlocProvider.of<AuthBloc>(
+        context,
+      ).add(LoginRequested(email: _emailController.text.trim(), password: _passwordController.text.trim()));
     }
   }
 
@@ -61,20 +58,14 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 TextFormField(
                   controller: _emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    border: OutlineInputBorder(),
-                  ),
+                  decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
                   keyboardType: TextInputType.emailAddress,
                   validator: AppValidators.emailValidator,
                 ),
                 const SizedBox(height: 16.0),
                 TextFormField(
                   controller: _passwordController,
-                  decoration: const InputDecoration(
-                    labelText: 'Password',
-                    border: OutlineInputBorder(),
-                  ),
+                  decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder()),
                   obscureText: true,
                   validator: AppValidators.passwordValidator,
                 ),

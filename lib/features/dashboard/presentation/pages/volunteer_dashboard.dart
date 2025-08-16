@@ -13,4 +13,3 @@ class VolunteerDashboard extends StatelessWidget {
     );
   }
 }
-

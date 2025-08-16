@@ -41,11 +41,10 @@ class _TwoFAChoicePageState extends State<TwoFAChoicePage> {
                 context.go('/2fa/verify?method=$_method');
               },
               child: const Text('Send OTP'),
-            )
+            ),
           ],
         ),
       ),
     );
   }
 }
-

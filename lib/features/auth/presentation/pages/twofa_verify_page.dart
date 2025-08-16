@@ -43,11 +43,10 @@ class _TwoFAVerifyPageState extends State<TwoFAVerifyPage> {
                 context.go('/home');
               },
               child: const Text('Verify'),
-            )
+            ),
           ],
         ),
       ),
     );
   }
 }
-

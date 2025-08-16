@@ -13,4 +13,3 @@ class PreacherDashboard extends StatelessWidget {
     );
   }
 }
-
