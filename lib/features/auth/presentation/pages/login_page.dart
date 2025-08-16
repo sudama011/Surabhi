@@ -1,8 +1,7 @@
 // lib/features/auth/presentation/pages/login_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:surabhi/core/constants/colors.dart';
-import 'package:surabhi/core/utils/app_bar_actions.dart';
+import 'package:surabhi/core/theme/app_colors.dart';
 import 'package:surabhi/core/utils/ui_utils.dart';
 import 'package:surabhi/core/widgets/app_scaffold.dart';
 import 'package:surabhi/core/widgets/loading_indicator.dart';
@@ -32,7 +31,7 @@ class _LoginPageState extends State<LoginPage> {
   void _login() {
     if (_formKey.currentState!.validate()) {
       BlocProvider.of<AuthBloc>(context).add(
-        LoginButtonPressed(
+        LoginRequested(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         ),
@@ -44,13 +43,11 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return AppScaffold(
       title: 'Login',
-      actions: [
-        AppBarActions.registerButton(context),
-      ],
+      actions: const [],
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
-            AppNavigator.navigateBasedOnRole(context, state.role);
+            AppNavigator.navigateBasedOnRole(context, state.user.role);
           } else if (state is AuthError) {
             UiUtils.showSnackBar(context, state.message, backgroundColor: AppColors.errorColor);
           }
@@ -94,12 +91,6 @@ class _LoginPageState extends State<LoginPage> {
                             child: const Text('Login', style: TextStyle(fontSize: 18)),
                           );
                   },
-                ),
-                TextButton(
-                  onPressed: () {
-                    AppNavigator.navigateToRegister(context);
-                  },
-                  child: const Text('Don\'t have an account? Register'),
                 ),
               ],
             ),

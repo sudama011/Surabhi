@@ -50,7 +50,7 @@ class AppNavigator {
   // A more robust initial navigation based on BLoC state
   static void navigateOnAuthChange(BuildContext context, AuthState state) {
     if (state is AuthAuthenticated) {
-      AppNavigator.navigateBasedOnRole(context, state.role);
+      AppNavigator.navigateBasedOnRole(context, state.user.role);
     } else if (state is AuthUnauthenticated) {
       AppNavigator.navigateToLogin(context);
     }

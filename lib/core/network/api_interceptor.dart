@@ -5,18 +5,29 @@ import 'package:dio/dio.dart';
 import 'package:surabhi/core/constants/api_constants.dart';
 import 'package:surabhi/core/errors/exceptions.dart';
 import 'package:surabhi/core/shared_preferences/preferences_service.dart';
+import 'dart:async';
 
 class ApiInterceptor extends Interceptor {
   final Dio _dio;
   final PreferencesService _preferencesService;
+  // A dedicated Dio instance for refresh token requests, without interceptors
+  final Dio _tokenDio; 
+  bool _isRefreshing = false;
+  final Completer<void> _refreshCompleter = Completer<void>();
 
-  ApiInterceptor({required Dio dio, required PreferencesService preferencesService})
-    : _dio = dio,
-      _preferencesService = preferencesService;
+  ApiInterceptor({
+    required Dio dio, 
+    required PreferencesService preferencesService,
+  })  : _dio = dio,
+        _preferencesService = preferencesService,
+        _tokenDio = Dio(
+          BaseOptions(
+            baseUrl: '${ApiConstants.baseApiUrl}${ApiConstants.apiVersionPath}',
+          ),
+        );
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
-    // Check if the request requires authentication
     final requiresAuth = options.extra['requiresAuth'] as bool? ?? true;
 
     if (requiresAuth) {
@@ -25,7 +36,7 @@ class ApiInterceptor extends Interceptor {
         return handler.reject(
           DioException(
             requestOptions: options,
-            error: const AuthException(message: 'No access token found. Please log in.'),
+            error: const AuthException(message: 'No access token found.'),
             type: DioExceptionType.cancel,
           ),
         );
@@ -40,60 +51,55 @@ class ApiInterceptor extends Interceptor {
     final originalRequest = err.requestOptions;
     final requiresAuth = originalRequest.extra['requiresAuth'] as bool? ?? true;
 
-    // Check for a 401 Unauthorized error and if the request requires authentication
     if (err.response?.statusCode == 401 && requiresAuth) {
-      try {
-        final refreshResponse = await _refreshAccessToken();
-        final newAccessToken = refreshResponse['access_token'];
+      if (!_isRefreshing) {
+        _isRefreshing = true;
+        
+        try {
+          final refreshResponse = await _refreshAccessToken();
+          final newAccessToken = refreshResponse['access_token'];
 
-        if (newAccessToken != null) {
-          await _preferencesService.saveAccessToken(newAccessToken);
+          if (newAccessToken != null) {
+            await _preferencesService.saveAccessToken(newAccessToken);
+            _refreshCompleter.complete();
+            _isRefreshing = false;
 
-          // Retry the original request with the new token
-          originalRequest.headers['Authorization'] = 'Bearer $newAccessToken';
-          final response = await _dio.fetch(originalRequest);
-          return handler.resolve(response);
-        } else {
+            // Retry the original request
+            originalRequest.headers['Authorization'] = 'Bearer $newAccessToken';
+            return handler.resolve(await _dio.fetch(originalRequest));
+          } else {
+            // Failed to get a new token, clear auth data and reject.
+            await _preferencesService.clearAuthData();
+            _refreshCompleter.completeError(
+              const AuthException(message: 'Failed to get new access token.'),
+            );
+            return handler.reject(err);
+          }
+        } catch (e) {
+          // Refresh token API call itself failed.
           await _preferencesService.clearAuthData();
-          return handler.reject(
-            DioException(
-              requestOptions: originalRequest,
-              error: const AuthException(message: 'Failed to get new access token.'),
-              type: DioExceptionType.cancel,
-            ),
+          _refreshCompleter.completeError(
+            const AuthException(message: 'Session expired. Please log in again.'),
           );
+          return handler.reject(err);
         }
-      } catch (e) {
-        // If token refresh fails, clear auth data and reject
-        await _preferencesService.clearAuthData();
-        return handler.reject(
-          DioException(
-            requestOptions: originalRequest,
-            error: const AuthException(message: 'Session expired. Please log in again.'),
-            type: DioExceptionType.cancel,
-          ),
-        );
+      } else {
+        // If a refresh is already in progress, wait for it to complete.
+        await _refreshCompleter.future;
+        
+        // Retry the original request with the new token
+        final newAccessToken = await _preferencesService.getAccessToken();
+        if (newAccessToken != null) {
+          originalRequest.headers['Authorization'] = 'Bearer $newAccessToken';
+          return handler.resolve(await _dio.fetch(originalRequest));
+        } else {
+          // The refresh failed and cleared auth data. Reject the request.
+          return handler.reject(err);
+        }
       }
-    } else if (err.response?.statusCode == 403) {
-      return handler.reject(
-        DioException(
-          requestOptions: originalRequest,
-          error: const PermissionDeniedException(message: 'Access forbidden.'),
-          type: DioExceptionType.cancel,
-        ),
-      );
-    } else if (err.type == DioExceptionType.unknown) {
-      // This handles http.ClientException and other network errors
-      return handler.reject(
-        DioException(
-          requestOptions: originalRequest,
-          error: const NetworkException(message: 'Network error.'),
-          type: DioExceptionType.unknown,
-        ),
-      );
     }
 
-    // For all other errors, pass them along
+    // Pass all other errors along
     return handler.next(err);
   }
 
@@ -103,15 +109,12 @@ class ApiInterceptor extends Interceptor {
       throw const AuthException(message: 'No refresh token found.');
     }
 
-    final refreshTokenPath = ApiConstants.refreshPath;
     final body = json.encode({'refresh_token': refreshToken});
 
     try {
-      final response = await _dio.post(
-        refreshTokenPath,
+      final response = await _tokenDio.post(
+        ApiConstants.refreshPath,
         data: body,
-        // Pass a flag to prevent infinite loops during refresh
-        options: Options(extra: {'requiresAuth': false}),
       );
 
       if (response.statusCode == 200) {

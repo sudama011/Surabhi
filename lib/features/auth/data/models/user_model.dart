@@ -1,44 +1,45 @@
 // lib/features/auth/data/models/user_model.dart
-class UserModel {
-  final int id;
-  final String email;
-  final String role;
 
-  UserModel({required this.id, required this.email, required this.role});
+import 'package:json_annotation/json_annotation.dart';
+import 'package:surabhi/features/auth/domain/entities/user_entity.dart';
 
-  factory UserModel.fromJson(Map<String, dynamic> json) {
-    return UserModel(
-      id: json['id'],
-      email: json['email'],
-      role: json['role'],
-    );
-  }
+part 'user_model.g.dart';
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'email': email,
-      'role': role,
-    };
-  }
-}
+@JsonSerializable()
+class UserModel extends UserEntity {
 
-class AuthResponseModel {
-  final String accessToken;
-  final String refreshToken;
-  final String userRole; // Role sent back by the server on login
-
-  AuthResponseModel({
-    required this.accessToken,
-    required this.refreshToken,
-    required this.userRole,
+  @JsonKey(name: 'created_at')
+  final DateTime? createdAt;
+  
+  @JsonKey(name: 'updated_at')
+  final DateTime? updatedAt;
+  
+  const UserModel({
+    required super.userId,
+    required super.email,
+    required super.role,
+    required super.is2faEnabled,
+    super.firstName,
+    super.lastName,
+    super.phoneNumber,
+    super.image,
+    this.createdAt,
+    this.updatedAt,
   });
 
-  factory AuthResponseModel.fromJson(Map<String, dynamic> json) {
-    return AuthResponseModel(
-      accessToken: json['access_token'],
-      refreshToken: json['refresh_token'],
-      userRole: json['user_role'],
-    );
-  }
+  factory UserModel.fromJson(Map<String, dynamic> json) => _$UserModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$UserModelToJson(this);
+
+  @override
+  List<Object?> get props => [
+    userId,
+    firstName,
+    lastName,
+    email,
+    phoneNumber,
+    image,
+    role,
+    is2faEnabled,
+  ];
 }

@@ -30,20 +30,14 @@ class _SplashScreenState extends State<SplashScreen> {
       title: 'Surabhi',
       actions: [
         AppBarActions.loginButton(context),
-        AppBarActions.registerButton(context),
       ],
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
-            // Navigate based on user role
-            print('Authenticated: User role is ${state.role}');
-            AppNavigator.navigateBasedOnRole(context, state.role);
+            AppNavigator.navigateBasedOnRole(context, state.user.role);
           } else if (state is AuthUnauthenticated) {
-            print('Unauthenticated: Navigating to login.');
-            // No explicit navigation here, as the splash screen itself is handling the initial check
-            // and the app_router's redirect will take over
+            // No-op; router redirect will handle
           } else if (state is AuthError) {
-            print('AuthError: ${state.message}');
             UiUtils.showSnackBar(context, state.message, backgroundColor: Colors.red);
             AppNavigator.navigateToLogin(context); // Redirect to login on error
           }

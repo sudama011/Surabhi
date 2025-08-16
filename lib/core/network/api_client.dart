@@ -3,30 +3,27 @@
 import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:surabhi/core/constants/api_constants.dart';
-import 'package:surabhi/core/shared_preferences/preferences_service.dart';
 import 'package:surabhi/core/network/api_interceptor.dart';
 
 class ApiClient {
   final Dio _dio;
 
-  ApiClient(PreferencesService preferencesService)
-      : _dio = Dio(
-          BaseOptions(
-            baseUrl: '${ApiConstants.baseApiUrl}${ApiConstants.apiVersionPath}',
-            connectTimeout: const Duration(seconds: 30),
-            sendTimeout: const Duration(seconds: 30),
-            receiveTimeout: const Duration(seconds: 30),
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-            },
-            followRedirects: false,
-            receiveDataWhenStatusError: true,
-          ),
-        ) {
-    _dio.interceptors.add(
-      ApiInterceptor(dio: _dio, preferencesService: preferencesService),
-    );
+  ApiClient(this._dio, ApiInterceptor apiInterceptor) {
+    _dio.options.baseUrl = '${ApiConstants.baseApiUrl}${ApiConstants.apiVersionPath}';
+    _dio.options.connectTimeout = const Duration(seconds: 30);
+    _dio.options.sendTimeout = const Duration(seconds: 30);
+    _dio.options.receiveTimeout = const Duration(seconds: 30);
+    _dio.options.headers = {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    };
+    _dio.options.followRedirects = false;
+    _dio.options.receiveDataWhenStatusError = true;
+
+    // The interceptor is provided from the outside
+    if (!_dio.interceptors.contains(apiInterceptor)) {
+      _dio.interceptors.add(apiInterceptor);
+    }
     _dio.interceptors.add(
       PrettyDioLogger(
         requestHeader: true,
@@ -36,6 +33,5 @@ class ApiClient {
     );
   }
 
-  // Public getter to allow features to access the configured Dio instance.
   Dio get dio => _dio;
 }
