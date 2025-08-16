@@ -37,9 +37,6 @@ class AppNavigator {
   }
 
   // Example of navigating to register
-  static void navigateToRegister(BuildContext context) {
-    context.go('/register');
-  }
 
   // Example: navigate back if possible, or to a default path
   static void navigateBackOrHome(BuildContext context) {

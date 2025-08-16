@@ -29,15 +29,6 @@ class AppBarActions {
     );
   }
 
-  static Widget registerButton(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.person_add),
-      tooltip: 'Register',
-      onPressed: () {
-        AppNavigator.navigateToRegister(context);
-      },
-    );
-  }
 
   // Example: General settings button (could be conditional)
   static Widget generalSettingsButton(BuildContext context) {
