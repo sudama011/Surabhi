@@ -1,5 +1,5 @@
-## Project Documentation
-#### 1. Architecture: Feature-First Clean Architecture
+# Project Documentation
+## 1. Architecture: Feature-First Clean Architecture
 The project is structured using a **feature-first** approach combined with principles of **Clean Architecture**. This design separates the application into distinct layers while keeping all files related to a specific feature within a single, dedicated folder. This structure promotes:
 
 - **Modularity:** Each feature is a self-contained unit.
@@ -14,7 +14,7 @@ The main layers are:
 
 - **features/:** Houses all feature-specific code, with each feature having its own `data/`, `domain/`, and `presentation/` sub-folders.
 
-#### 2. Core Components
+## 2. Core Components
 The core folder is the foundation of the application, containing shared functionality and dependencies.
 
 ##### Network Layer
@@ -38,27 +38,29 @@ The core folder is the foundation of the application, containing shared function
 ##### Dependency Injection
 - **injector.dart:** The main dependency management file using the get_it package. All core services, repositories, and BLoCs are registered here as either lazy singletons or factories. This approach ensures that dependencies are loosely coupled and that all components are easily testable and replaceable.
 
-#### 3. Feature Structure
+## 3. Feature Structure
 Each feature (e.g., `auth/`) adheres to the same layered structure:
 
 - `data/`: Handles data retrieval and storage.
 
-	- datasources/: Contains AuthRemoteDataSource for fetching data from the API and AuthLocalDataSource (if needed) for local persistence.
+	- `datasources/`: Contains AuthRemoteDataSource for fetching data from the API and AuthLocalDataSource (if needed) for local persistence.
 
-	- repositories/: The implementation of the repository interface. It orchestrates data flow by calling data sources and converting low-level exceptions into high-level failures.
+	- `models/`: Defines the data models (e.g., `AuthResponseModel`, `UserModel`) that represent the API response. These are classes specifically for serialization and deserialization of JSON data from the API. The `UserModel` extends `UserEntity`, blurring the line between models and entities to simplify the architecture.
+
+	- `repositories/`: The implementation of the repository interface. It orchestrates data flow by calling data sources and converting low-level exceptions into high-level failures.
 
 - `domain/`: The business logic layer, completely independent of any framework.
 
-	- entities/: Defines the business objects (e.g., UserEntity).
+	- `entities/`: Defines the business objects (e.g., `UserEntity`).
 
-	- repositories/: Defines the abstract repository interfaces, which act as a contract for the data layer.
+	- `repositories/`: Defines the abstract repository interfaces, which act as a contract for the data layer.
 
-	- usecases/: Encapsulates specific business logic (e.g., LoginUseCase).
+	- `usecases/`: Encapsulates specific business logic (e.g., `LoginUseCase`).
 
 - `presentation/`: The user-facing layer.
 
-	- bloc/: Contains the business logic components (e.g., AuthBloc) that manage the state for the UI.
+	- `bloc/`: Contains the business logic components (e.g., `AuthBloc`) that manage the state for the UI.
 
-	- pages/: The UI widgets and screens.
+	- `pages/`: The UI widgets and screens.
 
 This project's architecture promotes a clear separation of concerns, making the codebase maintainable, scalable, and easy to navigate for any developer.

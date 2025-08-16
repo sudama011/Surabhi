@@ -28,7 +28,13 @@ Please follow these guidelines to help us maintain a high-quality codebase and s
     flutter pub get
     ```
 
-4. **Create a new branch** for your feature or bugfix:
+4. **Generate Code**: 
+The project uses json_serializable and build_runner. Run the following command to generate the necessary files:
+    ```bash
+    flutter pub run build_runner build --delete-conflicting-outputs
+    ```
+
+5. **Create a new branch** for your feature or bugfix:
      - For features:
      ```bash
      git checkout -b feature/your-feature-name
@@ -38,29 +44,30 @@ Please follow these guidelines to help us maintain a high-quality codebase and s
      git checkout -b bugfix/issue-description
      ```
 
-5. **Make Your Changes**
+6. **Make Your Changes**
    - Follow Dart and Flutter style guidelines.
    - Write clear comments where needed.
+   - Follow the architecture and structure of the project.
 
-6. **Write and Run Tests**
+7. **Write and Run Tests**
    - Add unit/integration tests for your changes.
    - Run all tests before committing:
      ```bash
      flutter test
      ```
-7. **Check code style**
+8. **Check code style**
     ```bash
     flutter analyze
     ```
 
-8. **Commit and Push**
+9. **Commit and Push**
    - Use clear, conventional commit messages (e.g., `feat: add user registration`, `fix: resolve login issue`).
    - Push your branch:
      ```bash
      git push origin feature/your-feature-name
      ```
 
-9. **Open a Pull Request**
+10. **Open a Pull Request**
    - Target the `develop` branch.
    - Provide a detailed description and reference related issues (e.g., `Fixes #123`).
 
@@ -107,7 +114,7 @@ We welcome new ideas! Open an issue describing:
 - At least one maintainer approval is required before merging.
 - All status checks must pass.
 - Do not merge your own PRs without approval.
-- Changes to `lib/` must be reviewed by code owners as specified in [CODEOWNERS](.github/CODEOWNERS).
+- Changes must be reviewed by code owners as specified in [CODEOWNERS](.github/CODEOWNERS).
 
 ---
 

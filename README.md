@@ -21,20 +21,72 @@ Surabhi is a comprehensive Flutter mobile application designed for Admins, Emplo
 2. **To run the app on a connected device or emulator:**
     ```bash
     flutter pub get
+    flutter pub run build_runner build --delete-conflicting-outputs
     flutter run
     ```
 
 ## Project Structure
 
-- `lib/main.dart` – App entry point and theme setup
-- `lib/assets/` – Static assets (images, icons, fonts, etc.)
-- `lib/features/` – Feature modules (auth, dashboard, etc.)
-- `lib/core/` – Shared utilities, constants, and services
-- `lib/routes/` – App navigation and routing
-- `test/` - Test files
-- `pubspec.yaml` – Project dependencies and metadata
-- `README.md` – Project overview and guide
-- `LICENSE.md` – License information
+```bash
+surabhi_flutter/
+├── lib/                                    # Source code
+│   ├── main.dart                           # App entry point
+│   ├── injector.dart                       # Dependency Injection
+│   ├── assets/                             # Static assets
+│   │   ├── images/
+│   │   ├── fonts/
+│   │   └── icons/
+│   ├── core/                               # Core components
+│   │   ├── constants/
+│   │   │   ├── api_constants.dart
+│   │   ├── errors/                         # Error handling
+│   │   │   ├── exceptions.dart
+│   │   │   └── failure.dart
+│   │   ├── network/                        # Network layer
+│   │   │   ├── api_client.dart
+│   │   │   └── api_interceptor.dart
+│   │   └── shared_preferences/             # Local data persistence
+│   │   │   ├── preferences_service.dart
+│   │   ├── theme/                          # Theming and styling
+│   │   │   ├── app_colors.dart
+│   │   │   ├── app_themes.dart
+│   │   │   └── theme_cubit.dart
+│   │   ├── usecases/                       # Business logic
+│   │   │   ├── usecase.dart
+│   │   └── utils/                          # Utility functions
+│   │   │   ├── date_utils.dart
+│   │   │   └── string_utils.dart
+│   │   │   └── validators.dart
+│   │   └── widgets/                        # Shared UI components
+│   │   │   ├── app_scaffold.dart
+│   │   │   └── role_based_app_bar.dart
+│   ├── features/                           # Feature modules
+│   │   ├── auth/                           # Authentication module
+│   │   │   ├── data/
+│   │   │   ├── domain/
+│   │   │   └── presentation/
+│   ├── routes/                             # App navigation and routing
+│   │   ├── app_router.dart
+│   │   └── app_navigator.dart
+├── test/                                   # Tests
+│   ├── widget_tests/
+│   ├── cubit_tests/
+│   ├── bloc_tests/
+│   └── service_tests/
+├── android/                                # Android-specific files
+├── ios/                                    # iOS-specific files
+├── pubspec.yaml                            # Project dependencies and metadata
+├── README.md
+├── LICENSE.md
+├── CONTRIBUTING.md
+├── docs/                                   # Project documentation
+│   ├── ARCHITECTURE.md
+├── Makefile                                # Build and test automation
+```
+
+## Documentation
+
+For a detailed overview of the project architecture, please refer to the [ARCHITECTURE.md](docs/ARCHITECTURE.md) file.
 
 ## Theming & Styling
 
