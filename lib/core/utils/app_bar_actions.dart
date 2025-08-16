@@ -11,7 +11,7 @@ class AppBarActions {
       icon: const Icon(Icons.logout),
       tooltip: 'Logout',
       onPressed: () {
-        BlocProvider.of<AuthBloc>(context).add(LogoutButtonPressed());
+        BlocProvider.of<AuthBloc>(context).add(LogoutRequested());
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Logging out...')),
         );
