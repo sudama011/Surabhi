@@ -1,5 +1,5 @@
 # Define variables for common commands and directories
-FLUTTER_CMD = flutter
+FLUTTER_CMD = flutter # Change this to your Flutter SDK path if necessary
 BUILD_RUNNER_CMD = $(FLUTTER_CMD) pub run build_runner build --delete-conflicting-outputs
 
 # The default target. Run 'make' to see available commands.
@@ -13,11 +13,12 @@ help:
 	@echo "  make build_ios        - Build an iOS release IPA"
 	@echo "  make build_android    - Build an Android release APK"
 	@echo "  make generate         - Run build_runner to generate files (e.g., json_serializable)"
+	@echo "  make assets           - Generate launcher icons and native splash screen"
 	@echo "  make clean            - Clean the Flutter project build artifacts"
 	@echo "  make format           - Format Dart code"
 	@echo "  make analyze          - Analyze Dart code for static errors"
 	@echo "  make test             - Run all tests"
-	@echo "  make lint             - Run all linters (alias for analyze)"
+	@echo "  make lint             - Run Dart linting checks(alias for analyze)"
 
 # Rule to get all pub dependencies
 .PHONY: get
@@ -33,13 +34,13 @@ run: get generate
 
 # Rule to build an iOS release IPA
 .PHONY: build_ios
-build_ios: get generate
+build_ios: get generate assets
 	@echo "=> Building iOS release IPA..."
 	$(FLUTTER_CMD) build ipa
 
 # Rule to build an Android release APK
 .PHONY: build_android
-build_android: get generate
+build_android: get generate assets
 	@echo "=> Building Android release APK..."
 	$(FLUTTER_CMD) build apk --release
 
@@ -48,6 +49,17 @@ build_android: get generate
 generate:
 	@echo "=> Running code generation (build_runner)..."
 	$(BUILD_RUNNER_CMD)
+
+# Rule to generate launcher icons and native splash screen
+.PHONY: assets
+assets: get
+	@echo "=> Generating launcher icons..."
+	$(FLUTTER_CMD) pub run flutter_launcher_icons
+	@echo ""
+	@echo "=> Generating native splash screen..."
+	$(FLUTTER_CMD) pub run flutter_native_splash:create
+	@echo ""
+	@echo "=> All app assets generated successfully!"
 
 # Rule to clean project build artifacts
 .PHONY: clean
@@ -62,7 +74,7 @@ format:
 	dart format lib/
 
 # Rule to analyze Dart code
-.PHONY: analyze lint
+.PHONY: analyze
 analyze:
 	@echo "=> Analyzing Dart code..."
 	$(FLUTTER_CMD) analyze
@@ -73,3 +85,4 @@ lint: analyze
 test: get
 	@echo "=> Running tests..."
 	$(FLUTTER_CMD) test
+	
