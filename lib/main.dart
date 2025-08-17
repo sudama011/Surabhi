@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<AuthBloc>(create: (_) => di.sl<AuthBloc>()),
+        BlocProvider<AuthBloc>(create: (_) => di.sl<AuthBloc>()..add(AppStarted())),
         BlocProvider<ThemeCubit>(create: (_) => di.sl<ThemeCubit>()),
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(

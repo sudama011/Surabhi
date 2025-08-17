@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:surabhi/core/utils/ui_utils.dart';
 import 'package:surabhi/core/utils/validators.dart';
@@ -41,7 +42,7 @@ class _AdminCreateUserPageState extends State<AdminCreateUserPage> {
       await api.dio.post('/users/create', data: body);
       if (!mounted) return;
       UiUtils.showSnackBar(context, 'User created successfully', backgroundColor: Colors.green);
-      Navigator.of(context).pop();
+      if (context.mounted) context.pop();
     } catch (e) {
       UiUtils.showSnackBar(context, 'Failed to create user: $e', backgroundColor: Colors.red);
     }

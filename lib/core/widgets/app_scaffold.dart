@@ -4,6 +4,7 @@ import 'package:surabhi/core/widgets/role_based_app_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:surabhi/core/theme/theme_cubit.dart';
 
 class AppScaffold extends StatelessWidget {
   final Widget body;
@@ -69,6 +70,12 @@ class _RoleAwareDrawer extends StatelessWidget {
             onTap: () => context.push('/admin/create-user'),
           ),
         ListTile(leading: const Icon(Icons.settings), title: const Text('Settings'), onTap: () {}),
+        SwitchListTile(
+          secondary: const Icon(Icons.brightness_6),
+          title: const Text('Dark Mode'),
+          value: Theme.of(context).brightness == Brightness.dark,
+          onChanged: (isDark) => context.read<ThemeCubit>().toggleTheme(isDark),
+        ),
         ListTile(
           leading: const Icon(Icons.logout),
           title: const Text('Logout'),

@@ -23,7 +23,7 @@ class AdminDashboard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Users', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                ElevatedButton(onPressed: () => context.go('/admin/create-user'), child: const Text('Register User')),
+                ElevatedButton(onPressed: () => context.push('/admin/create-user'), child: const Text('Register User')),
               ],
             ),
             const SizedBox(height: 12),
