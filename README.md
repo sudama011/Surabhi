@@ -90,7 +90,8 @@ For a detailed overview of the project architecture, please refer to the [ARCHIT
 
 ## Theming & Styling
 
-Primary colors are defined in `lib/core/constants/colors.dart` and applied globally via `ThemeData` in `main.dart` for a consistent look and feel.
+Primary colors are defined in `lib/core/theme/app_colors.dart`.  
+Global theming is applied in `lib/core/theme/app_themes.dart` and managed by `ThemeCubit` in `lib/core/theme/theme_cubit.dart`.
 
 ## Contribution & Code Ownership
 
