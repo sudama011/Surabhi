@@ -6,10 +6,10 @@ This document outlines the folder structure and naming conventions for the Surab
 ## Root Structure
 ```
 lib/
-├── assets/                 # Static assets (fonts, icons, images, logos)
-├── core/                   # Shared core functionality
-├── features/               # Feature-based modules organized by user roles
-├── routes/                 # App routing and navigation
+├── assets/                # Static assets (fonts, icons, images, logos)
+├── core/                  # Shared core functionality
+├── features/              # Feature-based modules organized by user roles
+├── routes/                # App routing and navigation
 ├── injector.dart          # Dependency injection setup
 └── main.dart              # App entry point
 ```
@@ -17,8 +17,8 @@ lib/
 ## Core Structure
 ```
 lib/core/
-├── constants/             # App-wide constants (API endpoints, roles, etc.)
-├── data/                  # Shared data models and responses
+├── constants/            # App-wide constants (API endpoints, roles, etc.)
+├── data/                 # Shared data models and responses
 │   └── models/           # Generic models (PaginatedResponse, UserModel)
 ├── domain/               # Shared domain entities
 │   └── entities/         # Core entities (UserEntity)
@@ -36,11 +36,11 @@ Each role has its own feature folder following Clean Architecture:
 
 ```
 lib/features/
-├── admin/                # Admin-specific features
-│   ├── dashboard/        # Admin dashboard
-│   └── users/           # User management
-├── employee/            # Employee-specific features
-│   ├── dashboard/       # Employee dashboard
+├── admin/              # Admin-specific features
+│   ├── dashboard/      # Admin dashboard
+│   └── users/          # User management
+├── employee/           # Employee-specific features
+│   ├── dashboard/      # Employee dashboard
 │   └── tasks/          # Task management (placeholder)
 ├── preacher/           # Preacher-specific features
 │   ├── dashboard/      # Preacher dashboard
@@ -53,8 +53,7 @@ lib/features/
 │   └── activities/     # Activity management (placeholder)
 ├── auth/               # Authentication (shared across roles)
 ├── home/               # Home/landing pages
-├── settings/           # App settings
-└── users/              # General user operations
+└── settings/           # App settings
 ```
 
 ## Clean Architecture Pattern
