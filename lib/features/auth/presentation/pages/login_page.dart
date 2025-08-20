@@ -31,9 +31,9 @@ class _LoginPageState extends State<LoginPage> {
 
   void _login() {
     if (_formKey.currentState!.validate()) {
-      BlocProvider.of<AuthBloc>(
-        context,
-      ).add(LoginRequested(email: _emailController.text.trim(), password: _passwordController.text.trim()));
+      BlocProvider.of<AuthBloc>(context).add(
+        LoginRequested(email: _emailController.text.trim().toLowerCase(), password: _passwordController.text.trim()),
+      );
     }
   }
 
@@ -63,6 +63,16 @@ class _LoginPageState extends State<LoginPage> {
                   keyboardType: TextInputType.emailAddress,
                   validator: AppValidators.emailValidator,
                   prefixIcon: const Icon(Icons.email),
+                  onChanged: (value) {
+                    // Auto-convert to lowercase as user types
+                    final lowercaseValue = value.toLowerCase();
+                    if (value != lowercaseValue) {
+                      _emailController.value = _emailController.value.copyWith(
+                        text: lowercaseValue,
+                        selection: TextSelection.collapsed(offset: lowercaseValue.length),
+                      );
+                    }
+                  },
                 ),
                 const SizedBox(height: 16.0),
                 AppTextField(

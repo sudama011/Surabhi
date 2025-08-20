@@ -42,7 +42,7 @@ class _CreateUserPageState extends State<CreateUserPage> {
     final api = di.sl<ApiClient>();
     try {
       final body = json.encode({
-        'email': _emailController.text.trim(),
+        'email': _emailController.text.trim().toLowerCase(),
         'password': _passwordController.text.trim(),
         'role': _role,
       });
@@ -77,6 +77,16 @@ class _CreateUserPageState extends State<CreateUserPage> {
                 keyboardType: TextInputType.emailAddress,
                 validator: AppValidators.emailValidator,
                 prefixIcon: const Icon(Icons.email),
+                onChanged: (value) {
+                  // Auto-convert to lowercase as user types
+                  final lowercaseValue = value.toLowerCase();
+                  if (value != lowercaseValue) {
+                    _emailController.value = _emailController.value.copyWith(
+                      text: lowercaseValue,
+                      selection: TextSelection.collapsed(offset: lowercaseValue.length),
+                    );
+                  }
+                },
               ),
               const SizedBox(height: 16),
               AppTextField(

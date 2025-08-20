@@ -35,7 +35,7 @@ class _AdminCreateUserPageState extends State<AdminCreateUserPage> {
     final api = RepositoryProvider.of<ApiClient>(context);
     try {
       final body = json.encode({
-        'email': _emailController.text.trim(),
+        'email': _emailController.text.trim().toLowerCase(),
         'password': _passwordController.text.trim(),
         'role': _role,
       });
