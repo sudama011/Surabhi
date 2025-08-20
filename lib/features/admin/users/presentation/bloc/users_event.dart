@@ -27,3 +27,12 @@ class LoadMoreUsersEvent extends UsersEvent {
   @override
   List<Object> get props => [size];
 }
+
+class ChangePageSizeEvent extends UsersEvent {
+  final int newSize;
+
+  const ChangePageSizeEvent({required this.newSize});
+
+  @override
+  List<Object> get props => [newSize];
+}

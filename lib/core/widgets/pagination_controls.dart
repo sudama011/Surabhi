@@ -8,7 +8,10 @@ class PaginationControls extends StatelessWidget {
   final VoidCallback? onPrevious;
   final VoidCallback? onNext;
   final Function(int)? onPageSelected;
+  final Function(int)? onPageSizeChanged;
   final bool isLoading;
+  final int currentPageSize;
+  final List<int> pageSizeOptions;
 
   const PaginationControls({
     super.key,
@@ -16,7 +19,10 @@ class PaginationControls extends StatelessWidget {
     this.onPrevious,
     this.onNext,
     this.onPageSelected,
+    this.onPageSizeChanged,
     this.isLoading = false,
+    this.currentPageSize = 10,
+    this.pageSizeOptions = const [5, 10, 20, 40],
   });
 
   @override
@@ -32,10 +38,63 @@ class PaginationControls extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Page info
-          Text(
-            'Page ${meta.page} of ${meta.pages} (${meta.total} total items)',
-            style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
+          // Page info and page size selector
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Page info
+              Expanded(
+                child: Text(
+                  'Page ${meta.page} of ${meta.pages} (${meta.total} total items)',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                  ),
+                ),
+              ),
+
+              // Page size selector
+              if (onPageSizeChanged != null) ...[
+                const SizedBox(width: 16),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Show:',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: theme.colorScheme.outline),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<int>(
+                          value: currentPageSize,
+                          isDense: true,
+                          onChanged: isLoading
+                              ? null
+                              : (value) {
+                                  if (value != null) {
+                                    onPageSizeChanged!(value);
+                                  }
+                                },
+                          items: pageSizeOptions.map((size) {
+                            return DropdownMenuItem<int>(
+                              value: size,
+                              child: Text(size.toString(), style: theme.textTheme.bodyMedium),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
           ),
           const SizedBox(height: 12),
 

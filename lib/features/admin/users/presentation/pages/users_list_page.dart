@@ -42,19 +42,32 @@ class UsersListPage extends StatelessWidget {
                     return Column(
                       children: [
                         Expanded(child: _buildUsersList(state.paginatedUsers.items)),
-                        PaginationControls(
-                          meta: state.paginatedUsers.meta,
-                          onPrevious: state.paginatedUsers.meta.hasPrev
-                              ? () => context.read<UsersBloc>().add(
-                                  GetUsersEvent(page: state.paginatedUsers.meta.page - 1),
-                                )
-                              : null,
-                          onNext: state.paginatedUsers.meta.hasNext
-                              ? () => context.read<UsersBloc>().add(
-                                  GetUsersEvent(page: state.paginatedUsers.meta.page + 1),
-                                )
-                              : null,
-                          onPageSelected: (page) => context.read<UsersBloc>().add(GetUsersEvent(page: page)),
+                        BlocBuilder<UsersBloc, UsersState>(
+                          builder: (context, paginationState) {
+                            final bloc = context.read<UsersBloc>();
+                            return PaginationControls(
+                              meta: state.paginatedUsers.meta,
+                              currentPageSize: bloc.currentPageSize,
+                              onPrevious: state.paginatedUsers.meta.hasPrev
+                                  ? () => bloc.add(
+                                      GetUsersEvent(
+                                        page: state.paginatedUsers.meta.page - 1,
+                                        size: bloc.currentPageSize,
+                                      ),
+                                    )
+                                  : null,
+                              onNext: state.paginatedUsers.meta.hasNext
+                                  ? () => bloc.add(
+                                      GetUsersEvent(
+                                        page: state.paginatedUsers.meta.page + 1,
+                                        size: bloc.currentPageSize,
+                                      ),
+                                    )
+                                  : null,
+                              onPageSelected: (page) => bloc.add(GetUsersEvent(page: page, size: bloc.currentPageSize)),
+                              onPageSizeChanged: (newSize) => bloc.add(ChangePageSizeEvent(newSize: newSize)),
+                            );
+                          },
                         ),
                       ],
                     );
