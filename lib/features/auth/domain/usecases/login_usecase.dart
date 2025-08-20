@@ -4,7 +4,7 @@ import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:surabhi/core/errors/failures.dart';
 import 'package:surabhi/core/usecases/usecase.dart';
-import 'package:surabhi/features/auth/domain/entities/user_entity.dart';
+import 'package:surabhi/core/domain/entities/user_entity.dart';
 import 'package:surabhi/features/auth/domain/repositories/auth_repository.dart';
 
 class LoginUseCase implements UseCase<UserEntity, LoginParams> {

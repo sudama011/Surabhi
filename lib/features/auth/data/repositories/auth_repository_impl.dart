@@ -5,8 +5,8 @@ import 'package:surabhi/core/errors/exceptions.dart';
 import 'package:surabhi/core/errors/failures.dart';
 import 'package:surabhi/core/shared_preferences/preferences_service.dart';
 import 'package:surabhi/features/auth/data/datasources/auth_remote_datasource.dart';
-import 'package:surabhi/features/auth/data/models/user_model.dart';
-import 'package:surabhi/features/auth/domain/entities/user_entity.dart';
+import 'package:surabhi/core/data/models/user_model.dart';
+import 'package:surabhi/core/domain/entities/user_entity.dart';
 import 'package:surabhi/features/auth/domain/usecases/login_usecase.dart';
 import 'package:surabhi/features/auth/domain/repositories/auth_repository.dart';
 
