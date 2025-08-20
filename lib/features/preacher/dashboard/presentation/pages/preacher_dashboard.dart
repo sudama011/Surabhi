@@ -1,4 +1,4 @@
-// lib/features/dashboard/presentation/pages/preacher_dashboard.dart
+// lib/features/preacher/dashboard/presentation/pages/preacher_dashboard.dart
 
 import 'package:flutter/material.dart';
 import 'package:surabhi/core/widgets/app_scaffold.dart';
@@ -16,9 +16,15 @@ class PreacherDashboard extends StatelessWidget {
           children: [
             Icon(Icons.school, size: 64, color: Colors.orange),
             SizedBox(height: 16),
-            Text('Welcome to Preacher Dashboard', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            Text(
+              'Welcome to Preacher Dashboard',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
             SizedBox(height: 8),
-            Text('Preacher features coming soon...', style: TextStyle(fontSize: 16, color: Colors.grey)),
+            Text(
+              'Preacher features coming soon...',
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
           ],
         ),
       ),

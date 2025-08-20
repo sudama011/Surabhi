@@ -1,4 +1,4 @@
-// lib/features/dashboard/presentation/pages/approver_dashboard.dart
+// lib/features/approver/dashboard/presentation/pages/approver_dashboard.dart
 
 import 'package:flutter/material.dart';
 import 'package:surabhi/core/widgets/app_scaffold.dart';
@@ -16,9 +16,15 @@ class ApproverDashboard extends StatelessWidget {
           children: [
             Icon(Icons.check_circle, size: 64, color: Colors.green),
             SizedBox(height: 16),
-            Text('Welcome to Approver Dashboard', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            Text(
+              'Welcome to Approver Dashboard',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
             SizedBox(height: 8),
-            Text('Approver features coming soon...', style: TextStyle(fontSize: 16, color: Colors.grey)),
+            Text(
+              'Approver features coming soon...',
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
           ],
         ),
       ),
