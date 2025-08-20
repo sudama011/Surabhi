@@ -69,7 +69,11 @@ class _RoleAwareDrawer extends StatelessWidget {
             title: const Text('Register User'),
             onTap: () => context.push('/admin/create-user'),
           ),
-        ListTile(leading: const Icon(Icons.settings), title: const Text('Settings'), onTap: () {}),
+        ListTile(
+          leading: const Icon(Icons.settings),
+          title: const Text('Settings'),
+          onTap: () => context.push('/settings'),
+        ),
         SwitchListTile(
           secondary: const Icon(Icons.brightness_6),
           title: const Text('Dark Mode'),
