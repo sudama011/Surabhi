@@ -28,6 +28,8 @@ final ThemeData lightTheme = ThemeData(
   ),
 
   inputDecorationTheme: InputDecorationTheme(
+    filled: true,
+    fillColor: AppColors.lightSurface,
     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8.0),
@@ -45,6 +47,7 @@ final ThemeData lightTheme = ThemeData(
       borderRadius: BorderRadius.circular(8.0),
       borderSide: const BorderSide(color: AppColors.errorColor, width: 2.0),
     ),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
   ),
 
   elevatedButtonTheme: ElevatedButtonThemeData(
@@ -86,6 +89,8 @@ final ThemeData darkTheme = ThemeData(
   ),
 
   inputDecorationTheme: InputDecorationTheme(
+    filled: true,
+    fillColor: AppColors.darkSurface,
     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8.0),
@@ -103,6 +108,7 @@ final ThemeData darkTheme = ThemeData(
       borderRadius: BorderRadius.circular(8.0),
       borderSide: const BorderSide(color: AppColors.errorColor, width: 2.0),
     ),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
   ),
 
   elevatedButtonTheme: ElevatedButtonThemeData(
