@@ -20,22 +20,13 @@ void main() {
   });
 
   group('LoginUseCase', () {
-    const testUser = UserEntity(
-      userId: '1',
-      email: 'test@example.com',
-      role: 'admin',
-      is2faEnabled: false,
-    );
+    const testUser = UserEntity(userId: '1', email: 'test@example.com', role: 'admin', is2faEnabled: false);
 
-    const testParams = LoginParams(
-      email: 'test@example.com',
-      password: 'password123',
-    );
+    const testParams = LoginParams(email: 'test@example.com', password: 'password123');
 
     test('should return UserEntity when login is successful', () async {
       // Arrange
-      when(mockAuthRepository.login(testParams))
-          .thenAnswer((_) async => const Right(testUser));
+      when(mockAuthRepository.login(testParams)).thenAnswer((_) async => const Right(testUser));
 
       // Act
       final result = await loginUseCase(testParams);
@@ -49,8 +40,7 @@ void main() {
     test('should return AuthFailure when login fails with invalid credentials', () async {
       // Arrange
       const failure = AuthFailure(message: 'Invalid email or password');
-      when(mockAuthRepository.login(testParams))
-          .thenAnswer((_) async => const Left(failure));
+      when(mockAuthRepository.login(testParams)).thenAnswer((_) async => const Left(failure));
 
       // Act
       final result = await loginUseCase(testParams);
@@ -64,8 +54,7 @@ void main() {
     test('should return ServerFailure when server error occurs', () async {
       // Arrange
       const failure = ServerFailure(message: 'Server error occurred');
-      when(mockAuthRepository.login(testParams))
-          .thenAnswer((_) async => const Left(failure));
+      when(mockAuthRepository.login(testParams)).thenAnswer((_) async => const Left(failure));
 
       // Act
       final result = await loginUseCase(testParams);
@@ -79,8 +68,7 @@ void main() {
     test('should return NetworkFailure when network error occurs', () async {
       // Arrange
       const failure = NetworkFailure(message: 'No internet connection');
-      when(mockAuthRepository.login(testParams))
-          .thenAnswer((_) async => const Left(failure));
+      when(mockAuthRepository.login(testParams)).thenAnswer((_) async => const Left(failure));
 
       // Act
       final result = await loginUseCase(testParams);

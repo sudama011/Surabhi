@@ -5,24 +5,13 @@ import 'package:surabhi/core/widgets/pagination_controls.dart';
 
 void main() {
   group('PaginationControls', () {
-    const testMeta = PaginationMeta(
-      page: 2,
-      pages: 5,
-      size: 10,
-      total: 50,
-      hasNext: true,
-      hasPrev: true,
-    );
+    const testMeta = PaginationMeta(page: 2, pages: 5, size: 10, total: 50, hasNext: true, hasPrev: true);
 
     testWidgets('should display pagination info', (WidgetTester tester) async {
       // Act
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: PaginationControls(
-              meta: testMeta,
-            ),
-          ),
+          home: Scaffold(body: PaginationControls(meta: testMeta)),
         ),
       );
 
@@ -34,11 +23,7 @@ void main() {
       // Act
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: PaginationControls(
-              meta: testMeta,
-            ),
-          ),
+          home: Scaffold(body: PaginationControls(meta: testMeta)),
         ),
       );
 
@@ -58,10 +43,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: PaginationControls(
-              meta: testMeta,
-              onPrevious: onPrevious,
-            ),
+            body: PaginationControls(meta: testMeta, onPrevious: onPrevious),
           ),
         ),
       );
@@ -84,10 +66,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: PaginationControls(
-              meta: testMeta,
-              onNext: onNext,
-            ),
+            body: PaginationControls(meta: testMeta, onNext: onNext),
           ),
         ),
       );
@@ -101,61 +80,37 @@ void main() {
 
     testWidgets('should disable previous button when hasPrev is false', (WidgetTester tester) async {
       // Arrange
-      const metaFirstPage = PaginationMeta(
-        page: 1,
-        pages: 5,
-        size: 10,
-        total: 50,
-        hasNext: true,
-        hasPrev: false,
-      );
+      const metaFirstPage = PaginationMeta(page: 1, pages: 5, size: 10, total: 50, hasNext: true, hasPrev: false);
 
       // Act
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: PaginationControls(
-              meta: metaFirstPage,
-              onPrevious: () {},
-            ),
+            body: PaginationControls(meta: metaFirstPage, onPrevious: () {}),
           ),
         ),
       );
 
       // Assert
-      final previousButton = tester.widget<IconButton>(
-        find.widgetWithIcon(IconButton, Icons.chevron_left),
-      );
+      final previousButton = tester.widget<IconButton>(find.widgetWithIcon(IconButton, Icons.chevron_left));
       expect(previousButton.onPressed, isNull);
     });
 
     testWidgets('should disable next button when hasNext is false', (WidgetTester tester) async {
       // Arrange
-      const metaLastPage = PaginationMeta(
-        page: 5,
-        pages: 5,
-        size: 10,
-        total: 50,
-        hasNext: false,
-        hasPrev: true,
-      );
+      const metaLastPage = PaginationMeta(page: 5, pages: 5, size: 10, total: 50, hasNext: false, hasPrev: true);
 
       // Act
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: PaginationControls(
-              meta: metaLastPage,
-              onNext: () {},
-            ),
+            body: PaginationControls(meta: metaLastPage, onNext: () {}),
           ),
         ),
       );
 
       // Assert
-      final nextButton = tester.widget<IconButton>(
-        find.widgetWithIcon(IconButton, Icons.chevron_right),
-      );
+      final nextButton = tester.widget<IconButton>(find.widgetWithIcon(IconButton, Icons.chevron_right));
       expect(nextButton.onPressed, isNull);
     });
 
@@ -164,11 +119,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: PaginationControls(
-              meta: testMeta,
-              currentPageSize: 10,
-              onPageSizeChanged: (size) {},
-            ),
+            body: PaginationControls(meta: testMeta, currentPageSize: 10, onPageSizeChanged: (size) {}),
           ),
         ),
       );
@@ -189,11 +140,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: PaginationControls(
-              meta: testMeta,
-              currentPageSize: 10,
-              onPageSizeChanged: onPageSizeChanged,
-            ),
+            body: PaginationControls(meta: testMeta, currentPageSize: 10, onPageSizeChanged: onPageSizeChanged),
           ),
         ),
       );
@@ -214,12 +161,7 @@ void main() {
       // Act
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: PaginationControls(
-              meta: testMeta,
-              isLoading: true,
-            ),
-          ),
+          home: Scaffold(body: PaginationControls(meta: testMeta, isLoading: true)),
         ),
       );
 
@@ -232,23 +174,14 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: PaginationControls(
-              meta: testMeta,
-              isLoading: true,
-              onPrevious: () {},
-              onNext: () {},
-            ),
+            body: PaginationControls(meta: testMeta, isLoading: true, onPrevious: () {}, onNext: () {}),
           ),
         ),
       );
 
       // Assert
-      final previousButton = tester.widget<IconButton>(
-        find.widgetWithIcon(IconButton, Icons.chevron_left),
-      );
-      final nextButton = tester.widget<IconButton>(
-        find.widgetWithIcon(IconButton, Icons.chevron_right),
-      );
+      final previousButton = tester.widget<IconButton>(find.widgetWithIcon(IconButton, Icons.chevron_left));
+      final nextButton = tester.widget<IconButton>(find.widgetWithIcon(IconButton, Icons.chevron_right));
 
       expect(previousButton.onPressed, isNull);
       expect(nextButton.onPressed, isNull);

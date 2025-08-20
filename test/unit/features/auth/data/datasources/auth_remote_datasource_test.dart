@@ -1,14 +1,11 @@
-import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:surabhi/core/constants/api_constants.dart';
-import 'package:surabhi/core/data/models/user_model.dart';
 import 'package:surabhi/core/errors/exceptions.dart';
 import 'package:surabhi/core/network/api_client.dart';
 import 'package:surabhi/features/auth/data/datasources/auth_remote_datasource.dart';
-import 'package:surabhi/features/auth/data/models/auth_response_model.dart';
 import 'package:surabhi/features/auth/domain/usecases/login_usecase.dart';
 
 import 'auth_remote_datasource_test.mocks.dart';
@@ -28,15 +25,6 @@ void main() {
 
   group('AuthRemoteDataSource', () {
     const testParams = LoginParams(email: 'test@example.com', password: 'password123');
-
-    final testUserModel = UserModel(userId: '1', email: 'test@example.com', role: 'admin', is2faEnabled: false);
-
-    final testAuthResponse = AuthResponseModel(
-      accessToken: 'access_token_123',
-      tokenType: 'bearer',
-      refreshToken: 'refresh_token_123',
-      user: testUserModel,
-    );
 
     group('login', () {
       test('should return AuthResponseModel when login is successful', () async {

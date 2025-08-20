@@ -147,7 +147,7 @@ void main() {
 
       // Navigate to a page that might show errors (like admin dashboard without auth)
       // This would typically show an error or redirect
-      
+
       // For basic structure testing, we can verify error handling components exist
       expect(find.byType(MaterialApp), findsOneWidget);
     });
@@ -190,7 +190,7 @@ void main() {
       // Navigate back and forward
       await tester.pageBack();
       await tester.pumpAndSettle();
-      
+
       await tester.tap(find.text('Login to Continue'));
       await tester.pumpAndSettle();
 
