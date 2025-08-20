@@ -22,13 +22,13 @@ class UsersListPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Users', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                ElevatedButton(onPressed: () => context.push('/admin/create-user'), child: const Text('Register User')),
-              ],
-            ),
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //   children: [
+            //     const Text('Users', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            //     ElevatedButton(onPressed: () => context.push('/admin/create-user'), child: const Text('Register User')),
+            //   ],
+            // ),
             const SizedBox(height: 12),
             Expanded(
               child: BlocBuilder<UsersBloc, UsersState>(
