@@ -42,7 +42,7 @@ class _RoleAwareDrawer extends StatelessWidget {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, authState) {
         if (authState is! AuthAuthenticated) {
-          return const SizedBox.shrink();
+          return _buildUnauthenticatedDrawer(context);
         }
 
         final user = authState.user;
@@ -61,6 +61,76 @@ class _RoleAwareDrawer extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+
+  Widget _buildUnauthenticatedDrawer(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return ListView(
+      padding: EdgeInsets.zero,
+      children: [
+        _buildUnauthenticatedHeader(context, theme),
+        ListTile(
+          leading: const Icon(Icons.home),
+          title: const Text('Home'),
+          onTap: () {
+            Navigator.of(context).pop();
+            context.go('/');
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.login),
+          title: const Text('Login'),
+          onTap: () {
+            Navigator.of(context).pop();
+            context.go('/login');
+          },
+        ),
+        const Divider(),
+        _buildThemeToggle(context),
+      ],
+    );
+  }
+
+  Widget _buildUnauthenticatedHeader(BuildContext context, ThemeData theme) {
+    return DrawerHeader(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [theme.colorScheme.primary, theme.colorScheme.primary.withValues(alpha: 0.8)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 24,
+                backgroundColor: Colors.white.withValues(alpha: 0.2),
+                child: Icon(Icons.person_outline, size: 28, color: Colors.white),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Welcome to Surabhi',
+                      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const Text('Please login to continue', style: TextStyle(color: Colors.white70, fontSize: 14)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
