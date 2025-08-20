@@ -13,9 +13,10 @@ import 'package:surabhi/features/dashboard/presentation/pages/employee_dashboard
 import 'package:surabhi/features/dashboard/presentation/pages/preacher_dashboard.dart';
 import 'package:surabhi/features/dashboard/presentation/pages/approver_dashboard.dart';
 import 'package:surabhi/features/dashboard/presentation/pages/volunteer_dashboard.dart';
-import 'package:surabhi/features/users/presentation/pages/admin_create_user_page.dart';
+import 'package:surabhi/features/admin/users/presentation/pages/create_user_page.dart';
 import 'package:surabhi/features/auth/presentation/pages/twofa_choice_page.dart';
 import 'package:surabhi/features/auth/presentation/pages/twofa_verify_page.dart';
+import 'package:surabhi/features/settings/presentation/pages/settings_page.dart';
 
 // Create a custom ChangeNotifier to listen to the AuthBloc stream
 class GoRouterRefreshStream extends ChangeNotifier {
@@ -73,8 +74,9 @@ class AppRouter {
       GoRoute(
         path: '/admin/create-user',
         name: 'admin-create-user',
-        builder: (context, state) => const AdminCreateUserPage(),
+        builder: (context, state) => const CreateUserPage(),
       ),
+      GoRoute(path: '/settings', name: 'settings', builder: (context, state) => const SettingsPage()),
     ],
     // Tell GoRouter to listen to the AuthBloc's stream for state changes
     refreshListenable: GoRouterRefreshStream(authBloc.stream),
@@ -94,9 +96,11 @@ class AppRouter {
       // 1. If still loading auth state, don't redirect yet
       if (isLoading) return null;
 
-      // 2. If unauthenticated and not on a public path, redirect to login
-      if (isUnauthenticated && !isGoingToPublicPath) {
-        return '/login';
+      // 2. If unauthenticated: send to login even from '/'
+      if (isUnauthenticated) {
+        if (!isGoingToPublicPath || state.fullPath == '/') {
+          return '/login';
+        }
       }
 
       // 3. If authenticated and trying to go to a public path, redirect to their dashboard
