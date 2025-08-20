@@ -30,6 +30,10 @@ help:
 	@echo "  make analyze          - Analyze code for issues"
 	@echo "  make format           - Format Dart code"
 	@echo "  make clean            - Clean build artifacts"
+	@echo ""
+	@echo "🔧 Setup & Diagnostics:"
+	@echo "  make doctor           - Check Flutter environment"
+	@echo "  make setup-ios        - Setup iOS development environment"
 
 # Setup & Dependencies
 .PHONY: get
@@ -64,6 +68,28 @@ build-android: get generate assets
 
 build-ios: get generate assets
 	@echo "🍎 Building iOS IPA..."
+	@if ! command -v xcodebuild >/dev/null 2>&1; then \
+		echo "❌ Error: Xcode is not installed or not properly configured."; \
+		echo "📋 To fix this:"; \
+		echo "   1. Install Xcode from App Store"; \
+		echo "   2. Run: sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer"; \
+		echo "   3. Run: sudo xcodebuild -runFirstLaunch"; \
+		echo "   4. Install CocoaPods: sudo gem install cocoapods"; \
+		echo "   5. Run: flutter doctor to verify setup"; \
+		exit 1; \
+	fi
+	@if ! command -v pod >/dev/null 2>&1; then \
+		echo "❌ Error: CocoaPods is not installed."; \
+		echo "📋 To fix this:"; \
+		echo "   1. Run: sudo gem install cocoapods"; \
+		echo "   2. Run: pod setup"; \
+		exit 1; \
+	fi
+	@if ! flutter doctor | grep -q "Xcode.*✓"; then \
+		echo "❌ Error: iOS development environment not properly configured."; \
+		echo "📋 Run 'flutter doctor' to see detailed setup requirements."; \
+		exit 1; \
+	fi
 	$(FLUTTER_CMD) build ipa --release
 	@echo "✅ iOS IPA built successfully!"
 
@@ -110,6 +136,32 @@ clean:
 	@echo "🧹 Cleaning build artifacts..."
 	$(FLUTTER_CMD) clean
 	@echo "✅ Project cleaned!"
+
+# Setup & Diagnostics
+.PHONY: doctor setup-ios
+doctor:
+	@echo "🔍 Checking Flutter environment..."
+	$(FLUTTER_CMD) doctor -v
+
+setup-ios:
+	@echo "🍎 Setting up iOS development environment..."
+	@echo "📋 iOS Setup Checklist:"
+	@echo ""
+	@echo "1️⃣ Install Xcode from App Store (if not already installed)"
+	@echo "2️⃣ Configure Xcode command line tools:"
+	@echo "   sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer"
+	@echo "3️⃣ Run Xcode first launch setup:"
+	@echo "   sudo xcodebuild -runFirstLaunch"
+	@echo "4️⃣ Accept Xcode license:"
+	@echo "   sudo xcodebuild -license accept"
+	@echo "5️⃣ Install CocoaPods:"
+	@echo "   sudo gem install cocoapods"
+	@echo "6️⃣ Setup CocoaPods:"
+	@echo "   pod setup"
+	@echo "7️⃣ Verify setup:"
+	@echo "   flutter doctor"
+	@echo ""
+	@echo "💡 After completing these steps, run 'make build-ios' again."
 
 # Aliases
 lint: analyze
