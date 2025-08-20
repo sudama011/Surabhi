@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:surabhi/core/widgets/app_scaffold.dart';
 import 'package:surabhi/core/widgets/pagination_controls.dart';
 import 'package:surabhi/core/widgets/user_card.dart';
+import 'package:surabhi/core/widgets/error_display.dart';
 import 'package:surabhi/features/admin/users/presentation/bloc/users_bloc.dart';
 import 'package:surabhi/features/admin/users/presentation/pages/user_details_page.dart';
 import 'package:surabhi/core/domain/entities/user_entity.dart';
@@ -58,18 +59,10 @@ class UsersListPage extends StatelessWidget {
                       ],
                     );
                   } else if (state is UsersError) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('Error: ${state.message}'),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: () => context.read<UsersBloc>().add(const GetUsersEvent()),
-                            child: const Text('Retry'),
-                          ),
-                        ],
-                      ),
+                    return ErrorDisplay(
+                      message: state.message,
+                      onRetry: () => context.read<UsersBloc>().add(const GetUsersEvent()),
+                      icon: Icons.people_outline,
                     );
                   }
                   return const SizedBox.shrink();

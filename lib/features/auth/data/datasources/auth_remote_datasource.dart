@@ -5,6 +5,7 @@ import 'package:surabhi/core/network/api_client.dart';
 import 'package:surabhi/features/auth/data/models/auth_response_model.dart';
 import 'package:surabhi/core/constants/api_constants.dart';
 import 'package:surabhi/features/auth/domain/usecases/login_usecase.dart';
+import 'package:surabhi/core/utils/error_utils.dart';
 
 abstract class AuthRemoteDataSource {
   Future<AuthResponseModel> login(LoginParams params);
@@ -27,8 +28,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
 
       return AuthResponseModel.fromJson(response.data);
+    } on DioException catch (e) {
+      // Extract user-friendly message from API response
+      final errorMessage = ErrorUtils.getComprehensiveErrorMessage(e, 'Login failed');
+      throw AuthException(message: errorMessage);
     } catch (e) {
-      throw ServerException(message: e.toString());
+      throw ServerException(message: 'Unexpected error occurred: $e');
     }
   }
 
@@ -37,8 +42,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       final response = await apiClient.dio.post(ApiConstants.logoutPath);
       return response.data;
+    } on DioException catch (e) {
+      // Extract user-friendly message from API response
+      final errorMessage = ErrorUtils.getComprehensiveErrorMessage(e, 'Logout failed');
+      throw ServerException(message: errorMessage);
     } catch (e) {
-      throw ServerException(message: e.toString());
+      throw ServerException(message: 'Unexpected error occurred: $e');
     }
   }
 }

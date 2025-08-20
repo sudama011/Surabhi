@@ -6,6 +6,7 @@ import 'package:surabhi/core/data/models/user_model.dart';
 import 'package:surabhi/core/data/models/paginated_response.dart';
 import 'package:surabhi/core/errors/exceptions.dart';
 import 'package:surabhi/core/network/api_client.dart';
+import 'package:surabhi/core/utils/error_utils.dart';
 
 abstract class UsersRemoteDataSource {
   Future<PaginatedResponse<UserModel>> getUsers({int page = 1, int size = 10});
@@ -37,7 +38,9 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
 
       return PaginatedResponse(items: items, meta: meta);
     } on DioException catch (e) {
-      throw ServerException(message: e.message ?? 'Failed to fetch users');
+      // Extract user-friendly message from API response
+      final errorMessage = ErrorUtils.getComprehensiveErrorMessage(e, 'Failed to fetch users');
+      throw ServerException(message: errorMessage);
     } catch (e) {
       throw ServerException(message: 'Unexpected error occurred: $e');
     }

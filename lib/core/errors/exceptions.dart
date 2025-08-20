@@ -46,3 +46,19 @@ class UnhandledException implements Exception {
   @override
   String toString() => 'UnhandledException: $message';
 }
+
+class RateLimitException implements Exception {
+  final String message;
+  const RateLimitException({this.message = 'Rate limit exceeded. Please try again later.'});
+
+  @override
+  String toString() => 'RateLimitException: $message';
+}
+
+class ValidationException implements Exception {
+  final String message;
+  const ValidationException({this.message = 'Validation failed.'});
+
+  @override
+  String toString() => 'ValidationException: $message';
+}
