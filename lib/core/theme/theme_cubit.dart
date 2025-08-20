@@ -9,7 +9,7 @@ class ThemeCubit extends Cubit<ThemeMode> {
     _loadTheme();
   }
 
-  void _loadTheme() async {
+  Future<void> _loadTheme() async {
     final savedTheme = await _preferencesService.getThemeMode();
     if (savedTheme == 'light') {
       emit(ThemeMode.light);

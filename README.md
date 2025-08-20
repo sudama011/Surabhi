@@ -97,7 +97,7 @@ make format        # Format code
 ```
 surabhi/
 ├── lib/
-│   ├── main.dart                    # Application entry point
+│   ├── main.dart                   # Application entry point
 │   ├── injector.dart               # Dependency injection setup
 │   ├── assets/                     # Static assets
 │   │   ├── fonts/                  # Custom fonts (Open Sans, Montserrat)
@@ -128,13 +128,13 @@ surabhi/
 │   └── routes/                     # Navigation and routing
 ├── test/unit/                      # Unit tests
 ├── android/                        # Android platform files
-├── ios/                           # iOS platform files
-├── web/                           # Web platform files
-├── docs/                          # Project documentation
-├── pubspec.yaml                   # Dependencies and metadata
-├── analysis_options.yaml         # Code analysis configuration
-├── Makefile                       # Build automation
-└── README.md                      # This file
+├── ios/                            # iOS platform files
+├── web/                            # Web platform files
+├── docs/                           # Project documentation
+├── pubspec.yaml                    # Dependencies and metadata
+├── analysis_options.yaml           # Code analysis configuration
+├── Makefile                        # Build automation
+└── README.md                       # This file
 ```
 
 ### Architecture Highlights
