@@ -22,7 +22,9 @@ help:
 	@echo ""
 	@echo "🏗️ Production Builds:"
 	@echo "  make build-android    - Build Android APK"
-	@echo "  make build-ios        - Build iOS IPA"
+	@echo "  make build-ios        - Build iOS IPA (requires Apple Developer account)"
+	@echo "  make build-ios-sim    - Build iOS for Simulator (no code signing)"
+	@echo "  make build-ios-no-sign - Build iOS without code signing (for testing)"
 	@echo "  make build-web        - Build web application"
 	@echo ""
 	@echo "🧪 Quality & Testing:"
@@ -60,7 +62,7 @@ run-web: get generate
 	$(FLUTTER_CMD) run -d chrome
 
 # Production Builds
-.PHONY: build-android build-ios build-web
+.PHONY: build-android build-ios build-ios-sim build-ios-no-sign build-web
 build-android: get generate assets
 	@echo "🤖 Building Android APK..."
 	$(FLUTTER_CMD) build apk --release
@@ -85,13 +87,47 @@ build-ios: get generate assets
 		echo "   2. Run: pod setup"; \
 		exit 1; \
 	fi
-	@if ! flutter doctor | grep -q "Xcode.*✓"; then \
+	@if ! flutter doctor | grep -q "Xcode.*develop for iOS"; then \
 		echo "❌ Error: iOS development environment not properly configured."; \
 		echo "📋 Run 'flutter doctor' to see detailed setup requirements."; \
 		exit 1; \
 	fi
+	@echo "📱 Note: This requires Apple Developer account and code signing setup."
+	@echo "💡 For testing without code signing, use 'make build-ios-sim' instead."
 	$(FLUTTER_CMD) build ipa --release
 	@echo "✅ iOS IPA built successfully!"
+
+build-ios-sim: get generate assets
+	@echo "📱 Building iOS for Simulator..."
+	@if ! command -v xcodebuild >/dev/null 2>&1; then \
+		echo "❌ Error: Xcode is not installed."; \
+		echo "📋 Install Xcode from App Store and try again."; \
+		exit 1; \
+	fi
+	@if ! command -v pod >/dev/null 2>&1; then \
+		echo "❌ Error: CocoaPods is not installed."; \
+		echo "📋 Run: brew install cocoapods"; \
+		exit 1; \
+	fi
+	$(FLUTTER_CMD) build ios --simulator
+	@echo "✅ iOS Simulator build completed!"
+	@echo "💡 To run: flutter run -d 'iPhone Simulator'"
+
+build-ios-no-sign: get generate assets
+	@echo "📱 Building iOS without code signing..."
+	@if ! command -v xcodebuild >/dev/null 2>&1; then \
+		echo "❌ Error: Xcode is not installed."; \
+		exit 1; \
+	fi
+	@if ! command -v pod >/dev/null 2>&1; then \
+		echo "❌ Error: CocoaPods is not installed."; \
+		echo "📋 Run: brew install cocoapods"; \
+		exit 1; \
+	fi
+	$(FLUTTER_CMD) build ios --no-codesign
+	@echo "✅ iOS build completed without code signing!"
+	@echo "📱 Built: build/ios/iphoneos/Runner.app"
+	@echo "💡 Manual code signing required for device deployment"
 
 build-web: get generate assets
 	@echo "🌐 Building Web application..."

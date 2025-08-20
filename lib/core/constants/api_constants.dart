@@ -3,7 +3,8 @@
 class ApiConstants {
   ApiConstants._();
 
-  static const String baseApiUrl = 'http://10.0.2.2:8000';
+  // static const String baseApiUrl = 'http://10.0.2.2:8000';
+  static const String baseApiUrl = 'https://surabhi-api.onrender.com';
   static const String apiVersionPath = '/api/v1';
 
   static const String loginPath = '/auth/login';

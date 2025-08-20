@@ -9,8 +9,10 @@ import 'package:dartz/dartz.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:surabhi/core/domain/entities/user_entity.dart' as _i6;
 import 'package:surabhi/core/errors/failures.dart' as _i5;
-import 'package:surabhi/features/auth/domain/repositories/auth_repository.dart' as _i3;
-import 'package:surabhi/features/auth/domain/usecases/login_usecase.dart' as _i7;
+import 'package:surabhi/features/auth/domain/repositories/auth_repository.dart'
+    as _i3;
+import 'package:surabhi/features/auth/domain/usecases/login_usecase.dart'
+    as _i7;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -27,7 +29,8 @@ import 'package:surabhi/features/auth/domain/usecases/login_usecase.dart' as _i7
 // ignore_for_file: subtype_of_sealed_class
 
 class _FakeEither_0<L, R> extends _i1.SmartFake implements _i2.Either<L, R> {
-  _FakeEither_0(Object parent, Invocation parentInvocation) : super(parent, parentInvocation);
+  _FakeEither_0(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 /// A class which mocks [AuthRepository].
@@ -39,12 +42,18 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
   }
 
   @override
-  _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>> login(_i7.LoginParams? params) =>
+  _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>> login(
+    _i7.LoginParams? params,
+  ) =>
       (super.noSuchMethod(
             Invocation.method(#login, [params]),
-            returnValue: _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>>.value(
-              _FakeEither_0<_i5.Failure, _i6.UserEntity>(this, Invocation.method(#login, [params])),
-            ),
+            returnValue:
+                _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>>.value(
+                  _FakeEither_0<_i5.Failure, _i6.UserEntity>(
+                    this,
+                    Invocation.method(#login, [params]),
+                  ),
+                ),
           )
           as _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>>);
 
@@ -53,7 +62,10 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
       (super.noSuchMethod(
             Invocation.method(#logout, []),
             returnValue: _i4.Future<_i2.Either<_i5.Failure, bool>>.value(
-              _FakeEither_0<_i5.Failure, bool>(this, Invocation.method(#logout, [])),
+              _FakeEither_0<_i5.Failure, bool>(
+                this,
+                Invocation.method(#logout, []),
+              ),
             ),
           )
           as _i4.Future<_i2.Either<_i5.Failure, bool>>);
@@ -62,9 +74,13 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
   _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>> checkAuthStatus() =>
       (super.noSuchMethod(
             Invocation.method(#checkAuthStatus, []),
-            returnValue: _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>>.value(
-              _FakeEither_0<_i5.Failure, _i6.UserEntity>(this, Invocation.method(#checkAuthStatus, [])),
-            ),
+            returnValue:
+                _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>>.value(
+                  _FakeEither_0<_i5.Failure, _i6.UserEntity>(
+                    this,
+                    Invocation.method(#checkAuthStatus, []),
+                  ),
+                ),
           )
           as _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>>);
 }
