@@ -64,7 +64,7 @@ class _RoleAwareDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildDrawerHeader(BuildContext context, user, ThemeData theme) {
+  Widget _buildDrawerHeader(BuildContext context, dynamic user, ThemeData theme) {
     return DrawerHeader(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -80,10 +80,12 @@ class _RoleAwareDrawer extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 24,
-                backgroundImage: user.image != null && user.image!.isNotEmpty ? NetworkImage(user.image!) : null,
-                child: user.image == null || user.image!.isEmpty
+                backgroundImage: user.image != null && (user.image as String).isNotEmpty
+                    ? NetworkImage(user.image as String)
+                    : null,
+                child: user.image == null || (user.image as String?)?.isEmpty == true
                     ? Text(
-                        user.email.isNotEmpty ? user.email[0].toUpperCase() : '?',
+                        (user.email as String).isNotEmpty ? (user.email as String)[0].toUpperCase() : '?',
                         style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       )
                     : null,
@@ -96,12 +98,12 @@ class _RoleAwareDrawer extends StatelessWidget {
                     Text(
                       user.firstName != null && user.lastName != null
                           ? '${user.firstName} ${user.lastName}'
-                          : user.email,
+                          : user.email as String,
                       style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
-                      user.role.toUpperCase(),
+                      (user.role as String).toUpperCase(),
                       style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500),
                     ),
                   ],
@@ -111,7 +113,7 @@ class _RoleAwareDrawer extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            user.email,
+            user.email as String,
             style: const TextStyle(color: Colors.white70, fontSize: 14),
             overflow: TextOverflow.ellipsis,
           ),
@@ -275,7 +277,7 @@ class _RoleAwareDrawer extends StatelessWidget {
   }
 
   void _showLogoutConfirmation(BuildContext context) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(

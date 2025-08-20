@@ -1,88 +1,125 @@
-# Define variables for common commands and directories
-FLUTTER_CMD = flutter # Change this to your Flutter SDK path if necessary
+# Surabhi Flutter Project Makefile
+# Supports Android, iOS, and Web platforms
+
+FLUTTER_CMD = flutter
 BUILD_RUNNER_CMD = $(FLUTTER_CMD) pub run build_runner build --delete-conflicting-outputs
 
-# The default target. Run 'make' to see available commands.
+# Default target - show help
 .PHONY: help
 help:
-	@echo "Welcome to the Surabhi project Makefile!"
+	@echo "🚀 Surabhi Flutter Project - Build Commands"
 	@echo ""
-	@echo "Available commands:"
-	@echo "  make get              - Install all Flutter project dependencies"
-	@echo "  make run              - Run the app on a connected device or emulator"
-	@echo "  make build_ios        - Build an iOS release IPA"
-	@echo "  make build_android    - Build an Android release APK"
-	@echo "  make generate         - Run build_runner to generate files (e.g., json_serializable)"
-	@echo "  make assets           - Generate launcher icons and native splash screen"
-	@echo "  make clean            - Clean the Flutter project build artifacts"
-	@echo "  make format           - Format Dart code"
-	@echo "  make analyze          - Analyze Dart code for static errors"
+	@echo "📦 Setup & Dependencies:"
+	@echo "  make get              - Install Flutter dependencies"
+	@echo "  make generate         - Generate code (JSON serialization, etc.)"
+	@echo "  make assets           - Generate app icons and splash screens"
+	@echo ""
+	@echo "🏃 Development:"
+	@echo "  make run              - Run app on connected device/emulator"
+	@echo "  make run-android      - Run specifically on Android"
+	@echo "  make run-ios          - Run specifically on iOS"
+	@echo "  make run-web          - Run on web browser"
+	@echo ""
+	@echo "🏗️ Production Builds:"
+	@echo "  make build-android    - Build Android APK"
+	@echo "  make build-ios        - Build iOS IPA"
+	@echo "  make build-web        - Build web application"
+	@echo ""
+	@echo "🧪 Quality & Testing:"
 	@echo "  make test             - Run all tests"
-	@echo "  make lint             - Run Dart linting checks(alias for analyze)"
+	@echo "  make analyze          - Analyze code for issues"
+	@echo "  make format           - Format Dart code"
+	@echo "  make clean            - Clean build artifacts"
 
-# Rule to get all pub dependencies
+# Setup & Dependencies
 .PHONY: get
 get:
-	@echo "=> Getting project dependencies..."
+	@echo "📦 Installing Flutter dependencies..."
 	$(FLUTTER_CMD) pub get
 
-# Rule to run the app
-.PHONY: run
+# Development - Run Commands
+.PHONY: run run-android run-ios run-web
 run: get generate
-	@echo "=> Running the application..."
+	@echo "🏃 Running application..."
 	$(FLUTTER_CMD) run
 
-# Rule to build an iOS release IPA
-.PHONY: build_ios
-build_ios: get generate assets
-	@echo "=> Building iOS release IPA..."
-	$(FLUTTER_CMD) build ipa
+run-android: get generate
+	@echo "🤖 Running on Android..."
+	$(FLUTTER_CMD) run -d android
 
-# Rule to build an Android release APK
-.PHONY: build_android
-build_android: get generate assets
-	@echo "=> Building Android release APK..."
+run-ios: get generate
+	@echo "🍎 Running on iOS..."
+	$(FLUTTER_CMD) run -d ios
+
+run-web: get generate
+	@echo "🌐 Running on Web..."
+	$(FLUTTER_CMD) run -d chrome
+
+# Production Builds
+.PHONY: build-android build-ios build-web
+build-android: get generate assets
+	@echo "🤖 Building Android APK..."
 	$(FLUTTER_CMD) build apk --release
+	@echo "✅ Android APK built successfully!"
 
-# Rule to run build_runner for code generation
+build-ios: get generate assets
+	@echo "🍎 Building iOS IPA..."
+	$(FLUTTER_CMD) build ipa --release
+	@echo "✅ iOS IPA built successfully!"
+
+build-web: get generate assets
+	@echo "🌐 Building Web application..."
+	$(FLUTTER_CMD) build web --release
+	@echo "✅ Web build completed successfully!"
+
+# Code Generation
 .PHONY: generate
 generate:
-	@echo "=> Running code generation (build_runner)..."
+	@echo "⚙️ Running code generation..."
 	$(BUILD_RUNNER_CMD)
+	@echo "✅ Code generation completed!"
 
-# Rule to generate launcher icons and native splash screen
+# Asset Generation
 .PHONY: assets
 assets: get
-	@echo "=> Generating launcher icons..."
+	@echo "🎨 Generating app assets..."
+	@echo "  📱 Generating launcher icons..."
 	$(FLUTTER_CMD) pub run flutter_launcher_icons
-	@echo ""
-	@echo "=> Generating native splash screen..."
+	@echo "  🎬 Generating splash screens..."
 	$(FLUTTER_CMD) pub run flutter_native_splash:create
-	@echo ""
-	@echo "=> All app assets generated successfully!"
+	@echo "✅ All assets generated successfully!"
 
-# Rule to clean project build artifacts
-.PHONY: clean
-clean:
-	@echo "=> Cleaning project..."
-	$(FLUTTER_CMD) clean
+# Quality & Testing
+.PHONY: test analyze format clean lint
+test: get
+	@echo "🧪 Running tests..."
+	$(FLUTTER_CMD) test
+	@echo "✅ All tests completed!"
 
-# Rule to format Dart code
-.PHONY: format
-format:
-	@echo "=> Formatting Dart code..."
-	dart format lib/
-
-# Rule to analyze Dart code
-.PHONY: analyze
 analyze:
-	@echo "=> Analyzing Dart code..."
+	@echo "🔍 Analyzing code..."
 	$(FLUTTER_CMD) analyze
+	@echo "✅ Code analysis completed!"
+
+format:
+	@echo "✨ Formatting code..."
+	dart format lib/ test/
+	@echo "✅ Code formatting completed!"
+
+clean:
+	@echo "🧹 Cleaning build artifacts..."
+	$(FLUTTER_CMD) clean
+	@echo "✅ Project cleaned!"
+
+# Aliases
 lint: analyze
 
-# Rule to run all tests
-.PHONY: test
-test: get
-	@echo "=> Running tests..."
-	$(FLUTTER_CMD) test
+# Development workflow
+.PHONY: dev setup
+setup: get generate assets
+	@echo "🚀 Project setup completed! Ready for development."
+
+dev: setup
+	@echo "🏃 Starting development server..."
+	$(FLUTTER_CMD) run
 	

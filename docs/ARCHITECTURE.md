@@ -1,42 +1,79 @@
-# Project Documentation
-## 1. Architecture: Feature-First Clean Architecture
-The project is structured using a **feature-first** approach combined with principles of **Clean Architecture**. This design separates the application into distinct layers while keeping all files related to a specific feature within a single, dedicated folder. This structure promotes:
+# Surabhi Architecture Documentation
 
-- **Modularity:** Each feature is a self-contained unit.
+## 🏗️ Architecture Overview
 
-- **Scalability:** New features can be added without affecting existing ones.
+Surabhi follows a **Feature-First Clean Architecture** approach, combining the benefits of Clean Architecture with role-based feature organization. This design ensures:
 
-- **Testability:** Each layer can be tested in isolation.
+### Core Principles
+- **🔧 Modularity**: Each feature is self-contained and independent
+- **📈 Scalability**: New features can be added without affecting existing ones
+- **🧪 Testability**: Each layer can be tested in isolation
+- **🔒 Security**: Role-based access control built into the architecture
+- **🎯 Maintainability**: Clear separation of concerns and responsibilities
 
-The main layers are:
+### Architecture Layers
 
-- **core/:** Contains app-wide logic and shared components.
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Presentation Layer                       │
+│  (UI, BLoC, Pages, Widgets, User Interaction)             │
+├─────────────────────────────────────────────────────────────┤
+│                     Domain Layer                            │
+│     (Business Logic, Entities, Use Cases, Repositories)    │
+├─────────────────────────────────────────────────────────────┤
+│                      Data Layer                             │
+│   (API Clients, Models, Repository Implementations)        │
+└─────────────────────────────────────────────────────────────┘
+```
 
-- **features/:** Houses all feature-specific code, with each feature having its own `data/`, `domain/`, and `presentation/` sub-folders.
+### Project Structure
+- **`core/`**: Shared functionality and infrastructure
+- **`features/`**: Role-based feature modules (admin, employee, preacher, etc.)
+- **`routes/`**: Navigation and routing logic
 
-## 2. Core Components
-The core folder is the foundation of the application, containing shared functionality and dependencies.
+## 🔧 Core Components
 
-##### Network Layer
-- **api_client.dart:** The primary HTTP client using the Dio package. It is configured as a singleton to ensure a single, consistent instance for all API calls. It handles base URL configuration, timeouts, and standard headers.
+The `core/` module provides the foundation for the entire application, containing shared functionality and infrastructure.
 
-- **api_interceptor.dart:** A custom interceptor that integrates with `ApiClient`. Its primary responsibilities are:
+### 🌐 Network Layer
 
-	- **Automated Authentication:** It intercepts every request and adds the access token to the headers.
+#### ApiClient (`core/network/api_client.dart`)
+- **Purpose**: Primary HTTP client using Dio package
+- **Configuration**: Singleton instance with base URL, timeouts, and headers
+- **Features**:
+  - Request/response logging with PrettyDioLogger
+  - Automatic content-type handling
+  - Timeout configuration (30s connect/send/receive)
 
-	- **Token Refreshing:** It automatically handles 401 Unauthorized errors by attempting to refresh the access token using the refresh token before re-attempting the original request.
+#### ApiInterceptor (`core/network/api_interceptor.dart`)
+- **Authentication**: Automatically adds JWT tokens to requests
+- **Token Refresh**: Handles 401 errors by refreshing tokens automatically
+- **Error Handling**: Converts HTTP errors to domain-specific exceptions
+- **Security**: Manages token lifecycle and secure storage
 
-	- **Error Handling:** Converts HTTP status codes (401, 403) and network errors into specific, custom exceptions (AuthException, PermissionDeniedException).
+### 💾 Storage Layer
 
-##### Local Storage
-- **preferences_service.dart:** A service that abstracts local data persistence. It correctly separates data based on sensitivity.
+#### PreferencesService (`core/shared_preferences/preferences_service.dart`)
+- **Secure Storage**: Uses FlutterSecureStorage for sensitive data (tokens)
+- **Shared Preferences**: Uses SharedPreferences for non-sensitive data (theme, user info)
+- **Data Separation**: Clear distinction between secure and non-secure storage
+- **Platform Security**: Leverages platform-specific encryption
 
-	- **FlutterSecureStorage:** Used for sensitive data like access and refresh tokens. It leverages platform-specific encryption to ensure data security.
+### 🎯 Dependency Injection
 
-	- **SharedPreferences:** Used for non-sensitive data such as user role, user JSON, and theme preferences.
+#### Injector (`injector.dart`)
+- **Container**: Uses GetIt for dependency management
+- **Registration**: Services registered as singletons or factories
+- **Lifecycle**: Proper dependency lifecycle management
+- **Testing**: Easy mocking and testing support
 
-##### Dependency Injection
-- **injector.dart:** The main dependency management file using the get_it package. All core services, repositories, and BLoCs are registered here as either lazy singletons or factories. This approach ensures that dependencies are loosely coupled and that all components are easily testable and replaceable.
+### 🎨 Theme System
+
+#### Theme Management
+- **ThemeCubit**: BLoC-based theme state management
+- **AppColors**: Centralized color definitions
+- **AppThemes**: Light/dark theme configurations
+- **Persistence**: Theme preference storage and restoration
 
 ## 3. Feature Structure
 Each feature (e.g., `auth/`) adheres to the same layered structure:

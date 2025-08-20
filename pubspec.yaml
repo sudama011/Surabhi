@@ -1,7 +1,7 @@
 name: surabhi
-description: "Donor Care Cell of Hare Krishna Movement"
-publish_to: 'none' # Prevents publishing to pub.dev
-version: 1.0.0+1 # 1.0.0 is the version, 1 is the build number
+description: "Donor Care Cell of Hare Krishna Movement - Role-based management app for Android, iOS, and Web"
+publish_to: 'none'
+version: 1.0.0+1
 
 environment:
   sdk: ^3.8.1
@@ -9,36 +9,61 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  shared_preferences: ^2.2.3 # For local storage of non-sensitive data
-  flutter_secure_storage: ^9.0.0 # More secure storage for sensitive data like tokens
-  provider: ^6.1.2 # For state management
+
+  # State Management
+  flutter_bloc: ^9.1.1
+  bloc: ^9.0.0
+  provider: ^6.1.2
+  equatable: ^2.0.7
+
+  # Navigation
   go_router: ^14.0.0
-  cupertino_icons: ^1.0.8 # For iOS style icons
-  flutter_bloc: ^9.1.1 # For state management using BLoC pattern
-  equatable: ^2.0.7 # For value equality in BLoC states and events
-  bloc: ^9.0.0 # For BLoC pattern implementation
-  get_it: ^8.0.3 # For dependency injection
-  dio: ^5.9.0 # For making HTTP requests
+
+  # Storage
+  shared_preferences: ^2.2.3
+  flutter_secure_storage: ^9.0.0
+
+  # Networking
+  dio: ^5.9.0
   pretty_dio_logger: ^1.4.0
+
+  # Dependency Injection
+  get_it: ^8.0.3
+
+  # JSON Serialization
   json_annotation: ^4.9.0
-  dartz: ^0.10.1 # For functional programming
+
+  # Functional Programming
+  dartz: ^0.10.1
+
+  # UI
+  cupertino_icons: ^1.0.8
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+  # Code Quality
   flutter_lints: ^5.0.0
+
+  # Code Generation
   build_runner: ^2.7.0
   json_serializable: ^6.10.0
+
+  # App Configuration
   flutter_launcher_icons: ^0.14.4
   flutter_native_splash: ^2.4.6
 
-
 flutter:
   uses-material-design: true
+
+  # Assets
   assets:
     - lib/assets/images/
     - lib/assets/icons/
-    - lib/assets/logos/   
+    - lib/assets/logos/
+
+  # Custom Fonts
   fonts:
     - family: Open Sans
       fonts:
@@ -54,13 +79,16 @@ flutter:
         - asset: lib/assets/fonts/Montserrat-Bold.ttf
           weight: 700
 
+# App Icon Configuration (Android, iOS, Web)
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "lib/assets/logos/logo.png" # Path to your single, high-resolution icon
-  min_sdk_android: 21 # Set this to your app's minimum Android SDK version
-  remove_alpha_ios: true # Remove alpha channel from iOS icon to avoid black borders
+  web: true
+  image_path: "lib/assets/logos/logo.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true
 
+# Splash Screen Configuration (Android, iOS, Web)
 flutter_native_splash:
   color: "#0175C2"
   image: lib/assets/logos/splash.png
