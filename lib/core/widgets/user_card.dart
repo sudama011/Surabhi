@@ -27,8 +27,10 @@ class UserCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundImage: user.image != null ? NetworkImage(user.image!) : null,
-          child: user.image == null ? Text(user.email[0].toUpperCase()) : null,
+          backgroundImage: user.image != null && user.image!.isNotEmpty ? NetworkImage(user.image!) : null,
+          child: user.image == null || user.image!.isEmpty
+              ? Text(user.email.isNotEmpty ? user.email[0].toUpperCase() : '?')
+              : null,
         ),
         title: Text(
           user.firstName != null && user.lastName != null ? '${user.firstName} ${user.lastName}' : user.email,

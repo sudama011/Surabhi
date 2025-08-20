@@ -30,10 +30,17 @@ class UsersBloc extends Bloc<UsersEvent, UsersState> {
 
       final result = await getUsersUseCase(page: currentState.paginatedUsers.meta.page + 1, size: event.size);
 
-      result.fold((failure) => emit(UsersError(failure.message)), (newPaginatedUsers) {
-        final allUsers = [...currentState.paginatedUsers.items, ...newPaginatedUsers.items];
-        emit(UsersLoaded(PaginatedResponse(items: allUsers, meta: newPaginatedUsers.meta)));
-      });
+      result.fold(
+        (failure) {
+          // On error, revert to the previous loaded state instead of showing error
+          emit(UsersLoaded(currentState.paginatedUsers));
+          // You could also emit a specific error state if needed
+        },
+        (newPaginatedUsers) {
+          final allUsers = [...currentState.paginatedUsers.items, ...newPaginatedUsers.items];
+          emit(UsersLoaded(PaginatedResponse(items: allUsers, meta: newPaginatedUsers.meta)));
+        },
+      );
     }
   }
 }

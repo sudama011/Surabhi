@@ -6,5 +6,5 @@ import 'package:surabhi/core/data/models/paginated_response.dart';
 import 'package:surabhi/core/errors/failures.dart';
 
 abstract class UsersRepository {
-  Future<Either<Failure, PaginatedResponse<UserEntity>>> getUsers({int page = 1, int size = 20});
+  Future<Either<Failure, PaginatedResponse<UserEntity>>> getUsers({int page = 1, int size = 10});
 }

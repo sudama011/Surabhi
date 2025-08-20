@@ -24,6 +24,7 @@ class _CreateUserPageState extends State<CreateUserPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   String _role = 'volunteer';
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -34,6 +35,10 @@ class _CreateUserPageState extends State<CreateUserPage> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_isLoading) return; // Prevent double submission
+
+    setState(() => _isLoading = true);
+
     final api = RepositoryProvider.of<ApiClient>(context);
     try {
       final body = json.encode({
@@ -46,7 +51,13 @@ class _CreateUserPageState extends State<CreateUserPage> {
       UiUtils.showSnackBar(context, 'User created successfully', backgroundColor: Colors.green);
       if (context.mounted) context.pop();
     } catch (e) {
-      UiUtils.showSnackBar(context, 'Failed to create user: $e', backgroundColor: Colors.red);
+      if (mounted) {
+        UiUtils.showSnackBar(context, 'Failed to create user: $e', backgroundColor: Colors.red);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -83,7 +94,12 @@ class _CreateUserPageState extends State<CreateUserPage> {
                 decoration: const InputDecoration(labelText: 'Role'),
               ),
               const SizedBox(height: 24),
-              ElevatedButton(onPressed: _submit, child: const Text('Create User')),
+              ElevatedButton(
+                onPressed: _isLoading ? null : _submit,
+                child: _isLoading
+                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Text('Create User'),
+              ),
             ],
           ),
         ),

@@ -76,6 +76,9 @@ class PaginationControls extends StatelessWidget {
     final theme = Theme.of(context);
     final List<Widget> pageWidgets = [];
 
+    // Handle edge case where pages is 0
+    if (meta.pages <= 0) return pageWidgets;
+
     // Calculate which pages to show
     int startPage = (meta.page - 2).clamp(1, meta.pages);
     int endPage = (meta.page + 2).clamp(1, meta.pages);

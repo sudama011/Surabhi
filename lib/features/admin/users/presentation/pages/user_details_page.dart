@@ -61,9 +61,12 @@ class UserDetailsPage extends StatelessWidget {
             // Avatar
             CircleAvatar(
               radius: 40,
-              backgroundImage: user.image != null ? NetworkImage(user.image!) : null,
-              child: user.image == null
-                  ? Text(user.email[0].toUpperCase(), style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold))
+              backgroundImage: user.image != null && user.image!.isNotEmpty ? NetworkImage(user.image!) : null,
+              child: user.image == null || user.image!.isEmpty
+                  ? Text(
+                      user.email.isNotEmpty ? user.email[0].toUpperCase() : '?',
+                      style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                    )
                   : null,
             ),
 
@@ -175,7 +178,11 @@ class UserDetailsPage extends StatelessWidget {
         const SizedBox(width: 16),
         Expanded(
           child: ElevatedButton.icon(
-            onPressed: () => context.pop(),
+            onPressed: () {
+              if (context.mounted) {
+                context.pop();
+              }
+            },
             icon: const Icon(Icons.arrow_back),
             label: const Text('Back to List'),
           ),

@@ -8,7 +8,7 @@ import 'package:surabhi/core/errors/exceptions.dart';
 import 'package:surabhi/core/network/api_client.dart';
 
 abstract class UsersRemoteDataSource {
-  Future<PaginatedResponse<UserModel>> getUsers({int page = 1, int size = 20});
+  Future<PaginatedResponse<UserModel>> getUsers({int page = 1, int size = 10});
 }
 
 class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
@@ -17,7 +17,7 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
   UsersRemoteDataSourceImpl({required this.apiClient});
 
   @override
-  Future<PaginatedResponse<UserModel>> getUsers({int page = 1, int size = 20}) async {
+  Future<PaginatedResponse<UserModel>> getUsers({int page = 1, int size = 10}) async {
     try {
       final response = await apiClient.dio.get(
         ApiConstants.userListPath,
@@ -28,11 +28,18 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
           .map((e) => UserModel.fromJson(e as Map<String, dynamic>))
           .toList();
 
-      final meta = PaginationMeta.fromJson(response.data['meta'] as Map<String, dynamic>? ?? {});
+      final metaData = response.data['meta'] as Map<String, dynamic>? ?? {};
+      final meta = PaginationMeta.fromJson(
+        metaData.isNotEmpty
+            ? metaData
+            : {'page': page, 'size': size, 'total': items.length, 'pages': 1, 'has_next': false, 'has_prev': false},
+      );
 
       return PaginatedResponse(items: items, meta: meta);
     } on DioException catch (e) {
       throw ServerException(message: e.message ?? 'Failed to fetch users');
+    } catch (e) {
+      throw ServerException(message: 'Unexpected error occurred: $e');
     }
   }
 }

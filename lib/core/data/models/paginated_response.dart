@@ -9,19 +9,12 @@ class PaginatedResponse<T> {
   final List<T> items;
   final PaginationMeta meta;
 
-  const PaginatedResponse({
-    required this.items,
-    required this.meta,
-  });
+  const PaginatedResponse({required this.items, required this.meta});
 
-  factory PaginatedResponse.fromJson(
-    Map<String, dynamic> json,
-    T Function(Object? json) fromJsonT,
-  ) =>
+  factory PaginatedResponse.fromJson(Map<String, dynamic> json, T Function(Object? json) fromJsonT) =>
       _$PaginatedResponseFromJson(json, fromJsonT);
 
-  Map<String, dynamic> toJson(Object Function(T value) toJsonT) =>
-      _$PaginatedResponseToJson(this, toJsonT);
+  Map<String, dynamic> toJson(Object Function(T value) toJsonT) => _$PaginatedResponseToJson(this, toJsonT);
 }
 
 @JsonSerializable()
@@ -44,8 +37,7 @@ class PaginationMeta {
     required this.hasPrev,
   });
 
-  factory PaginationMeta.fromJson(Map<String, dynamic> json) =>
-      _$PaginationMetaFromJson(json);
+  factory PaginationMeta.fromJson(Map<String, dynamic> json) => _$PaginationMetaFromJson(json);
 
   Map<String, dynamic> toJson() => _$PaginationMetaToJson(this);
 }

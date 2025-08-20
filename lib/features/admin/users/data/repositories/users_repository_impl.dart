@@ -14,13 +14,15 @@ class UsersRepositoryImpl implements UsersRepository {
   UsersRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<Either<Failure, PaginatedResponse<UserEntity>>> getUsers({int page = 1, int size = 20}) async {
+  Future<Either<Failure, PaginatedResponse<UserEntity>>> getUsers({int page = 1, int size = 10}) async {
     try {
       final paginatedUsers = await remoteDataSource.getUsers(page: page, size: size);
       final userEntities = paginatedUsers.items.map((user) => user as UserEntity).toList();
       return Right(PaginatedResponse(items: userEntities, meta: paginatedUsers.meta));
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));
+    } catch (e) {
+      return Left(ServerFailure(message: 'Unexpected error: $e'));
     }
   }
 }

@@ -1,4 +1,4 @@
-// lib/features/admin/users/domain/usecases/get_all_users_usecase.dart
+// lib/features/admin/users/domain/usecases/get_users_usecase.dart
 
 import 'package:dartz/dartz.dart';
 import 'package:surabhi/core/domain/entities/user_entity.dart';
@@ -11,7 +11,12 @@ class GetUsersUseCase {
 
   GetUsersUseCase(this.repository);
 
-  Future<Either<Failure, PaginatedResponse<UserEntity>>> call({int page = 1, int size = 20}) {
+  Future<Either<Failure, PaginatedResponse<UserEntity>>> call({int page = 1, int size = 10}) {
+    // Validate input parameters
+    if (page < 1) page = 1;
+    if (size < 1) size = 10;
+    if (size > 100) size = 100; // Prevent excessive page sizes
+
     return repository.getUsers(page: page, size: size);
   }
 }
