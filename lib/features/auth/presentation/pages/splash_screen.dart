@@ -1,6 +1,7 @@
 // lib/features/auth/presentation/pages/splash_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:surabhi/core/theme/app_colors.dart';
 import 'package:surabhi/core/utils/app_bar_actions.dart';
 import 'package:surabhi/core/utils/ui_utils.dart';
 import 'package:surabhi/core/widgets/app_scaffold.dart';
@@ -36,7 +37,7 @@ class _SplashScreenState extends State<SplashScreen> {
           } else if (state is AuthUnauthenticated) {
             // No-op; router redirect will handle
           } else if (state is AuthError) {
-            UiUtils.showSnackBar(context, state.message, backgroundColor: Colors.red);
+            UiUtils.showSnackBar(context, state.message, backgroundColor: AppColors.errorColor);
             AppNavigator.navigateToLogin(context); // Redirect to login on error
           }
           // No action needed for AuthInitial or AuthLoading, just show indicator

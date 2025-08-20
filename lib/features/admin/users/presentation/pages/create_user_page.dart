@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:surabhi/core/constants/api_constants.dart';
+import 'package:surabhi/core/theme/app_colors.dart';
 import 'package:surabhi/core/utils/ui_utils.dart';
 import 'package:surabhi/core/utils/validators.dart';
 import 'package:surabhi/core/widgets/app_scaffold.dart';
@@ -48,11 +49,11 @@ class _CreateUserPageState extends State<CreateUserPage> {
       });
       await api.dio.post(ApiConstants.userCreatePath, data: body);
       if (!mounted) return;
-      UiUtils.showSnackBar(context, 'User created successfully', backgroundColor: Colors.green);
+      UiUtils.showSnackBar(context, 'User created successfully', backgroundColor: AppColors.successColor);
       if (context.mounted) context.pop();
     } catch (e) {
       if (mounted) {
-        UiUtils.showSnackBar(context, 'Failed to create user: $e', backgroundColor: Colors.red);
+        UiUtils.showSnackBar(context, 'Failed to create user: $e', backgroundColor: AppColors.errorColor);
       }
     } finally {
       if (mounted) {

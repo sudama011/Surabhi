@@ -12,9 +12,22 @@ class AppColors {
   static const Color onPrimary = Colors.white;
   static const Color onSecondary = Colors.white;
   static const Color onAccent = Colors.black;
-  static const Color errorColor = Colors.red;
+  static const Color errorColor = Color(0xFFD32F2F);
   static const Color successColor = Color(0xFF388E3C);
   static const Color warningColor = Color(0xFFFBC02D);
+  static const Color infoColor = Color(0xFF1976D2);
+
+  // Role-specific colors
+  static const Color adminColor = Color(0xFFD32F2F); // Red
+  static const Color employeeColor = Color(0xFF1976D2); // Blue
+  static const Color preacherColor = Color(0xFFFF9800); // Orange
+  static const Color approverColor = Color(0xFF388E3C); // Green
+  static const Color volunteerColor = Color(0xFF7B1FA2); // Purple
+  static const Color defaultRoleColor = Color(0xFF757575); // Grey
+
+  // Security/Status colors
+  static const Color securityEnabledColor = Color(0xFF388E3C); // Green
+  static const Color securityDisabledColor = Color(0xFF757575); // Grey
 
   // Light Theme Colors
   static const Color lightBackground = Color(0xFFF5F5F5);
@@ -37,4 +50,26 @@ class AppColors {
   static const Color darkButton = Color(0xFF64B5F6);
   static const Color darkOnButton = Colors.black;
   static const Color darkTextColor = Colors.white;
+
+  // Helper methods
+  static Color getRoleColor(String role) {
+    switch (role.toLowerCase()) {
+      case 'admin':
+        return adminColor;
+      case 'employee':
+        return employeeColor;
+      case 'preacher':
+        return preacherColor;
+      case 'approver':
+        return approverColor;
+      case 'volunteer':
+        return volunteerColor;
+      default:
+        return defaultRoleColor;
+    }
+  }
+
+  static Color getSecurityColor(bool isEnabled) {
+    return isEnabled ? securityEnabledColor : securityDisabledColor;
+  }
 }

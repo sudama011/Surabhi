@@ -315,8 +315,8 @@ class _RoleAwareDrawer extends StatelessWidget {
 
   Widget _buildLogoutTile(BuildContext context) {
     return ListTile(
-      leading: const Icon(Icons.logout, color: Colors.red),
-      title: const Text('Logout', style: TextStyle(color: Colors.red)),
+      leading: Icon(Icons.logout, color: Theme.of(context).colorScheme.error),
+      title: Text('Logout', style: TextStyle(color: Theme.of(context).colorScheme.error)),
       onTap: () {
         Navigator.of(context).pop();
         _showLogoutConfirmation(context);
@@ -361,8 +361,8 @@ class _RoleAwareDrawer extends StatelessWidget {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Logged out successfully')));
                 context.read<AuthBloc>().add(LogoutRequested());
               },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Logout', style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
+              child: Text('Logout', style: TextStyle(color: Theme.of(context).colorScheme.onError)),
             ),
           ],
         );

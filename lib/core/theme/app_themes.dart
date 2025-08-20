@@ -61,6 +61,23 @@ final ThemeData lightTheme = ThemeData(
   ),
 
   textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: AppColors.primaryColor)),
+
+  snackBarTheme: const SnackBarThemeData(
+    backgroundColor: AppColors.darkSurface,
+    contentTextStyle: TextStyle(color: AppColors.darkTextColor),
+    actionTextColor: AppColors.primaryColor,
+    behavior: SnackBarBehavior.floating,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8.0))),
+  ),
+
+  cardTheme: const CardThemeData(
+    color: AppColors.lightSurface,
+    elevation: 2,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8.0))),
+    margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+  ),
+
+  dividerTheme: const DividerThemeData(color: AppColors.lightBorderColor, thickness: 1, space: 1),
 );
 
 // Define dark theme
@@ -122,4 +139,21 @@ final ThemeData darkTheme = ThemeData(
   ),
 
   textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: AppColors.primaryColor)),
+
+  snackBarTheme: const SnackBarThemeData(
+    backgroundColor: AppColors.lightSurface,
+    contentTextStyle: TextStyle(color: AppColors.lightTextColor),
+    actionTextColor: AppColors.primaryColor,
+    behavior: SnackBarBehavior.floating,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8.0))),
+  ),
+
+  cardTheme: const CardThemeData(
+    color: AppColors.darkSurface,
+    elevation: 2,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8.0))),
+    margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+  ),
+
+  dividerTheme: const DividerThemeData(color: AppColors.darkBorderColor, thickness: 1, space: 1),
 );

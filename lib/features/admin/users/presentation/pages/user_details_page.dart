@@ -2,8 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:surabhi/core/widgets/app_scaffold.dart';
 import 'package:surabhi/core/domain/entities/user_entity.dart';
+import 'package:surabhi/core/theme/app_colors.dart';
+import 'package:surabhi/core/widgets/app_scaffold.dart';
 
 class UserDetailsPage extends StatelessWidget {
   final UserEntity user;
@@ -110,10 +111,10 @@ class UserDetailsPage extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.1),
+                  color: AppColors.getSecurityColor(user.is2faEnabled).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.security, color: Colors.green, size: 24),
+                child: Icon(Icons.security, color: AppColors.getSecurityColor(user.is2faEnabled), size: 24),
               ),
           ],
         ),
@@ -192,19 +193,6 @@ class UserDetailsPage extends StatelessWidget {
   }
 
   Color _getRoleColor(String role) {
-    switch (role.toLowerCase()) {
-      case 'admin':
-        return Colors.red;
-      case 'employee':
-        return Colors.blue;
-      case 'preacher':
-        return Colors.orange;
-      case 'approver':
-        return Colors.green;
-      case 'volunteer':
-        return Colors.purple;
-      default:
-        return Colors.grey;
-    }
+    return AppColors.getRoleColor(role);
   }
 }

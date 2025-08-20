@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:surabhi/core/domain/entities/user_entity.dart';
+import 'package:surabhi/core/theme/app_colors.dart';
 
 class UserCard extends StatelessWidget {
   final UserEntity user;
@@ -66,7 +67,8 @@ class UserCard extends StatelessWidget {
                 ? Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (user.is2faEnabled) const Icon(Icons.security, color: Colors.green, size: 16),
+                      if (user.is2faEnabled)
+                        Icon(Icons.security, color: AppColors.getSecurityColor(user.is2faEnabled), size: 16),
                       const Icon(Icons.chevron_right),
                     ],
                   )
@@ -77,19 +79,6 @@ class UserCard extends StatelessWidget {
   }
 
   Color _getRoleColor(String role) {
-    switch (role.toLowerCase()) {
-      case 'admin':
-        return Colors.red;
-      case 'employee':
-        return Colors.blue;
-      case 'preacher':
-        return Colors.orange;
-      case 'approver':
-        return Colors.green;
-      case 'volunteer':
-        return Colors.purple;
-      default:
-        return Colors.grey;
-    }
+    return AppColors.getRoleColor(role);
   }
 }
