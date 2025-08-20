@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
 import 'package:surabhi/core/utils/ui_utils.dart';
 import 'package:surabhi/core/widgets/app_scaffold.dart';
+import 'package:surabhi/core/widgets/app_text_field.dart';
 import 'package:surabhi/core/widgets/loading_indicator.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:surabhi/routes/app_navigator.dart';
@@ -56,18 +57,20 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                TextFormField(
+                AppTextField(
                   controller: _emailController,
-                  decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
+                  labelText: 'Email',
                   keyboardType: TextInputType.emailAddress,
                   validator: AppValidators.emailValidator,
+                  prefixIcon: const Icon(Icons.email),
                 ),
                 const SizedBox(height: 16.0),
-                TextFormField(
+                AppTextField(
                   controller: _passwordController,
-                  decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder()),
+                  labelText: 'Password',
                   obscureText: true,
                   validator: AppValidators.passwordValidator,
+                  prefixIcon: const Icon(Icons.lock),
                 ),
                 const SizedBox(height: 24.0),
                 BlocBuilder<AuthBloc, AuthState>(
