@@ -12,7 +12,7 @@ class AdminDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => di.sl<admin_users.UsersBloc>(),
+      create: (context) => di.sl<admin_users.UsersBloc>()..add(const admin_users.GetUsersEvent()),
       child: const UsersListPage(),
     );
   }
