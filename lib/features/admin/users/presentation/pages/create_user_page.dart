@@ -2,7 +2,6 @@
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:surabhi/core/constants/api_constants.dart';
 import 'package:surabhi/core/utils/ui_utils.dart';
@@ -10,6 +9,7 @@ import 'package:surabhi/core/utils/validators.dart';
 import 'package:surabhi/core/widgets/app_scaffold.dart';
 import 'package:surabhi/core/widgets/app_text_field.dart';
 import 'package:surabhi/core/network/api_client.dart';
+import 'package:surabhi/injector.dart' as di;
 import 'package:surabhi/core/constants/role_constants.dart';
 
 class CreateUserPage extends StatefulWidget {
@@ -39,7 +39,7 @@ class _CreateUserPageState extends State<CreateUserPage> {
 
     setState(() => _isLoading = true);
 
-    final api = RepositoryProvider.of<ApiClient>(context);
+    final api = di.sl<ApiClient>();
     try {
       final body = json.encode({
         'email': _emailController.text.trim(),
