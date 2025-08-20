@@ -51,7 +51,7 @@ class ErrorUtils {
     if (error.response?.data != null && error.response!.data is Map<String, dynamic>) {
       final responseData = error.response!.data as Map<String, dynamic>;
       final apiMessage = responseData['message'] as String?;
-      
+
       if (apiMessage != null && apiMessage.isNotEmpty) {
         return apiMessage;
       }

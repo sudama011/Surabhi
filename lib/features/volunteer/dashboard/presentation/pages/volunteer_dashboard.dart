@@ -16,15 +16,9 @@ class VolunteerDashboard extends StatelessWidget {
           children: [
             Icon(Icons.volunteer_activism, size: 64, color: Colors.purple),
             SizedBox(height: 16),
-            Text(
-              'Welcome to Volunteer Dashboard',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
+            Text('Welcome to Volunteer Dashboard', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             SizedBox(height: 8),
-            Text(
-              'Volunteer features coming soon...',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
+            Text('Volunteer features coming soon...', style: TextStyle(fontSize: 16, color: Colors.grey)),
           ],
         ),
       ),

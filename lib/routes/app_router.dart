@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart'; // For ChangeNotifier
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 
 import 'package:surabhi/features/auth/presentation/pages/login_page.dart';
-import 'package:surabhi/features/auth/presentation/pages/splash_screen.dart';
 import 'package:surabhi/features/home/presentation/pages/home_page.dart';
 import 'package:surabhi/features/admin/dashboard/presentation/pages/admin_dashboard.dart';
 import 'package:surabhi/features/employee/dashboard/presentation/pages/employee_dashboard.dart';
@@ -45,7 +44,7 @@ class AppRouter {
     initialLocation: '/',
     debugLogDiagnostics: kDebugMode,
     routes: [
-      GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
+      GoRoute(path: '/', builder: (context, state) => const HomePage()),
       GoRoute(path: '/login', name: 'login', builder: (context, state) => const LoginPage()),
       GoRoute(path: '/home', name: 'home', builder: (context, state) => const HomePage()),
       GoRoute(path: '/2fa/choice', name: 'twofa-choice', builder: (context, state) => const TwoFAChoicePage()),
@@ -90,16 +89,16 @@ class AppRouter {
       final String? loggedInRole = isAuthenticated ? (authState).user.role : null;
       final bool require2FA = isAuthenticated && (authState).user.is2faEnabled;
 
-      const publicPaths = ['/login', '/'];
+      const publicPaths = ['/login', '/', '/home'];
       final bool isGoingToPublicPath = publicPaths.contains(state.fullPath);
 
       // 1. If still loading auth state, don't redirect yet
       if (isLoading) return null;
 
-      // 2. If unauthenticated: send to login even from '/'
+      // 2. If unauthenticated: allow access to public paths, redirect protected routes to home
       if (isUnauthenticated) {
-        if (!isGoingToPublicPath || state.fullPath == '/') {
-          return '/login';
+        if (!isGoingToPublicPath) {
+          return '/'; // Redirect to home page instead of login
         }
       }
 

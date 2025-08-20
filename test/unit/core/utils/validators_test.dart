@@ -21,5 +21,4 @@ void main() {
       expect(AppValidators.isValidPassword('abc12'), false);
     });
   });
-
 }

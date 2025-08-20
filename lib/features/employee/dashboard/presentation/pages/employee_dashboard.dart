@@ -16,15 +16,9 @@ class EmployeeDashboard extends StatelessWidget {
           children: [
             Icon(Icons.work, size: 64, color: Colors.blue),
             SizedBox(height: 16),
-            Text(
-              'Welcome to Employee Dashboard',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
+            Text('Welcome to Employee Dashboard', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             SizedBox(height: 8),
-            Text(
-              'Employee features coming soon...',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
+            Text('Employee features coming soon...', style: TextStyle(fontSize: 16, color: Colors.grey)),
           ],
         ),
       ),
