@@ -22,8 +22,8 @@ class ApiInterceptor extends Interceptor {
         BaseOptions(
           baseUrl: '${ApiConstants.baseApiUrl}${ApiConstants.apiVersionPath}',
           headers: {'Content-Type': 'application/json'},
-          connectTimeout: const Duration(seconds: 30),
-          receiveTimeout: const Duration(seconds: 30),
+          connectTimeout: const Duration(seconds: 10),
+          receiveTimeout: const Duration(seconds: 10),
         ),
       );
 

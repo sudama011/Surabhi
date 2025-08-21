@@ -10,14 +10,13 @@ class ApiClient {
 
   ApiClient(this._dio, ApiInterceptor apiInterceptor) {
     _dio.options.baseUrl = '${ApiConstants.baseApiUrl}${ApiConstants.apiVersionPath}';
-    _dio.options.connectTimeout = const Duration(seconds: 30);
-    _dio.options.sendTimeout = const Duration(seconds: 30);
-    _dio.options.receiveTimeout = const Duration(seconds: 30);
+    _dio.options.connectTimeout = const Duration(seconds: 20);
+    _dio.options.sendTimeout = const Duration(seconds: 10);
+    _dio.options.receiveTimeout = const Duration(seconds: 10);
     _dio.options.headers = {'Accept': 'application/json', 'Content-Type': 'application/json'};
     _dio.options.followRedirects = false;
     _dio.options.receiveDataWhenStatusError = true;
 
-    // The interceptor is provided from the outside
     if (!_dio.interceptors.contains(apiInterceptor)) {
       _dio.interceptors.add(apiInterceptor);
     }

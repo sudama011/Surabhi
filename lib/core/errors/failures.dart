@@ -30,6 +30,18 @@ class CacheFailure extends Failure {
   const CacheFailure({super.message = 'A caching error occurred.'});
 }
 
+class ValidationFailure extends Failure {
+  const ValidationFailure({super.message = 'Validation failed. Please check your input.'});
+}
+
+class RateLimitFailure extends Failure {
+  const RateLimitFailure({super.message = 'Rate limit exceeded. Please try again later.'});
+}
+
+class ConflictFailure extends Failure {
+  const ConflictFailure({super.message = 'Conflict. The resource already exists.'});
+}
+
 class UnhandledFailure extends Failure {
   const UnhandledFailure({super.message = 'An unhandled error occurred.'});
 }

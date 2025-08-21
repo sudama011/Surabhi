@@ -3,8 +3,6 @@
 import 'package:dio/dio.dart';
 
 class ErrorUtils {
-  /// Extracts user-friendly error message from API response
-  /// Falls back to default message if no message found in response
   static String extractErrorMessage(DioException error, String defaultMessage) {
     if (error.response?.data != null && error.response!.data is Map<String, dynamic>) {
       final responseData = error.response!.data as Map<String, dynamic>;
@@ -13,7 +11,6 @@ class ErrorUtils {
     return defaultMessage;
   }
 
-  /// Gets appropriate error message based on status code
   static String getErrorMessageByStatusCode(int? statusCode, String? apiMessage) {
     if (apiMessage != null && apiMessage.isNotEmpty) {
       return apiMessage;
@@ -45,19 +42,7 @@ class ErrorUtils {
     }
   }
 
-  /// Comprehensive error message extraction with fallbacks
   static String getComprehensiveErrorMessage(DioException error, String defaultMessage) {
-    // First try to get message from API response
-    if (error.response?.data != null && error.response!.data is Map<String, dynamic>) {
-      final responseData = error.response!.data as Map<String, dynamic>;
-      final apiMessage = responseData['message'] as String?;
-
-      if (apiMessage != null && apiMessage.isNotEmpty) {
-        return apiMessage;
-      }
-    }
-
-    // Fallback to status code based message
-    return getErrorMessageByStatusCode(error.response?.statusCode, null);
+    return getErrorMessageByStatusCode(error.response?.statusCode, extractErrorMessage(error, defaultMessage));
   }
 }

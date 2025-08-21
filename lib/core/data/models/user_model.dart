@@ -31,5 +31,5 @@ class UserModel extends UserEntity {
   Map<String, dynamic> toJson() => _$UserModelToJson(this);
 
   @override
-  List<Object?> get props => [userId, firstName, lastName, email, phoneNumber, image, role, is2faEnabled];
+  List<Object?> get props => [userId, firstName, lastName, email, phoneNumber, image, role, is2faEnabled, createdAt, updatedAt];
 }
