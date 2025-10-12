@@ -5,6 +5,7 @@ import 'package:surabhi/core/errors/failures.dart';
 import 'package:surabhi/core/shared_preferences/preferences_service.dart';
 import 'package:surabhi/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:surabhi/features/auth/data/models/auth_response_model.dart';
+import 'package:surabhi/features/auth/data/models/twofa_request_model.dart';
 import 'package:surabhi/core/data/models/user_model.dart';
 import 'package:surabhi/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:surabhi/core/domain/entities/user_entity.dart';
@@ -16,6 +17,10 @@ class _RemoteFake implements AuthRemoteDataSource {
   Future<AuthResponseModel> login(LoginParams params) async => response!;
   @override
   Future<void> logout() async {}
+  @override
+  Future<TwoFAResponseModel> request2FA(String method) async => throw UnimplementedError();
+  @override
+  Future<VerifyOTPResponseModel> verifyOTP(String otp, String method) async => throw UnimplementedError();
 }
 
 class _PrefsFake implements PreferencesService {

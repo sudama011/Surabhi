@@ -19,3 +19,22 @@ class LoginRequested extends AuthEvent {
 }
 
 class LogoutRequested extends AuthEvent {}
+
+class TwoFAMethodSelected extends AuthEvent {
+  final String method; // 'email' or 'phone'
+
+  const TwoFAMethodSelected({required this.method});
+
+  @override
+  List<Object> get props => [method];
+}
+
+class OTPVerificationRequested extends AuthEvent {
+  final String otp;
+  final String method;
+
+  const OTPVerificationRequested({required this.otp, required this.method});
+
+  @override
+  List<Object> get props => [otp, method];
+}

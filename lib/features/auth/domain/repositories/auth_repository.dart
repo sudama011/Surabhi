@@ -8,4 +8,6 @@ abstract class AuthRepository {
   Future<Either<Failure, UserEntity>> login(LoginParams params);
   Future<Either<Failure, bool>> logout();
   Future<Either<Failure, UserEntity>> checkAuthStatus();
+  Future<Either<Failure, String>> request2FA(String method);
+  Future<Either<Failure, bool>> verifyOTP(String otp, String method);
 }

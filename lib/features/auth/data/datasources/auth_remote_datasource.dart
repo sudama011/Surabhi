@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:surabhi/core/errors/exceptions.dart';
 import 'package:surabhi/core/network/api_client.dart';
 import 'package:surabhi/features/auth/data/models/auth_response_model.dart';
+import 'package:surabhi/features/auth/data/models/twofa_request_model.dart';
 import 'package:surabhi/core/constants/api_constants.dart';
 import 'package:surabhi/features/auth/domain/usecases/login_usecase.dart';
 import 'package:surabhi/core/utils/error_utils.dart';
@@ -10,6 +11,8 @@ import 'package:surabhi/core/utils/error_utils.dart';
 abstract class AuthRemoteDataSource {
   Future<AuthResponseModel> login(LoginParams params);
   Future<void> logout();
+  Future<TwoFAResponseModel> request2FA(String method);
+  Future<VerifyOTPResponseModel> verifyOTP(String otp, String method);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -46,6 +49,32 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       // Extract user-friendly message from API response
       final errorMessage = ErrorUtils.getComprehensiveErrorMessage(e, 'Logout failed');
       throw ServerException(message: errorMessage);
+    } catch (e) {
+      throw ServerException(message: 'Unexpected error occurred: $e');
+    }
+  }
+
+  @override
+  Future<TwoFAResponseModel> request2FA(String method) async {
+    try {
+      final response = await apiClient.dio.post(ApiConstants.request2FAPath, data: {'method': method});
+      return TwoFAResponseModel.fromJson(response.data);
+    } on DioException catch (e) {
+      final errorMessage = ErrorUtils.getComprehensiveErrorMessage(e, '2FA request failed');
+      throw AuthException(message: errorMessage);
+    } catch (e) {
+      throw ServerException(message: 'Unexpected error occurred: $e');
+    }
+  }
+
+  @override
+  Future<VerifyOTPResponseModel> verifyOTP(String otp, String method) async {
+    try {
+      final response = await apiClient.dio.post(ApiConstants.verify2FAPath, data: {'otp': otp, 'method': method});
+      return VerifyOTPResponseModel.fromJson(response.data);
+    } on DioException catch (e) {
+      final errorMessage = ErrorUtils.getComprehensiveErrorMessage(e, 'OTP verification failed');
+      throw AuthException(message: errorMessage);
     } catch (e) {
       throw ServerException(message: 'Unexpected error occurred: $e');
     }

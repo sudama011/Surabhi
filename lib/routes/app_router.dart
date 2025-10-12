@@ -85,31 +85,43 @@ class AppRouter {
       final bool isAuthenticated = authState is AuthAuthenticated;
       final bool isUnauthenticated = authState is AuthUnauthenticated;
       final bool isLoading = authState is AuthLoading || authState is AuthInitial;
+      final bool is2FARequired = authState is Auth2FARequired;
+      final bool is2FAInProgress =
+          authState is Auth2FALoading || authState is Auth2FAOTPSent || authState is Auth2FAError;
 
       final String? loggedInRole = isAuthenticated ? (authState).user.role : null;
-      final bool require2FA = isAuthenticated && (authState).user.is2faEnabled;
 
       const publicPaths = ['/login', '/', '/home'];
       final bool isGoingToPublicPath = publicPaths.contains(state.fullPath);
+      final bool isOn2FAPath = state.fullPath?.startsWith('/2fa') ?? false;
 
       // 1. If still loading auth state, don't redirect yet
       if (isLoading) return null;
 
-      // 2. If unauthenticated: allow access to public paths, redirect protected routes to home
+      // 2. If 2FA is required and not on a 2FA path, redirect to 2FA choice
+      if (is2FARequired && !isOn2FAPath) {
+        return '/2fa/choice';
+      }
+
+      // 3. If 2FA is in progress, allow access to 2FA paths only
+      if (is2FAInProgress && !isOn2FAPath) {
+        return '/2fa/choice';
+      }
+
+      // 4. If unauthenticated: allow access to public paths, redirect protected routes to home
       if (isUnauthenticated) {
-        if (!isGoingToPublicPath) {
+        if (!isGoingToPublicPath && !isOn2FAPath) {
           return '/'; // Redirect to home page instead of login
+        }
+        // If trying to access 2FA pages while unauthenticated, redirect to home
+        if (isOn2FAPath) {
+          return '/';
         }
       }
 
-      // 3. If authenticated and trying to go to a public path, redirect to their dashboard
-      if (isAuthenticated && isGoingToPublicPath) {
+      // 5. If authenticated and trying to go to a public path or 2FA path, redirect to their dashboard
+      if (isAuthenticated && (isGoingToPublicPath || isOn2FAPath)) {
         return _getDashboardPathForRole(loggedInRole);
-      }
-
-      // 4. 2FA gating: if required and not on a 2FA route, redirect to choice page
-      if (require2FA && !(state.fullPath?.startsWith('/2fa') ?? false)) {
-        return '/2fa/choice';
       }
 
       return null; // No redirect needed

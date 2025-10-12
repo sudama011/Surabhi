@@ -10,6 +10,8 @@ class ApiConstants {
   static const String loginPath = '/auth/login';
   static const String refreshPath = '/auth/refresh';
   static const String logoutPath = '/auth/logout';
+  static const String request2FAPath = '/manage/2fa';
+  static const String verify2FAPath = '/auth/verify-2fa';
 
   static const String userCreatePath = '/users/create';
   static const String userListPath = '/users';

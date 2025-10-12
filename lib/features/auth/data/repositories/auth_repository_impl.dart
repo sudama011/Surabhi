@@ -65,4 +65,32 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(const CacheFailure(message: 'Failed to parse user data.'));
     }
   }
+
+  @override
+  Future<Either<Failure, String>> request2FA(String method) async {
+    try {
+      final response = await remoteDataSource.request2FA(method);
+      return Right(response.message);
+    } on AuthException catch (e) {
+      return Left(AuthFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    } catch (e) {
+      return Left(const UnhandledFailure(message: 'Failed to request 2FA.'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> verifyOTP(String otp, String method) async {
+    try {
+      final response = await remoteDataSource.verifyOTP(otp, method);
+      return Right(response.verified);
+    } on AuthException catch (e) {
+      return Left(AuthFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    } catch (e) {
+      return Left(const UnhandledFailure(message: 'Failed to verify OTP.'));
+    }
+  }
 }

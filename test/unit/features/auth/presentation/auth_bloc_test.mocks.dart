@@ -125,4 +125,33 @@ class MockAuthRepository extends _i1.Mock implements _i2.AuthRepository {
                 ),
           )
           as _i5.Future<_i3.Either<_i6.Failure, _i7.UserEntity>>);
+
+  @override
+  _i5.Future<_i3.Either<_i6.Failure, String>> request2FA(String? method) =>
+      (super.noSuchMethod(
+            Invocation.method(#request2FA, [method]),
+            returnValue: _i5.Future<_i3.Either<_i6.Failure, String>>.value(
+              _FakeEither_1<_i6.Failure, String>(
+                this,
+                Invocation.method(#request2FA, [method]),
+              ),
+            ),
+          )
+          as _i5.Future<_i3.Either<_i6.Failure, String>>);
+
+  @override
+  _i5.Future<_i3.Either<_i6.Failure, bool>> verifyOTP(
+    String? otp,
+    String? method,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#verifyOTP, [otp, method]),
+            returnValue: _i5.Future<_i3.Either<_i6.Failure, bool>>.value(
+              _FakeEither_1<_i6.Failure, bool>(
+                this,
+                Invocation.method(#verifyOTP, [otp, method]),
+              ),
+            ),
+          )
+          as _i5.Future<_i3.Either<_i6.Failure, bool>>);
 }

@@ -38,3 +38,34 @@ class AuthError extends AuthState {
   @override
   List<Object> get props => [message];
 }
+
+// 2FA States
+class Auth2FARequired extends AuthState {
+  final UserEntity user;
+
+  const Auth2FARequired({required this.user});
+
+  @override
+  List<Object> get props => [user];
+}
+
+class Auth2FALoading extends AuthState {}
+
+class Auth2FAOTPSent extends AuthState {
+  final String method;
+  final String message;
+
+  const Auth2FAOTPSent({required this.method, required this.message});
+
+  @override
+  List<Object> get props => [method, message];
+}
+
+class Auth2FAError extends AuthState {
+  final String message;
+
+  const Auth2FAError({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}
