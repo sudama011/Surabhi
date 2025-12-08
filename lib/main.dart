@@ -1,6 +1,7 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:surabhi/core/constants/app_constants.dart';
 import 'package:surabhi/core/theme/app_themes.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:surabhi/routes/app_router.dart';
@@ -26,7 +27,7 @@ class MyApp extends StatelessWidget {
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {
           return MaterialApp.router(
-            title: 'My Mobile App',
+            title: AppConstants.appName,
             theme: lightTheme,
             darkTheme: darkTheme,
             themeMode: themeMode,

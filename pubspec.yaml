@@ -36,6 +36,9 @@ dependencies:
   # Functional Programming
   dartz: ^0.10.1
 
+  # Authentication
+  local_auth: ^2.1.1
+
   # UI
   cupertino_icons: ^1.0.8
 

@@ -190,13 +190,12 @@ We welcome contributions! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for
 ## 📄 License
 
 This project is proprietary software. All rights reserved.
-See [LICENSE.md](LICENSE.md) for details.
+See [LICENSE](LICENSE) for details.
 
 ## 👥 Maintainers
 
-- [@praveenkumargurrala](https://github.com/praveenkumargurrala) - Project Lead
-- [@sudama011](https://github.com/sudama011) - Lead Developer
-- [@Sdcoder123](https://github.com/Sdcoder123) - Developer
+- [@praveenkumargurrala](https://github.com/praveenkumargurrala)
+- [@sudama011](https://github.com/sudama011)
 
 ## 📞 Support
 

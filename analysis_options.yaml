@@ -8,13 +8,16 @@ linter:
   rules:
     # Enforce consistent code style
     prefer_single_quotes: true
-    prefer_const_constructors: false  # Too strict for this project
-    prefer_const_literals_to_create_immutables: false  # Too strict
+    prefer_const_constructors: true
+    prefer_const_literals_to_create_immutables: true
 
-    # Improve code quality
-    avoid_print: false  # Allow print statements for debugging
+    # Code quality
+    avoid_print: true  # Allow print statements for debugging
     avoid_unnecessary_containers: true
     avoid_web_libraries_in_flutter: true
+
+    # Architecture
+    use_build_context_synchronously: true # Prevents crashes in async UI code
 
     # Documentation
     public_member_api_docs: false  # Disable for internal project
