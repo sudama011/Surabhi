@@ -7,20 +7,31 @@ import 'package:surabhi/core/domain/entities/user_entity.dart';
 import 'package:surabhi/core/errors/failures.dart';
 import 'package:surabhi/features/auth/domain/repositories/auth_repository.dart';
 import 'package:surabhi/features/auth/domain/usecases/login_usecase.dart';
+import 'package:surabhi/features/auth/domain/usecases/request_2fa_usecase.dart';
+import 'package:surabhi/features/auth/domain/usecases/verify_otp_usecase.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 
 import 'auth_bloc_test.mocks.dart';
 
-@GenerateMocks([LoginUseCase, AuthRepository])
+@GenerateMocks([LoginUseCase, AuthRepository, Request2FAUseCase, VerifyOTPUseCase])
 void main() {
   late AuthBloc authBloc;
   late MockLoginUseCase mockLoginUseCase;
   late MockAuthRepository mockAuthRepository;
+  late MockRequest2FAUseCase mockRequest2FAUseCase;
+  late MockVerifyOTPUseCase mockVerifyOTPUseCase;
 
   setUp(() {
     mockLoginUseCase = MockLoginUseCase();
     mockAuthRepository = MockAuthRepository();
-    authBloc = AuthBloc(loginUseCase: mockLoginUseCase, authRepository: mockAuthRepository);
+    mockRequest2FAUseCase = MockRequest2FAUseCase();
+    mockVerifyOTPUseCase = MockVerifyOTPUseCase();
+    authBloc = AuthBloc(
+      loginUseCase: mockLoginUseCase,
+      authRepository: mockAuthRepository,
+      request2FAUseCase: mockRequest2FAUseCase,
+      verifyOTPUseCase: mockVerifyOTPUseCase,
+    );
   });
 
   tearDown(() {
@@ -28,7 +39,7 @@ void main() {
   });
 
   group('AuthBloc', () {
-    const testUser = UserEntity(userId: '1', email: 'test@example.com', role: 'admin', is2faEnabled: false);
+    const testUser = UserEntity(userId: '1', email: 'test@example.com', role: 'admin');
 
     const testLoginParams = LoginParams(email: 'test@example.com', password: 'password123');
 
@@ -65,17 +76,17 @@ void main() {
 
     group('AppStarted', () {
       blocTest<AuthBloc, AuthState>(
-        'emits [AuthAuthenticated] when user is already logged in',
+        'emits [AuthLoading, AuthAuthenticated] when user is already logged in',
         build: () {
           when(mockAuthRepository.checkAuthStatus()).thenAnswer((_) async => const Right(testUser));
           return authBloc;
         },
         act: (bloc) => bloc.add(AppStarted()),
-        expect: () => [const AuthAuthenticated(user: testUser)],
+        expect: () => [AuthLoading(), const AuthAuthenticated(user: testUser)],
       );
 
       blocTest<AuthBloc, AuthState>(
-        'emits [AuthUnauthenticated] when no user is logged in',
+        'emits [AuthLoading, AuthUnauthenticated] when no user is logged in',
         build: () {
           when(
             mockAuthRepository.checkAuthStatus(),
@@ -83,7 +94,7 @@ void main() {
           return authBloc;
         },
         act: (bloc) => bloc.add(AppStarted()),
-        expect: () => [const AuthUnauthenticated(message: 'No user found')],
+        expect: () => [AuthLoading(), const AuthUnauthenticated()],
       );
     });
 
@@ -95,7 +106,7 @@ void main() {
           return authBloc;
         },
         act: (bloc) => bloc.add(LogoutRequested()),
-        expect: () => [const AuthUnauthenticated(message: 'Logged out successfully')],
+        expect: () => [const AuthUnauthenticated()],
       );
 
       blocTest<AuthBloc, AuthState>(
@@ -107,7 +118,7 @@ void main() {
           return authBloc;
         },
         act: (bloc) => bloc.add(LogoutRequested()),
-        expect: () => [const AuthUnauthenticated(message: 'Logout failed')],
+        expect: () => [const AuthUnauthenticated()],
       );
     });
   });

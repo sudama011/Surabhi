@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:surabhi/core/domain/entities/user_entity.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
-import 'package:surabhi/core/widgets/app_scaffold.dart';
 
 class UserDetailsPage extends StatelessWidget {
   final UserEntity user;
@@ -15,8 +14,8 @@ class UserDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return AppScaffold(
-      title: 'User Details',
+    return Scaffold(
+      appBar: AppBar(title: const Text('User Details')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -31,16 +30,15 @@ class UserDetailsPage extends StatelessWidget {
             _buildInfoCard(context, 'Personal Information', [
               _buildInfoRow('First Name', user.firstName ?? 'Not provided'),
               _buildInfoRow('Last Name', user.lastName ?? 'Not provided'),
-              _buildInfoRow('Email', user.email),
+              _buildInfoRow('Email', user.userName),
               _buildInfoRow('Phone', user.phoneNumber ?? 'Not provided'),
             ]),
 
             const SizedBox(height: 16),
 
             _buildInfoCard(context, 'Account Information', [
-              _buildInfoRow('User ID', user.userId),
+              _buildInfoRow('User ID', user.userName),
               _buildInfoRow('Role', user.role.toUpperCase()),
-              _buildInfoRow('2FA Enabled', user.is2faEnabled ? 'Yes' : 'No'),
             ]),
 
             const SizedBox(height: 24),
@@ -65,7 +63,7 @@ class UserDetailsPage extends StatelessWidget {
               backgroundImage: user.image != null && user.image!.isNotEmpty ? NetworkImage(user.image!) : null,
               child: user.image == null || user.image!.isEmpty
                   ? Text(
-                      user.email.isNotEmpty ? user.email[0].toUpperCase() : '?',
+                      user.userName.isNotEmpty ? user.userName[0].toUpperCase() : '?',
                       style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                     )
                   : null,
@@ -79,12 +77,14 @@ class UserDetailsPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    user.firstName != null && user.lastName != null ? '${user.firstName} ${user.lastName}' : user.email,
+                    user.firstName != null && user.lastName != null
+                        ? '${user.firstName} ${user.lastName}'
+                        : user.userName,
                     style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    user.email,
+                    user.userName,
                     style: theme.textTheme.bodyLarge?.copyWith(
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
@@ -105,17 +105,6 @@ class UserDetailsPage extends StatelessWidget {
                 ],
               ),
             ),
-
-            // 2FA Status
-            if (user.is2faEnabled)
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.getSecurityColor(user.is2faEnabled).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(Icons.security, color: AppColors.getSecurityColor(user.is2faEnabled), size: 24),
-              ),
           ],
         ),
       ),

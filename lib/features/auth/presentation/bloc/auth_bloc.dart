@@ -18,6 +18,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   // Store user temporarily during 2FA flow
   UserEntity? _pendingUser;
+  String? _pendingEmail;
 
   AuthBloc({
     required this.loginUseCase,
@@ -37,12 +38,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final result = await loginUseCase(LoginParams(email: event.email, password: event.password));
     result.fold((failure) => emit(AuthUnauthenticated(message: failure.message)), (user) {
       _pendingUser = user;
-      // Check if user has 2FA enabled
-      if (user.is2faEnabled) {
-        emit(Auth2FARequired(user: user));
-      } else {
-        emit(AuthAuthenticated(user: user));
-      }
+      _pendingEmail = user.userName;
+      // Always emit authenticated - fingerprint setup will be handled in UI
+      emit(AuthAuthenticated(user: user));
     });
   }
 
@@ -60,7 +58,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onTwoFAMethodSelected(TwoFAMethodSelected event, Emitter<AuthState> emit) async {
     emit(Auth2FALoading());
-    final result = await request2FAUseCase(Request2FAParams(method: event.method));
+    if (_pendingEmail == null) {
+      emit(const Auth2FAError(message: 'Email not found. Please login again.'));
+      return;
+    }
+    final result = await request2FAUseCase(Request2FAParams(email: _pendingEmail!, method: event.method));
     result.fold(
       (failure) => emit(Auth2FAError(message: failure.message)),
       (message) => emit(Auth2FAOTPSent(method: event.method, message: message)),

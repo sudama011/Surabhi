@@ -30,16 +30,16 @@ void main() {
       test('should return AuthResponseModel when login is successful', () async {
         // Arrange
         final responseData = {
-          'access_token': 'access_token_123',
-          'token_type': 'bearer',
-          'refresh_token': 'refresh_token_123',
-          'user': {'id': '1', 'email': 'test@example.com', 'role': 'admin', 'is_2fa_enabled': false},
+          'accessToken': 'access_token_123',
+          'tokenType': 'bearer',
+          'refreshToken': 'refresh_token_123',
+          'expiresIn': 3600,
         };
 
         when(
           mockDio.post(
             ApiConstants.loginPath,
-            data: {'username': testParams.email, 'password': testParams.password},
+            data: {'email': testParams.email, 'password': testParams.password},
             options: anyNamed('options'),
           ),
         ).thenAnswer(
@@ -54,16 +54,15 @@ void main() {
         final result = await dataSource.login(testParams);
 
         // Assert
-        expect(result.accessToken, equals('access_token_123'));
-        expect(result.tokenType, equals('bearer'));
+        expect(result.token, equals('access_token_123'));
         expect(result.refreshToken, equals('refresh_token_123'));
-        expect(result.user.email, equals('test@example.com'));
-        expect(result.user.role, equals('admin'));
+        expect(result.succeeded, equals(true));
+        expect(result.roles, isNotEmpty);
 
         verify(
           mockDio.post(
             ApiConstants.loginPath,
-            data: {'username': testParams.email, 'password': testParams.password},
+            data: {'email': testParams.email, 'password': testParams.password},
             options: anyNamed('options'),
           ),
         ).called(1);
@@ -124,38 +123,10 @@ void main() {
     });
 
     group('logout', () {
-      test('should complete successfully when logout is successful', () async {
-        // Arrange
-        when(mockDio.post(ApiConstants.logoutPath)).thenAnswer(
-          (_) async => Response(
-            data: {'message': 'Logged out successfully'},
-            statusCode: 200,
-            requestOptions: RequestOptions(path: ApiConstants.logoutPath),
-          ),
-        );
-
+      test('should complete successfully', () async {
+        // Note: API doesn't have a logout endpoint, so logout just clears local state
         // Act & Assert
         expect(() => dataSource.logout(), returnsNormally);
-
-        verify(mockDio.post(ApiConstants.logoutPath)).called(1);
-      });
-
-      test('should throw ServerException when logout fails', () async {
-        // Arrange
-        final dioError = DioException(
-          response: Response(
-            data: {'message': 'Logout failed'},
-            statusCode: 500,
-            requestOptions: RequestOptions(path: ApiConstants.logoutPath),
-          ),
-          requestOptions: RequestOptions(path: ApiConstants.logoutPath),
-          type: DioExceptionType.badResponse,
-        );
-
-        when(mockDio.post(ApiConstants.logoutPath)).thenThrow(dioError);
-
-        // Act & Assert
-        expect(() => dataSource.logout(), throwsA(isA<ServerException>()));
       });
     });
   });

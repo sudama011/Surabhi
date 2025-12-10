@@ -6,15 +6,13 @@ import 'package:flutter/foundation.dart'; // For ChangeNotifier
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 
 import 'package:surabhi/features/auth/presentation/pages/login_page.dart';
-import 'package:surabhi/features/home/presentation/pages/home_page.dart';
 import 'package:surabhi/features/admin/dashboard/presentation/pages/admin_dashboard.dart';
 import 'package:surabhi/features/employee/dashboard/presentation/pages/employee_dashboard.dart';
 import 'package:surabhi/features/preacher/dashboard/presentation/pages/preacher_dashboard.dart';
 import 'package:surabhi/features/approver/dashboard/presentation/pages/approver_dashboard.dart';
 import 'package:surabhi/features/volunteer/dashboard/presentation/pages/volunteer_dashboard.dart';
 import 'package:surabhi/features/admin/users/presentation/pages/create_user_page.dart';
-import 'package:surabhi/features/auth/presentation/pages/twofa_choice_page.dart';
-import 'package:surabhi/features/auth/presentation/pages/twofa_verify_page.dart';
+import 'package:surabhi/features/profile/presentation/pages/profile_page.dart';
 import 'package:surabhi/features/settings/presentation/pages/settings_page.dart';
 
 // Create a custom ChangeNotifier to listen to the AuthBloc stream
@@ -44,11 +42,11 @@ class AppRouter {
     initialLocation: '/',
     debugLogDiagnostics: kDebugMode,
     routes: [
-      GoRoute(path: '/', builder: (context, state) => const HomePage()),
-      GoRoute(path: '/login', name: 'login', builder: (context, state) => const LoginPage()),
-      GoRoute(path: '/home', name: 'home', builder: (context, state) => const HomePage()),
-      GoRoute(path: '/2fa/choice', name: 'twofa-choice', builder: (context, state) => const TwoFAChoicePage()),
-      GoRoute(path: '/2fa/verify', name: 'twofa-verify', builder: (context, state) => const TwoFAVerifyPage()),
+      GoRoute(
+        path: '/',
+        name: 'login',
+        builder: (context, state) => LoginPage(checkAuthOnInit: state.extra as bool? ?? true),
+      ),
       GoRoute(path: '/admin-dashboard', name: 'admin-dashboard', builder: (context, state) => const AdminDashboard()),
       GoRoute(
         path: '/employee-dashboard',
@@ -75,6 +73,7 @@ class AppRouter {
         name: 'admin-create-user',
         builder: (context, state) => const CreateUserPage(),
       ),
+      GoRoute(path: '/profile', name: 'profile', builder: (context, state) => const ProfilePage()),
       GoRoute(path: '/settings', name: 'settings', builder: (context, state) => const SettingsPage()),
     ],
     // Tell GoRouter to listen to the AuthBloc's stream for state changes
@@ -86,41 +85,32 @@ class AppRouter {
       final bool isUnauthenticated = authState is AuthUnauthenticated;
       final bool isLoading = authState is AuthLoading || authState is AuthInitial;
       final bool is2FARequired = authState is Auth2FARequired;
-      final bool is2FAInProgress =
-          authState is Auth2FALoading || authState is Auth2FAOTPSent || authState is Auth2FAError;
 
       final String? loggedInRole = isAuthenticated ? (authState).user.role : null;
 
-      const publicPaths = ['/login', '/', '/home'];
+      const publicPaths = ['/'];
       final bool isGoingToPublicPath = publicPaths.contains(state.fullPath);
-      final bool isOn2FAPath = state.fullPath?.startsWith('/2fa') ?? false;
+      final bool isOnHome = state.fullPath == '/';
 
-      // 1. If still loading auth state, don't redirect yet
-      if (isLoading) return null;
-
-      // 2. If 2FA is required and not on a 2FA path, redirect to 2FA choice
-      if (is2FARequired && !isOn2FAPath) {
-        return '/2fa/choice';
+      // 1. If still loading auth state, stay on home
+      if (isLoading && !isOnHome) {
+        return '/';
       }
 
-      // 3. If 2FA is in progress, allow access to 2FA paths only
-      if (is2FAInProgress && !isOn2FAPath) {
-        return '/2fa/choice';
+      // 2. If 2FA is required, keep user on login page (2FA flow is handled within LoginPage)
+      if (is2FARequired && !isOnHome) {
+        return '/';
       }
 
-      // 4. If unauthenticated: allow access to public paths, redirect protected routes to home
+      // 3. If unauthenticated: allow access to public paths, redirect protected routes to home
       if (isUnauthenticated) {
-        if (!isGoingToPublicPath && !isOn2FAPath) {
-          return '/'; // Redirect to home page instead of login
-        }
-        // If trying to access 2FA pages while unauthenticated, redirect to home
-        if (isOn2FAPath) {
-          return '/';
+        if (!isGoingToPublicPath) {
+          return '/'; // Redirect to home page
         }
       }
 
-      // 5. If authenticated and trying to go to a public path or 2FA path, redirect to their dashboard
-      if (isAuthenticated && (isGoingToPublicPath || isOn2FAPath)) {
+      // 4. If authenticated and trying to go to home, redirect to their dashboard
+      if (isAuthenticated && isGoingToPublicPath) {
         return _getDashboardPathForRole(loggedInRole);
       }
 
@@ -142,6 +132,6 @@ String _getDashboardPathForRole(String? role) {
     case 'volunteer':
       return '/volunteer-dashboard';
     default:
-      return '/home';
+      return '/admin-dashboard';
   }
 }

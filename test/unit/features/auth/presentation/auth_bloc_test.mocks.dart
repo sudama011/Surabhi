@@ -13,6 +13,10 @@ import 'package:surabhi/features/auth/domain/repositories/auth_repository.dart'
     as _i2;
 import 'package:surabhi/features/auth/domain/usecases/login_usecase.dart'
     as _i4;
+import 'package:surabhi/features/auth/domain/usecases/request_2fa_usecase.dart'
+    as _i8;
+import 'package:surabhi/features/auth/domain/usecases/verify_otp_usecase.dart'
+    as _i9;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -85,15 +89,24 @@ class MockAuthRepository extends _i1.Mock implements _i2.AuthRepository {
 
   @override
   _i5.Future<_i3.Either<_i6.Failure, _i7.UserEntity>> login(
-    _i4.LoginParams? params,
-  ) =>
+    _i4.LoginParams? params, {
+    String? twoFactorCode,
+  }) =>
       (super.noSuchMethod(
-            Invocation.method(#login, [params]),
+            Invocation.method(
+              #login,
+              [params],
+              {#twoFactorCode: twoFactorCode},
+            ),
             returnValue:
                 _i5.Future<_i3.Either<_i6.Failure, _i7.UserEntity>>.value(
                   _FakeEither_1<_i6.Failure, _i7.UserEntity>(
                     this,
-                    Invocation.method(#login, [params]),
+                    Invocation.method(
+                      #login,
+                      [params],
+                      {#twoFactorCode: twoFactorCode},
+                    ),
                   ),
                 ),
           )
@@ -127,29 +140,126 @@ class MockAuthRepository extends _i1.Mock implements _i2.AuthRepository {
           as _i5.Future<_i3.Either<_i6.Failure, _i7.UserEntity>>);
 
   @override
-  _i5.Future<_i3.Either<_i6.Failure, String>> request2FA(String? method) =>
+  _i5.Future<_i3.Either<_i6.Failure, bool>> sendTwoFactorCode(
+    String? email,
+    String? provider,
+  ) =>
       (super.noSuchMethod(
-            Invocation.method(#request2FA, [method]),
+            Invocation.method(#sendTwoFactorCode, [email, provider]),
+            returnValue: _i5.Future<_i3.Either<_i6.Failure, bool>>.value(
+              _FakeEither_1<_i6.Failure, bool>(
+                this,
+                Invocation.method(#sendTwoFactorCode, [email, provider]),
+              ),
+            ),
+          )
+          as _i5.Future<_i3.Either<_i6.Failure, bool>>);
+
+  @override
+  _i5.Future<_i3.Either<_i6.Failure, bool>> verifyTwoFactorCode(
+    String? email,
+    String? provider,
+    String? code,
+    bool? rememberMe,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#verifyTwoFactorCode, [
+              email,
+              provider,
+              code,
+              rememberMe,
+            ]),
+            returnValue: _i5.Future<_i3.Either<_i6.Failure, bool>>.value(
+              _FakeEither_1<_i6.Failure, bool>(
+                this,
+                Invocation.method(#verifyTwoFactorCode, [
+                  email,
+                  provider,
+                  code,
+                  rememberMe,
+                ]),
+              ),
+            ),
+          )
+          as _i5.Future<_i3.Either<_i6.Failure, bool>>);
+
+  @override
+  _i5.Future<_i3.Either<_i6.Failure, _i7.UserEntity>> refreshToken() =>
+      (super.noSuchMethod(
+            Invocation.method(#refreshToken, []),
+            returnValue:
+                _i5.Future<_i3.Either<_i6.Failure, _i7.UserEntity>>.value(
+                  _FakeEither_1<_i6.Failure, _i7.UserEntity>(
+                    this,
+                    Invocation.method(#refreshToken, []),
+                  ),
+                ),
+          )
+          as _i5.Future<_i3.Either<_i6.Failure, _i7.UserEntity>>);
+}
+
+/// A class which mocks [Request2FAUseCase].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockRequest2FAUseCase extends _i1.Mock implements _i8.Request2FAUseCase {
+  MockRequest2FAUseCase() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i2.AuthRepository get repository =>
+      (super.noSuchMethod(
+            Invocation.getter(#repository),
+            returnValue: _FakeAuthRepository_0(
+              this,
+              Invocation.getter(#repository),
+            ),
+          )
+          as _i2.AuthRepository);
+
+  @override
+  _i5.Future<_i3.Either<_i6.Failure, String>> call(
+    _i8.Request2FAParams? params,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#call, [params]),
             returnValue: _i5.Future<_i3.Either<_i6.Failure, String>>.value(
               _FakeEither_1<_i6.Failure, String>(
                 this,
-                Invocation.method(#request2FA, [method]),
+                Invocation.method(#call, [params]),
               ),
             ),
           )
           as _i5.Future<_i3.Either<_i6.Failure, String>>);
+}
+
+/// A class which mocks [VerifyOTPUseCase].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockVerifyOTPUseCase extends _i1.Mock implements _i9.VerifyOTPUseCase {
+  MockVerifyOTPUseCase() {
+    _i1.throwOnMissingStub(this);
+  }
 
   @override
-  _i5.Future<_i3.Either<_i6.Failure, bool>> verifyOTP(
-    String? otp,
-    String? method,
-  ) =>
+  _i2.AuthRepository get repository =>
       (super.noSuchMethod(
-            Invocation.method(#verifyOTP, [otp, method]),
+            Invocation.getter(#repository),
+            returnValue: _FakeAuthRepository_0(
+              this,
+              Invocation.getter(#repository),
+            ),
+          )
+          as _i2.AuthRepository);
+
+  @override
+  _i5.Future<_i3.Either<_i6.Failure, bool>> call(_i9.VerifyOTPParams? params) =>
+      (super.noSuchMethod(
+            Invocation.method(#call, [params]),
             returnValue: _i5.Future<_i3.Either<_i6.Failure, bool>>.value(
               _FakeEither_1<_i6.Failure, bool>(
                 this,
-                Invocation.method(#verifyOTP, [otp, method]),
+                Invocation.method(#call, [params]),
               ),
             ),
           )

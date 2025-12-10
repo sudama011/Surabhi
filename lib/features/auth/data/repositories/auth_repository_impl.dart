@@ -17,24 +17,50 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({required this.remoteDataSource, required this.preferencesService});
 
   @override
-  Future<Either<Failure, UserEntity>> login(LoginParams params) async {
+  Future<Either<Failure, UserEntity>> login(LoginParams params, {String? twoFactorCode}) async {
     try {
-      final authResponse = await remoteDataSource.login(params);
+      final authResponse = await remoteDataSource.login(params, twoFactorCode: twoFactorCode);
 
-      await preferencesService.saveAccessToken(authResponse.accessToken);
+      // Save tokens
+      await preferencesService.saveAccessToken(authResponse.token);
       await preferencesService.saveRefreshToken(authResponse.refreshToken);
-      final userJson = json.encode(authResponse.user.toJson());
+
+      // Get user profile data from the profile endpoint
+      final profileResult = await remoteDataSource.getUserProfile(params.email);
+
+      UserModel user;
+      if (profileResult != null) {
+        // Use the profile data and add the role from login response
+        user = UserModel(
+          id: profileResult.userId,
+          userName: profileResult.email,
+          role: authResponse.roles.isNotEmpty ? authResponse.roles.first : 'user',
+          firstName: profileResult.firstName,
+          lastName: profileResult.lastName,
+          phoneNumber: profileResult.phoneNumber,
+          image: profileResult.image,
+          emailVerified: profileResult.emailVerified,
+          phoneVerified: profileResult.phoneVerified,
+        );
+      } else {
+        // Fallback: Create user from login response
+        user = UserModel(
+          id: params.email,
+          userName: params.email,
+          role: authResponse.roles.isNotEmpty ? authResponse.roles.first : 'user',
+          image: null,
+        );
+      }
+
+      final userJson = json.encode(user.toJson());
       await preferencesService.saveUserJson(userJson);
-
-      final userEntity = authResponse.user;
-
-      return Right(userEntity);
+      return Right(user);
     } on AuthException catch (e) {
       return Left(AuthFailure(message: e.message));
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));
     } catch (e) {
-      return Left(const UnhandledFailure(message: 'An error occurred.'));
+      return const Left(UnhandledFailure(message: 'An error occurred.'));
     }
   }
 
@@ -54,7 +80,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, UserEntity>> checkAuthStatus() async {
     final userJson = preferencesService.getUserJson();
     if (userJson == null) {
-      return Left(const AuthFailure(message: 'No user data found.'));
+      return const Left(AuthFailure(message: 'No user data found.'));
     }
 
     try {
@@ -62,35 +88,62 @@ class AuthRepositoryImpl implements AuthRepository {
       final userModel = UserModel.fromJson(userMap);
       return Right(userModel);
     } catch (e) {
-      return Left(const CacheFailure(message: 'Failed to parse user data.'));
+      return const Left(CacheFailure(message: 'Failed to parse user data.'));
     }
   }
 
   @override
-  Future<Either<Failure, String>> request2FA(String method) async {
+  Future<Either<Failure, bool>> sendTwoFactorCode(String email, String provider) async {
     try {
-      final response = await remoteDataSource.request2FA(method);
-      return Right(response.message);
-    } on AuthException catch (e) {
-      return Left(AuthFailure(message: e.message));
+      await remoteDataSource.sendTwoFactor(email, provider);
+      return const Right(true);
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));
     } catch (e) {
-      return Left(const UnhandledFailure(message: 'Failed to request 2FA.'));
+      return const Left(UnhandledFailure(message: 'Failed to send 2FA code.'));
     }
   }
 
   @override
-  Future<Either<Failure, bool>> verifyOTP(String otp, String method) async {
+  Future<Either<Failure, bool>> verifyTwoFactorCode(String email, String provider, String code, bool rememberMe) async {
     try {
-      final response = await remoteDataSource.verifyOTP(otp, method);
-      return Right(response.verified);
-    } on AuthException catch (e) {
-      return Left(AuthFailure(message: e.message));
+      await remoteDataSource.verifyTwoFactor(email, provider, code, rememberMe: rememberMe);
+      return const Right(true);
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));
     } catch (e) {
-      return Left(const UnhandledFailure(message: 'Failed to verify OTP.'));
+      return const Left(UnhandledFailure(message: 'Failed to verify 2FA code.'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, UserEntity>> refreshToken() async {
+    try {
+      final authResponse = await remoteDataSource.refreshToken();
+
+      // Save new tokens
+      await preferencesService.saveAccessToken(authResponse.token);
+      await preferencesService.saveRefreshToken(authResponse.refreshToken);
+
+      // Get stored user data to maintain role and other info
+      final userJson = preferencesService.getUserJson();
+      if (userJson != null && userJson.isNotEmpty && userJson != '{}') {
+        final userMap = jsonDecode(userJson) as Map<String, dynamic>;
+        final user = UserModel.fromJson(userMap);
+        return Right(user);
+      }
+
+      // Fallback: Create minimal user entity with role from response
+      final user = UserModel(
+        id: 'unknown',
+        userName: 'unknown',
+        role: authResponse.roles.isNotEmpty ? authResponse.roles.first : 'user',
+      );
+      return Right(user);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    } catch (e) {
+      return Left(ServerFailure(message: 'Failed to refresh token: $e'));
     }
   }
 }

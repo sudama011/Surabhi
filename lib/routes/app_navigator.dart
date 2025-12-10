@@ -25,15 +25,15 @@ class AppNavigator {
         path = '/volunteer-dashboard';
         break;
       default:
-        path = '/home'; // Fallback to a generic home page
+        path = '/admin-dashboard'; // Fallback to a generic home page
         break;
     }
     context.go(path);
   }
 
-  // Navigate to login
-  static void navigateToLogin(BuildContext context) {
-    context.go('/login');
+  // Navigate to home (login/auth check)
+  static void navigateToHome(BuildContext context, {bool checkAuthOnInit = true}) {
+    context.go('/', extra: checkAuthOnInit);
   }
 
   // Navigate to settings
@@ -51,7 +51,7 @@ class AppNavigator {
     if (context.canPop()) {
       context.pop();
     } else {
-      context.go('/home'); // Or to a sensible default if no previous page
+      context.go('/'); // Or to a sensible default if no previous page
     }
   }
 
@@ -78,7 +78,7 @@ class AppNavigator {
     if (state is AuthAuthenticated) {
       AppNavigator.navigateBasedOnRole(context, state.user.role);
     } else if (state is AuthUnauthenticated) {
-      AppNavigator.navigateToLogin(context);
+      AppNavigator.navigateToHome(context);
     }
     // No action needed for AuthInitial or AuthLoading, those are transient.
     // AuthError usually shows a Snackbar, then might lead to unauthenticated or login.

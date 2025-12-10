@@ -14,27 +14,50 @@ class UsersInitial extends UsersState {}
 class UsersLoading extends UsersState {}
 
 class UsersLoadingMore extends UsersState {
-  final PaginatedResponse<UserEntity> paginatedUsers;
+  final List<UserEntity> users;
+  final bool hasMoreData;
 
-  const UsersLoadingMore(this.paginatedUsers);
+  const UsersLoadingMore({required this.users, required this.hasMoreData});
 
   @override
-  List<Object> get props => [paginatedUsers];
+  List<Object> get props => [users, hasMoreData];
 }
 
 class UsersLoaded extends UsersState {
-  final PaginatedResponse<UserEntity> paginatedUsers;
+  final List<UserEntity> users;
+  final bool hasMoreData;
 
-  const UsersLoaded(this.paginatedUsers);
+  const UsersLoaded({required this.users, required this.hasMoreData});
 
   @override
-  List<Object> get props => [paginatedUsers];
+  List<Object> get props => [users, hasMoreData];
 }
 
 class UsersError extends UsersState {
   final String message;
 
   const UsersError(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+
+// Admin operation states
+class AdminOperationLoading extends UsersState {}
+
+class AdminOperationSuccess extends UsersState {
+  final String message;
+
+  const AdminOperationSuccess(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+
+class AdminOperationError extends UsersState {
+  final String message;
+
+  const AdminOperationError(this.message);
 
   @override
   List<Object> get props => [message];

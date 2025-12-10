@@ -3,16 +3,30 @@ import 'package:dio/dio.dart';
 import 'package:surabhi/core/errors/exceptions.dart';
 import 'package:surabhi/core/network/api_client.dart';
 import 'package:surabhi/features/auth/data/models/auth_response_model.dart';
-import 'package:surabhi/features/auth/data/models/twofa_request_model.dart';
+import 'package:surabhi/features/auth/data/models/user_profile_model.dart';
 import 'package:surabhi/core/constants/api_constants.dart';
 import 'package:surabhi/features/auth/domain/usecases/login_usecase.dart';
 import 'package:surabhi/core/utils/error_utils.dart';
 
 abstract class AuthRemoteDataSource {
-  Future<AuthResponseModel> login(LoginParams params);
+  /// Login with email and password
+  /// If 2FA is required, provide twoFactorCode in the second attempt
+  Future<AuthResponseModel> login(LoginParams params, {String? twoFactorCode});
+
+  /// Get user profile information
+  /// Requires email parameter as the API endpoint needs it
+  Future<UserProfileModel?> getUserProfile(String email);
+
+  /// Send 2FA code via email or phone
+  Future<void> sendTwoFactor(String email, String provider);
+
+  /// Verify 2FA code
+  Future<bool> verifyTwoFactor(String email, String provider, String code, {bool rememberMe = false});
+
+  /// Refresh access token using refresh token
+  Future<AuthResponseModel> refreshToken();
+
   Future<void> logout();
-  Future<TwoFAResponseModel> request2FA(String method);
-  Future<VerifyOTPResponseModel> verifyOTP(String otp, String method);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -21,13 +35,21 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   AuthRemoteDataSourceImpl(this.apiClient);
 
   @override
-  Future<AuthResponseModel> login(LoginParams params) async {
-    // FastAPI expects OAuth2PasswordRequestForm (application/x-www-form-urlencoded)
+  Future<AuthResponseModel> login(LoginParams params, {String? twoFactorCode}) async {
+    // API expects JSON format with email field
+    // If 2FA is required, provide twoFactorCode in the second attempt
     try {
+      final data = {'email': params.email, 'password': params.password};
+
+      // Only include 2FA fields if provided
+      if (twoFactorCode != null) {
+        data['twoFactorCode'] = twoFactorCode;
+      }
+
       final response = await apiClient.dio.post(
         ApiConstants.loginPath,
-        data: {'username': params.email, 'password': params.password},
-        options: Options(contentType: Headers.formUrlEncodedContentType, extra: {'requiresAuth': false}),
+        data: data,
+        options: Options(contentType: Headers.jsonContentType, extra: {'requiresAuth': false}),
       );
 
       return AuthResponseModel.fromJson(response.data);
@@ -41,13 +63,20 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<void> logout() async {
+  Future<UserProfileModel?> getUserProfile(String email) async {
     try {
-      final response = await apiClient.dio.post(ApiConstants.logoutPath);
-      return response.data;
+      final response = await apiClient.dio.post(
+        ApiConstants.userProfilePath,
+        queryParameters: {'email': email},
+        options: Options(contentType: Headers.jsonContentType),
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        return UserProfileModel.fromJson(response.data);
+      }
+      return null;
     } on DioException catch (e) {
-      // Extract user-friendly message from API response
-      final errorMessage = ErrorUtils.getComprehensiveErrorMessage(e, 'Logout failed');
+      final errorMessage = ErrorUtils.getComprehensiveErrorMessage(e, 'Failed to fetch profile');
       throw ServerException(message: errorMessage);
     } catch (e) {
       throw ServerException(message: 'Unexpected error occurred: $e');
@@ -55,28 +84,64 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<TwoFAResponseModel> request2FA(String method) async {
+  Future<void> sendTwoFactor(String email, String provider) async {
     try {
-      final response = await apiClient.dio.post(ApiConstants.request2FAPath, data: {'method': method});
-      return TwoFAResponseModel.fromJson(response.data);
+      final data = {'email': email, 'provider': provider};
+      await apiClient.dio.post(
+        ApiConstants.send2FAPath,
+        data: data,
+        options: Options(contentType: Headers.jsonContentType),
+      );
     } on DioException catch (e) {
-      final errorMessage = ErrorUtils.getComprehensiveErrorMessage(e, '2FA request failed');
-      throw AuthException(message: errorMessage);
+      final errorMessage = ErrorUtils.getComprehensiveErrorMessage(e, 'Failed to send 2FA code');
+      throw ServerException(message: errorMessage);
     } catch (e) {
       throw ServerException(message: 'Unexpected error occurred: $e');
     }
   }
 
   @override
-  Future<VerifyOTPResponseModel> verifyOTP(String otp, String method) async {
+  Future<bool> verifyTwoFactor(String email, String provider, String code, {bool rememberMe = false}) async {
     try {
-      final response = await apiClient.dio.post(ApiConstants.verify2FAPath, data: {'otp': otp, 'method': method});
-      return VerifyOTPResponseModel.fromJson(response.data);
+      final data = {'email': email, 'provider': provider, 'code': code, 'rememberMe': rememberMe};
+      final response = await apiClient.dio.post(
+        ApiConstants.verify2FAPath,
+        data: data,
+        options: Options(contentType: Headers.jsonContentType, extra: {'requiresAuth': false}),
+      );
+
+      return response.statusCode == 200;
     } on DioException catch (e) {
-      final errorMessage = ErrorUtils.getComprehensiveErrorMessage(e, 'OTP verification failed');
-      throw AuthException(message: errorMessage);
+      final errorMessage = ErrorUtils.getComprehensiveErrorMessage(e, 'Failed to verify 2FA code');
+      throw ServerException(message: errorMessage);
     } catch (e) {
       throw ServerException(message: 'Unexpected error occurred: $e');
+    }
+  }
+
+  @override
+  Future<AuthResponseModel> refreshToken() async {
+    try {
+      final response = await apiClient.dio.post(
+        ApiConstants.refreshPath,
+        options: Options(contentType: Headers.jsonContentType),
+      );
+
+      return AuthResponseModel.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      final errorMessage = ErrorUtils.getComprehensiveErrorMessage(e, 'Failed to refresh token');
+      throw ServerException(message: errorMessage);
+    } catch (e) {
+      throw ServerException(message: 'Unexpected error occurred: $e');
+    }
+  }
+
+  @override
+  Future<void> logout() async {
+    try {
+      await apiClient.dio.post(ApiConstants.logoutPath, options: Options(contentType: Headers.jsonContentType));
+    } catch (e) {
+      // Logout failure is not critical, continue with local logout
     }
   }
 }

@@ -43,15 +43,24 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
 
   @override
   _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>> login(
-    _i7.LoginParams? params,
-  ) =>
+    _i7.LoginParams? params, {
+    String? twoFactorCode,
+  }) =>
       (super.noSuchMethod(
-            Invocation.method(#login, [params]),
+            Invocation.method(
+              #login,
+              [params],
+              {#twoFactorCode: twoFactorCode},
+            ),
             returnValue:
                 _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>>.value(
                   _FakeEither_0<_i5.Failure, _i6.UserEntity>(
                     this,
-                    Invocation.method(#login, [params]),
+                    Invocation.method(
+                      #login,
+                      [params],
+                      {#twoFactorCode: twoFactorCode},
+                    ),
                   ),
                 ),
           )
@@ -85,31 +94,60 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
           as _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>>);
 
   @override
-  _i4.Future<_i2.Either<_i5.Failure, String>> request2FA(String? method) =>
-      (super.noSuchMethod(
-            Invocation.method(#request2FA, [method]),
-            returnValue: _i4.Future<_i2.Either<_i5.Failure, String>>.value(
-              _FakeEither_0<_i5.Failure, String>(
-                this,
-                Invocation.method(#request2FA, [method]),
-              ),
-            ),
-          )
-          as _i4.Future<_i2.Either<_i5.Failure, String>>);
-
-  @override
-  _i4.Future<_i2.Either<_i5.Failure, bool>> verifyOTP(
-    String? otp,
-    String? method,
+  _i4.Future<_i2.Either<_i5.Failure, bool>> sendTwoFactorCode(
+    String? email,
+    String? provider,
   ) =>
       (super.noSuchMethod(
-            Invocation.method(#verifyOTP, [otp, method]),
+            Invocation.method(#sendTwoFactorCode, [email, provider]),
             returnValue: _i4.Future<_i2.Either<_i5.Failure, bool>>.value(
               _FakeEither_0<_i5.Failure, bool>(
                 this,
-                Invocation.method(#verifyOTP, [otp, method]),
+                Invocation.method(#sendTwoFactorCode, [email, provider]),
               ),
             ),
           )
           as _i4.Future<_i2.Either<_i5.Failure, bool>>);
+
+  @override
+  _i4.Future<_i2.Either<_i5.Failure, bool>> verifyTwoFactorCode(
+    String? email,
+    String? provider,
+    String? code,
+    bool? rememberMe,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#verifyTwoFactorCode, [
+              email,
+              provider,
+              code,
+              rememberMe,
+            ]),
+            returnValue: _i4.Future<_i2.Either<_i5.Failure, bool>>.value(
+              _FakeEither_0<_i5.Failure, bool>(
+                this,
+                Invocation.method(#verifyTwoFactorCode, [
+                  email,
+                  provider,
+                  code,
+                  rememberMe,
+                ]),
+              ),
+            ),
+          )
+          as _i4.Future<_i2.Either<_i5.Failure, bool>>);
+
+  @override
+  _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>> refreshToken() =>
+      (super.noSuchMethod(
+            Invocation.method(#refreshToken, []),
+            returnValue:
+                _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>>.value(
+                  _FakeEither_0<_i5.Failure, _i6.UserEntity>(
+                    this,
+                    Invocation.method(#refreshToken, []),
+                  ),
+                ),
+          )
+          as _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>>);
 }

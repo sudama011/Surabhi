@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:surabhi/core/domain/entities/user_entity.dart';
 import 'package:surabhi/core/data/models/user_model.dart';
-import 'package:surabhi/core/data/models/paginated_response.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 
 /// Test helper utilities for common test operations
@@ -14,7 +13,6 @@ class TestHelpers {
     String userId = '1',
     String email = 'test@example.com',
     String role = 'admin',
-    bool is2faEnabled = false,
     String? firstName,
     String? lastName,
     String? phoneNumber,
@@ -23,7 +21,6 @@ class TestHelpers {
     userId: userId,
     email: email,
     role: role,
-    is2faEnabled: is2faEnabled,
     firstName: firstName,
     lastName: lastName,
     phoneNumber: phoneNumber,
@@ -35,46 +32,22 @@ class TestHelpers {
     String userId = '1',
     String email = 'test@example.com',
     String role = 'admin',
-    bool is2faEnabled = false,
     String? firstName,
     String? lastName,
     String? phoneNumber,
     String? image,
-    DateTime? createdAt,
-    DateTime? updatedAt,
   }) => UserModel(
     userId: userId,
     email: email,
     role: role,
-    is2faEnabled: is2faEnabled,
     firstName: firstName,
     lastName: lastName,
     phoneNumber: phoneNumber,
     image: image,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
   );
 
-  /// Creates a test paginated response
-  static PaginatedResponse<T> createTestPaginatedResponse<T>({
-    required List<T> items,
-    int page = 1,
-    int pages = 1,
-    int size = 10,
-    int? total,
-    bool? hasNext,
-    bool? hasPrev,
-  }) => PaginatedResponse<T>(
-    items: items,
-    meta: PaginationMeta(
-      page: page,
-      pages: pages,
-      size: size,
-      total: total ?? items.length,
-      hasNext: hasNext ?? page < pages,
-      hasPrev: hasPrev ?? page > 1,
-    ),
-  );
+  /// Creates a test list of users (for infinite scroll)
+  static List<T> createTestUserList<T>({required List<T> items}) => items;
 
   /// Creates a MaterialApp wrapper for widget testing
   static Widget createTestApp({required Widget child, List<BlocProvider>? providers, ThemeData? theme}) {

@@ -7,8 +7,6 @@ import 'package:surabhi/core/constants/api_constants.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
 import 'package:surabhi/core/utils/ui_utils.dart';
 import 'package:surabhi/core/utils/validators.dart';
-import 'package:surabhi/core/widgets/app_scaffold.dart';
-import 'package:surabhi/core/widgets/app_text_field.dart';
 import 'package:surabhi/core/network/api_client.dart';
 import 'package:surabhi/injector.dart' as di;
 import 'package:surabhi/core/constants/role_constants.dart';
@@ -47,7 +45,7 @@ class _CreateUserPageState extends State<CreateUserPage> {
         'password': _passwordController.text.trim(),
         'role': _role,
       });
-      await api.dio.post(ApiConstants.userCreatePath, data: body);
+      await api.dio.post(ApiConstants.registerPath, data: body);
       if (!mounted) return;
       UiUtils.showSnackBar(context, 'User created successfully', backgroundColor: AppColors.successColor);
       if (context.mounted) context.pop();
@@ -64,20 +62,23 @@ class _CreateUserPageState extends State<CreateUserPage> {
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      title: 'Create User (Admin)',
+    return Scaffold(
+      appBar: AppBar(title: const Text('Create User (Admin)')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: ListView(
             children: [
-              AppTextField(
+              TextFormField(
                 controller: _emailController,
-                labelText: 'Email',
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  hintText: 'Enter email',
+                  prefixIcon: Icon(Icons.email),
+                ),
                 keyboardType: TextInputType.emailAddress,
                 validator: AppValidators.emailValidator,
-                prefixIcon: const Icon(Icons.email),
                 onChanged: (value) {
                   // Auto-convert to lowercase as user types
                   final lowercaseValue = value.toLowerCase();
@@ -90,12 +91,15 @@ class _CreateUserPageState extends State<CreateUserPage> {
                 },
               ),
               const SizedBox(height: 16),
-              AppTextField(
+              TextFormField(
                 controller: _passwordController,
-                labelText: 'Password',
+                decoration: const InputDecoration(
+                  labelText: 'Password',
+                  hintText: 'Min 6 characters',
+                  prefixIcon: Icon(Icons.lock),
+                ),
                 obscureText: true,
-                validator: (v) => (v != null && v.length >= 8) ? null : 'Min 8 chars',
-                prefixIcon: const Icon(Icons.lock),
+                validator: (v) => (v != null && v.length >= 6) ? null : 'Min 6 chars',
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(

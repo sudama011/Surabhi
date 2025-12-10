@@ -22,7 +22,7 @@ class AppBarActions {
       icon: const Icon(Icons.login),
       tooltip: 'Login',
       onPressed: () {
-        AppNavigator.navigateToLogin(context);
+        AppNavigator.navigateToHome(context);
       },
     );
   }

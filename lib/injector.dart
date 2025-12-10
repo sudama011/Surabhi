@@ -14,6 +14,9 @@ import 'package:surabhi/features/admin/users/data/datasources/users_remote_datas
 import 'package:surabhi/features/admin/users/data/repositories/users_repository_impl.dart' as admin_users;
 import 'package:surabhi/features/admin/users/domain/repositories/users_repository.dart' as admin_users;
 import 'package:surabhi/features/admin/users/domain/usecases/get_users_usecase.dart';
+import 'package:surabhi/features/admin/users/domain/usecases/reset_user_password_usecase.dart' as admin_users;
+import 'package:surabhi/features/admin/users/domain/usecases/remove_user_usecase.dart' as admin_users;
+import 'package:surabhi/features/admin/users/domain/usecases/change_user_role_usecase.dart' as admin_users;
 import 'package:surabhi/features/admin/users/presentation/bloc/users_bloc.dart' as admin_users;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -38,13 +41,10 @@ Future<void> init() async {
 
   // --- 3. Features ---
   sl.registerLazySingleton<AuthRemoteDataSource>(() => AuthRemoteDataSourceImpl(sl()));
-  
 
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(remoteDataSource: sl(), preferencesService: sl()));
   sl.registerLazySingleton<LoginUseCase>(() => LoginUseCase(sl()));
-  sl.registerLazySingleton<SecurityService>(
-    () => SecurityService(sl<Request2FAUseCase>()),
-  );
+  sl.registerLazySingleton<SecurityService>(() => SecurityService(sl<Request2FAUseCase>()));
   sl.registerLazySingleton<Request2FAUseCase>(() => Request2FAUseCase(sl()));
   sl.registerLazySingleton<VerifyOTPUseCase>(() => VerifyOTPUseCase(sl()));
   sl.registerFactory(
@@ -57,5 +57,19 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<admin_users.UsersRepository>(() => admin_users.UsersRepositoryImpl(remoteDataSource: sl()));
   sl.registerLazySingleton<GetUsersUseCase>(() => GetUsersUseCase(sl()));
-  sl.registerFactory(() => admin_users.UsersBloc(getUsersUseCase: sl()));
+  sl.registerLazySingleton<admin_users.ResetUserPasswordUseCase>(
+    () => admin_users.ResetUserPasswordUseCase(repository: sl()),
+  );
+  sl.registerLazySingleton<admin_users.RemoveUserUseCase>(() => admin_users.RemoveUserUseCase(repository: sl()));
+  sl.registerLazySingleton<admin_users.ChangeUserRoleUseCase>(
+    () => admin_users.ChangeUserRoleUseCase(repository: sl()),
+  );
+  sl.registerFactory(
+    () => admin_users.UsersBloc(
+      getUsersUseCase: sl(),
+      resetUserPasswordUseCase: sl(),
+      removeUserUseCase: sl(),
+      changeUserRoleUseCase: sl(),
+    ),
+  );
 }

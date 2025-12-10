@@ -4,20 +4,27 @@ class ApiConstants {
   ApiConstants._();
 
   // static const String baseApiUrl = 'http://10.0.2.2:8000';
-  static const String baseApiUrl = 'https://surabhi-api.onrender.com';
-  static const String apiVersionPath = '/api/v1';
+  static const String baseApiUrl = 'https://api.vhkmsurabhi.com';
+  static const String apiVersionPath = '/api';
 
-  static const String loginPath = '/auth/login';
-  static const String refreshPath = '/auth/refresh';
-  static const String logoutPath = '/auth/logout';
-  static const String request2FAPath = '/manage/2fa';
-  static const String verify2FAPath = '/auth/verify-2fa';
+  // Account/Authentication Endpoints
+  static const String rolesPath = '/Account/roles';
+  static const String registerPath = '/Account/register';
+  static const String loginPath = '/Account/login';
+  static const String refreshPath = '/Account/refresh';
+  static const String logoutPath = '/Account/logout';
+  static const String confirmEmailPath = '/Account/confirmEmail';
+  static const String resendEmailPath = '/Account/resendConfirmationEmail';
+  static const String forgotPasswordPath = '/Account/forgotPassword';
+  static const String changePasswordPath = '/Account/change-password';
+  static const String adminResetPasswordPath = '/Account/admin/reset-password';
+  static const String adminRemoveUserPath = '/Account/admin/remove-user';
+  static const String adminChangeRolePath = '/Account/admin/change-role';
+  static const String adminChangeEmailPath = '/Account/admin/change-email';
+  static const String send2FAPath = '/Account/twofactor/send';
+  static const String verify2FAPath = '/Account/twofactor/verify';
+  static const String userProfilePath = '/Account/profile';
 
-  static const String userCreatePath = '/users/create';
-  static const String userListPath = '/users';
-  static const String userByEmailPath = '/users/by-email';
-
-  static String getFullApiUrl(String path) {
-    return '$baseApiUrl$apiVersionPath$path';
-  }
+  // User Management Endpoints (Admin)
+  static const String userListPath = '/Admin/registered-users';
 }

@@ -5,21 +5,48 @@ import 'package:surabhi/core/data/models/user_model.dart';
 
 part 'auth_response_model.g.dart';
 
+/// Matches API schema: LoginResponse
+/// Response from POST /api/Account/login
 @JsonSerializable()
 class AuthResponseModel {
-  @JsonKey(name: 'access_token')
-  final String accessToken;
-  @JsonKey(name: 'token_type')
-  final String tokenType;
-  @JsonKey(name: 'refresh_token')
+  final bool succeeded;
+
+  @JsonKey(name: 'token')
+  final String token;
+
+  @JsonKey(name: 'expiresAt')
+  final DateTime expiresAt;
+
+  @JsonKey(name: 'requiresTwoFactor')
+  final bool requiresTwoFactor;
+
+  @JsonKey(name: 'providers')
+  final List<String>? providers;
+
+  @JsonKey(name: 'refreshToken')
   final String refreshToken;
-  final UserModel user;
+
+  @JsonKey(name: 'refreshTokenExpiresAt')
+  final DateTime refreshTokenExpiresAt;
+
+  @JsonKey(name: 'roles')
+  final List<String> roles;
+
+  // User data is not part of the API response, but we include it for app logic
+  // This will be populated from a separate endpoint or stored locally
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  final UserModel? user;
 
   AuthResponseModel({
-    required this.accessToken,
-    required this.tokenType,
+    required this.succeeded,
+    required this.token,
+    required this.expiresAt,
+    required this.requiresTwoFactor,
+    this.providers,
     required this.refreshToken,
-    required this.user,
+    required this.refreshTokenExpiresAt,
+    required this.roles,
+    this.user,
   });
 
   factory AuthResponseModel.fromJson(Map<String, dynamic> json) => _$AuthResponseModelFromJson(json);

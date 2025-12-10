@@ -36,3 +36,32 @@ class ChangePageSizeEvent extends UsersEvent {
   @override
   List<Object> get props => [newSize];
 }
+
+class ResetUserPasswordEvent extends UsersEvent {
+  final String email;
+  final String newPassword;
+
+  const ResetUserPasswordEvent({required this.email, required this.newPassword});
+
+  @override
+  List<Object> get props => [email, newPassword];
+}
+
+class RemoveUserEvent extends UsersEvent {
+  final String email;
+
+  const RemoveUserEvent({required this.email});
+
+  @override
+  List<Object> get props => [email];
+}
+
+class ChangeUserRoleEvent extends UsersEvent {
+  final String email;
+  final String newRole;
+
+  const ChangeUserRoleEvent({required this.email, required this.newRole});
+
+  @override
+  List<Object> get props => [email, newRole];
+}

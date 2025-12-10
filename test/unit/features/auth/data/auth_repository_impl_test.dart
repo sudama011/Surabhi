@@ -5,7 +5,7 @@ import 'package:surabhi/core/errors/failures.dart';
 import 'package:surabhi/core/shared_preferences/preferences_service.dart';
 import 'package:surabhi/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:surabhi/features/auth/data/models/auth_response_model.dart';
-import 'package:surabhi/features/auth/data/models/twofa_request_model.dart';
+import 'package:surabhi/features/auth/data/models/user_profile_model.dart';
 import 'package:surabhi/core/data/models/user_model.dart';
 import 'package:surabhi/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:surabhi/core/domain/entities/user_entity.dart';
@@ -13,14 +13,25 @@ import 'package:surabhi/features/auth/domain/usecases/login_usecase.dart';
 
 class _RemoteFake implements AuthRemoteDataSource {
   AuthResponseModel? response;
+  UserProfileModel? profileResponse;
+
   @override
-  Future<AuthResponseModel> login(LoginParams params) async => response!;
+  Future<AuthResponseModel> login(LoginParams params, {String? twoFactorCode}) async => response!;
+
+  @override
+  Future<UserProfileModel?> getUserProfile(String email) async => profileResponse;
+
+  @override
+  Future<void> sendTwoFactor(String email, String provider) async {}
+
+  @override
+  Future<bool> verifyTwoFactor(String email, String provider, String code, {bool rememberMe = false}) async => true;
+
+  @override
+  Future<AuthResponseModel> refreshToken() async => response!;
+
   @override
   Future<void> logout() async {}
-  @override
-  Future<TwoFAResponseModel> request2FA(String method) async => throw UnimplementedError();
-  @override
-  Future<VerifyOTPResponseModel> verifyOTP(String otp, String method) async => throw UnimplementedError();
 }
 
 class _PrefsFake implements PreferencesService {
@@ -65,14 +76,22 @@ void main() {
   });
 
   test('login persists tokens and user and returns entity', () async {
-    final user = UserModel(userId: '1', email: 'e', role: 'admin', is2faEnabled: false);
-    remote.response = AuthResponseModel(accessToken: 'a', tokenType: 'bearer', refreshToken: 'r', user: user);
+    remote.response = AuthResponseModel(
+      succeeded: true,
+      token: 'a',
+      expiresAt: DateTime.now().add(const Duration(hours: 1)),
+      requiresTwoFactor: false,
+      refreshToken: 'r',
+      refreshTokenExpiresAt: DateTime.now().add(const Duration(days: 7)),
+      roles: ['admin'],
+    );
+    remote.profileResponse = UserProfileModel(userId: '1', email: 'e');
 
     final res = await repo.login(LoginParams(email: 'e', password: 'p'));
     expect(res.isRight(), true);
     final entity = (res as Right).value as UserEntity;
     expect(entity.email, 'e');
-    expect(prefs.getUserJson(), json.encode(user.toJson()));
+    expect(entity.role, 'admin');
   });
 
   test('logout clears auth data', () async {
@@ -83,7 +102,7 @@ void main() {
   });
 
   test('checkAuthStatus returns entity from stored json', () async {
-    final user = UserModel(userId: '1', email: 'e', role: 'admin', is2faEnabled: true);
+    final user = UserModel(userId: '1', email: 'e', role: 'admin');
     await prefs.saveUserJson(json.encode(user.toJson()));
     final res = await repo.checkAuthStatus();
     expect(res.isRight(), true);

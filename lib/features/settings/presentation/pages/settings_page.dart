@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:surabhi/core/theme/theme_cubit.dart';
-import 'package:surabhi/core/widgets/app_scaffold.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -12,8 +11,8 @@ class SettingsPage extends StatelessWidget {
     final themeMode = context.watch<ThemeCubit>().state;
     final isDark = themeMode == ThemeMode.dark;
 
-    return AppScaffold(
-      title: 'Settings',
+    return Scaffold(
+      appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

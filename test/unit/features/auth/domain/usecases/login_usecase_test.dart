@@ -20,7 +20,7 @@ void main() {
   });
 
   group('LoginUseCase', () {
-    const testUser = UserEntity(userId: '1', email: 'test@example.com', role: 'admin', is2faEnabled: false);
+    const testUser = UserEntity(userId: '1', email: 'test@example.com', role: 'admin');
 
     const testParams = LoginParams(email: 'test@example.com', password: 'password123');
 

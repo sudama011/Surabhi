@@ -30,18 +30,18 @@ class UserCard extends StatelessWidget {
         leading: CircleAvatar(
           backgroundImage: user.image != null && user.image!.isNotEmpty ? NetworkImage(user.image!) : null,
           child: user.image == null || user.image!.isEmpty
-              ? Text(user.email.isNotEmpty ? user.email[0].toUpperCase() : '?')
+              ? Text(user.userName.isNotEmpty ? user.userName[0].toUpperCase() : '?')
               : null,
         ),
         title: Text(
-          user.firstName != null && user.lastName != null ? '${user.firstName} ${user.lastName}' : user.email,
+          user.firstName != null && user.lastName != null ? '${user.firstName} ${user.lastName}' : user.userName,
           style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              user.email,
+              user.userName,
               style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
             ),
             if (showRole) ...[
@@ -61,18 +61,7 @@ class UserCard extends StatelessWidget {
             ],
           ],
         ),
-        trailing:
-            trailing ??
-            (showSecurityIcon
-                ? Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (user.is2faEnabled)
-                        Icon(Icons.security, color: AppColors.getSecurityColor(user.is2faEnabled), size: 16),
-                      const Icon(Icons.chevron_right),
-                    ],
-                  )
-                : const Icon(Icons.chevron_right)),
+        trailing: trailing,
         onTap: onTap,
       ),
     );

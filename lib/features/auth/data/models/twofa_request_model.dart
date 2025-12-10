@@ -11,8 +11,7 @@ class TwoFARequestModel {
 
   TwoFARequestModel({required this.method});
 
-  factory TwoFARequestModel.fromJson(Map<String, dynamic> json) =>
-      _$TwoFARequestModelFromJson(json);
+  factory TwoFARequestModel.fromJson(Map<String, dynamic> json) => _$TwoFARequestModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$TwoFARequestModelToJson(this);
 }
@@ -27,8 +26,7 @@ class TwoFAResponseModel {
 
   TwoFAResponseModel({required this.message, required this.method});
 
-  factory TwoFAResponseModel.fromJson(Map<String, dynamic> json) =>
-      _$TwoFAResponseModelFromJson(json);
+  factory TwoFAResponseModel.fromJson(Map<String, dynamic> json) => _$TwoFAResponseModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$TwoFAResponseModelToJson(this);
 }
@@ -43,8 +41,7 @@ class VerifyOTPRequestModel {
 
   VerifyOTPRequestModel({required this.otp, required this.method});
 
-  factory VerifyOTPRequestModel.fromJson(Map<String, dynamic> json) =>
-      _$VerifyOTPRequestModelFromJson(json);
+  factory VerifyOTPRequestModel.fromJson(Map<String, dynamic> json) => _$VerifyOTPRequestModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$VerifyOTPRequestModelToJson(this);
 }
@@ -59,9 +56,7 @@ class VerifyOTPResponseModel {
 
   VerifyOTPResponseModel({required this.message, required this.verified});
 
-  factory VerifyOTPResponseModel.fromJson(Map<String, dynamic> json) =>
-      _$VerifyOTPResponseModelFromJson(json);
+  factory VerifyOTPResponseModel.fromJson(Map<String, dynamic> json) => _$VerifyOTPResponseModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$VerifyOTPResponseModelToJson(this);
 }
-
