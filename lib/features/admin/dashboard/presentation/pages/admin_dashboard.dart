@@ -2,10 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:surabhi/core/domain/entities/navigation_item.dart';
 import 'package:surabhi/core/widgets/app_shell.dart';
+import 'package:surabhi/features/admin/dashboard/presentation/pages/home_page.dart';
 import 'package:surabhi/features/admin/users/presentation/bloc/users_bloc.dart' as admin_users;
 import 'package:surabhi/features/admin/users/presentation/pages/users_list_page.dart';
+import 'package:surabhi/features/admin/users/presentation/pages/create_user_page.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:surabhi/injector.dart' as di;
 
@@ -17,16 +20,8 @@ class AdminDashboard extends StatefulWidget {
 }
 
 class _AdminDashboardState extends State<AdminDashboard> {
-  int _currentIndex = 0;
-
-  final List<NavigationItem> _navigationItems = [
+  final List<NavigationItem> _bottomNavigationItems = [
     const NavigationItem(icon: Icons.home_outlined, selectedIcon: Icons.home, label: 'Home', route: '/admin-dashboard'),
-    const NavigationItem(
-      icon: Icons.people_outline,
-      selectedIcon: Icons.people,
-      label: 'Users',
-      route: '/admin-dashboard/users',
-    ),
     const NavigationItem(
       icon: Icons.favorite_outline,
       selectedIcon: Icons.favorite,
@@ -40,6 +35,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
       route: '/admin-dashboard/donate',
     ),
     const NavigationItem(
+      icon: Icons.account_balance_wallet_outlined,
+      selectedIcon: Icons.account_balance_wallet,
+      label: 'Donations',
+      route: '/admin-dashboard/donations',
+    ),
+    const NavigationItem(
       icon: Icons.assessment_outlined,
       selectedIcon: Icons.assessment,
       label: 'Reports',
@@ -47,27 +48,50 @@ class _AdminDashboardState extends State<AdminDashboard> {
     ),
   ];
 
-  void _onNavigationSelected(int index) {
-    setState(() => _currentIndex = index);
+  final List<NavigationItem> _sideNavigationItems = [
+    const NavigationItem(
+      icon: Icons.people_outlined,
+      selectedIcon: Icons.people,
+      label: 'Registered Users',
+      route: '/admin-dashboard/users',
+    ),
+    const NavigationItem(
+      icon: Icons.person_add_outlined,
+      selectedIcon: Icons.person_add,
+      label: 'Add User',
+      route: '/admin-dashboard/register-user',
+    ),
+  ];
+
+  void _onNavigationSelected(String route) {
+    context.go(route);
   }
 
-  Widget _buildContent() {
-    switch (_currentIndex) {
-      case 0:
-        return const Center(child: Text('Welcome to Admin Dashboard'));
-      case 1:
-        return BlocProvider(
-          create: (context) => di.sl<admin_users.UsersBloc>()..add(const admin_users.GetUsersEvent(page: 1, size: 100)),
-          child: const UsersListPage(),
-        );
-      case 2:
+  Widget _buildContent(String currentLocation) {
+    // Check sidebar routes first
+    if (currentLocation == '/admin-dashboard/users') {
+      return BlocProvider(
+        create: (context) => di.sl<admin_users.UsersBloc>()..add(const admin_users.GetUsersEvent(page: 1, size: 100)),
+        child: const UsersListPage(),
+      );
+    } else if (currentLocation == '/admin-dashboard/register-user') {
+      return const CreateUserPage();
+    }
+
+    // Check bottom nav routes
+    switch (currentLocation) {
+      case '/admin-dashboard':
+        return const HomePage();
+      case '/admin-dashboard/donors':
         return const Center(child: Text('Donors coming soon'));
-      case 3:
+      case '/admin-dashboard/donate':
         return const Center(child: Text('Donate coming soon'));
-      case 4:
+      case '/admin-dashboard/donations':
+        return const Center(child: Text('Donations coming soon'));
+      case '/admin-dashboard/reports':
         return const Center(child: Text('Reports coming soon'));
       default:
-        return const Center(child: Text('Welcome to Admin Dashboard'));
+        return const HomePage();
     }
   }
 
@@ -75,12 +99,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, authState) {
+        final location = GoRouterState.of(context).uri.path;
+
         return AppShell(
-          pageTitle: 'Admin Dashboard',
-          items: _navigationItems,
-          currentIndex: _currentIndex,
-          onDestinationSelected: _onNavigationSelected,
-          child: _buildContent(),
+          pageTitle: 'Dashboard',
+          sideNavigationItems: _sideNavigationItems,
+          bottomNavigationitems: _bottomNavigationItems,
+          onNavigationSelected: _onNavigationSelected,
+          child: _buildContent(location),
         );
       },
     );

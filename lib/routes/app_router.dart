@@ -11,7 +11,6 @@ import 'package:surabhi/features/employee/dashboard/presentation/pages/employee_
 import 'package:surabhi/features/preacher/dashboard/presentation/pages/preacher_dashboard.dart';
 import 'package:surabhi/features/approver/dashboard/presentation/pages/approver_dashboard.dart';
 import 'package:surabhi/features/volunteer/dashboard/presentation/pages/volunteer_dashboard.dart';
-import 'package:surabhi/features/admin/users/presentation/pages/create_user_page.dart';
 import 'package:surabhi/features/profile/presentation/pages/profile_page.dart';
 import 'package:surabhi/features/settings/presentation/pages/settings_page.dart';
 
@@ -47,7 +46,28 @@ class AppRouter {
         name: 'login',
         builder: (context, state) => LoginPage(checkAuthOnInit: state.extra as bool? ?? true),
       ),
-      GoRoute(path: '/admin-dashboard', name: 'admin-dashboard', builder: (context, state) => const AdminDashboard()),
+      GoRoute(
+        path: '/admin-dashboard',
+        name: 'admin-dashboard',
+        builder: (context, state) => const AdminDashboard(),
+        routes: [
+          GoRoute(path: 'donors', name: 'admin-donors', builder: (context, state) => const AdminDashboard()),
+          GoRoute(path: 'donate', name: 'admin-donate', builder: (context, state) => const AdminDashboard()),
+          GoRoute(path: 'donations', name: 'admin-donations', builder: (context, state) => const AdminDashboard()),
+          GoRoute(path: 'reports', name: 'admin-reports', builder: (context, state) => const AdminDashboard()),
+          GoRoute(path: 'users', name: 'admin-users', builder: (context, state) => const AdminDashboard(),
+          routes: [
+            GoRoute(path: 'details', name: 'user-details', builder: (context, state) => const AdminDashboard()),
+          ],
+          ),
+         
+          GoRoute(
+            path: 'register-user',
+            name: 'register-user',
+            builder: (context, state) => const AdminDashboard(),
+          ),
+        ],
+      ),
       GoRoute(
         path: '/employee-dashboard',
         name: 'employee-dashboard',
@@ -67,11 +87,6 @@ class AppRouter {
         path: '/volunteer-dashboard',
         name: 'volunteer-dashboard',
         builder: (context, state) => const VolunteerDashboard(),
-      ),
-      GoRoute(
-        path: '/admin/create-user',
-        name: 'admin-create-user',
-        builder: (context, state) => const CreateUserPage(),
       ),
       GoRoute(path: '/profile', name: 'profile', builder: (context, state) => const ProfilePage()),
       GoRoute(path: '/settings', name: 'settings', builder: (context, state) => const SettingsPage()),

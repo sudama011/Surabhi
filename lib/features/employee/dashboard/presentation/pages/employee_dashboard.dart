@@ -1,28 +1,17 @@
 // lib/features/employee/dashboard/presentation/pages/employee_dashboard.dart
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:surabhi/core/domain/entities/navigation_item.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
 import 'package:surabhi/core/widgets/app_shell.dart';
 
-class EmployeeDashboard extends StatefulWidget {
+class EmployeeDashboard extends StatelessWidget {
   const EmployeeDashboard({super.key});
 
-  @override
-  State<EmployeeDashboard> createState() => _EmployeeDashboardState();
-}
-
-class _EmployeeDashboardState extends State<EmployeeDashboard> {
-  int _currentIndex = 0;
-
-  final List<NavigationItem> _navigationItems = [
-    const NavigationItem(
-      icon: Icons.home_outlined,
-      selectedIcon: Icons.home,
-      label: 'Home',
-      route: '/employee-dashboard',
-    ),
-    const NavigationItem(
+  final List<NavigationItem> _navigationItems = const [
+    NavigationItem(icon: Icons.home_outlined, selectedIcon: Icons.home, label: 'Home', route: '/employee-dashboard'),
+    NavigationItem(
       icon: Icons.assignment_outlined,
       selectedIcon: Icons.assignment,
       label: 'My Tasks',
@@ -30,13 +19,13 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
     ),
   ];
 
-  void _onNavigationSelected(int index) {
-    setState(() => _currentIndex = index);
+  void _onNavigationSelected(String route, BuildContext context) {
+    context.go(route);
   }
 
-  Widget _buildContent() {
-    switch (_currentIndex) {
-      case 1:
+  Widget _buildContent(String currentLocation, BuildContext context) {
+    switch (currentLocation) {
+      case '/employee-dashboard/tasks':
         return const Center(child: Text('My Tasks coming soon'));
       default:
         return Center(
@@ -59,12 +48,13 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final location = GoRouterState.of(context).uri.path;
     return AppShell(
       pageTitle: 'Employee Dashboard',
-      items: _navigationItems,
-      currentIndex: _currentIndex,
-      onDestinationSelected: _onNavigationSelected,
-      child: _buildContent(),
+      sideNavigationItems: _navigationItems,
+      bottomNavigationitems: _navigationItems,
+      onNavigationSelected: (route) => _onNavigationSelected(route, context),
+      child: _buildContent(location, context),
     );
   }
 }

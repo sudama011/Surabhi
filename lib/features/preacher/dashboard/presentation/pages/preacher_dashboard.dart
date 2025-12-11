@@ -1,28 +1,17 @@
 // lib/features/preacher/dashboard/presentation/pages/preacher_dashboard.dart
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:surabhi/core/domain/entities/navigation_item.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
 import 'package:surabhi/core/widgets/app_shell.dart';
 
-class PreacherDashboard extends StatefulWidget {
+class PreacherDashboard extends StatelessWidget {
   const PreacherDashboard({super.key});
 
-  @override
-  State<PreacherDashboard> createState() => _PreacherDashboardState();
-}
-
-class _PreacherDashboardState extends State<PreacherDashboard> {
-  int _currentIndex = 0;
-
-  final List<NavigationItem> _navigationItems = [
-    const NavigationItem(
-      icon: Icons.home_outlined,
-      selectedIcon: Icons.home,
-      label: 'Home',
-      route: '/preacher-dashboard',
-    ),
-    const NavigationItem(
+  final List<NavigationItem> _navigationItems = const [
+    NavigationItem(icon: Icons.home_outlined, selectedIcon: Icons.home, label: 'Home', route: '/preacher-dashboard'),
+    NavigationItem(
       icon: Icons.school_outlined,
       selectedIcon: Icons.school,
       label: 'Sermons',
@@ -30,13 +19,13 @@ class _PreacherDashboardState extends State<PreacherDashboard> {
     ),
   ];
 
-  void _onNavigationSelected(int index) {
-    setState(() => _currentIndex = index);
+  void _onNavigationSelected(String route, BuildContext context) {
+    context.go(route);
   }
 
-  Widget _buildContent() {
-    switch (_currentIndex) {
-      case 1:
+  Widget _buildContent(String currentLocation, BuildContext context) {
+    switch (currentLocation) {
+      case '/preacher-dashboard/sermons':
         return const Center(child: Text('Sermons coming soon'));
       default:
         return Center(
@@ -59,12 +48,13 @@ class _PreacherDashboardState extends State<PreacherDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final location = GoRouterState.of(context).uri.path;
     return AppShell(
       pageTitle: 'Preacher Dashboard',
-      items: _navigationItems,
-      currentIndex: _currentIndex,
-      onDestinationSelected: _onNavigationSelected,
-      child: _buildContent(),
+      sideNavigationItems: _navigationItems,
+      bottomNavigationitems: _navigationItems,
+      onNavigationSelected: (route) => _onNavigationSelected(route, context),
+      child: _buildContent(location, context),
     );
   }
 }

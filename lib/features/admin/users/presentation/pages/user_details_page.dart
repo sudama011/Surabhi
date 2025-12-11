@@ -14,9 +14,7 @@ class UserDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('User Details')),
-      body: SingleChildScrollView(
+    return SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,7 +45,6 @@ class UserDetailsPage extends StatelessWidget {
             _buildActionButtons(context),
           ],
         ),
-      ),
     );
   }
 

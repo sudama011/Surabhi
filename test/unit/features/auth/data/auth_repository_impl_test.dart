@@ -90,7 +90,7 @@ void main() {
     final res = await repo.login(LoginParams(email: 'e', password: 'p'));
     expect(res.isRight(), true);
     final entity = (res as Right).value as UserEntity;
-    expect(entity.email, 'e');
+    expect(entity.userName, 'e');
     expect(entity.role, 'admin');
   });
 
@@ -102,7 +102,7 @@ void main() {
   });
 
   test('checkAuthStatus returns entity from stored json', () async {
-    final user = UserModel(userId: '1', email: 'e', role: 'admin');
+    final user = UserModel(id: '1', userName: 'e', role: 'admin');
     await prefs.saveUserJson(json.encode(user.toJson()));
     final res = await repo.checkAuthStatus();
     expect(res.isRight(), true);

@@ -10,16 +10,16 @@ import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 class TestHelpers {
   /// Creates a test user entity
   static UserEntity createTestUser({
-    String userId = '1',
-    String email = 'test@example.com',
+    String id = '1',
+    String userName = 'test@example.com',
     String role = 'admin',
     String? firstName,
     String? lastName,
     String? phoneNumber,
     String? image,
   }) => UserEntity(
-    userId: userId,
-    email: email,
+    id: id,
+    userName: userName,
     role: role,
     firstName: firstName,
     lastName: lastName,
@@ -29,16 +29,16 @@ class TestHelpers {
 
   /// Creates a test user model
   static UserModel createTestUserModel({
-    String userId = '1',
-    String email = 'test@example.com',
+    String id = '1',
+    String userName = 'test@example.com',
     String role = 'admin',
     String? firstName,
     String? lastName,
     String? phoneNumber,
     String? image,
   }) => UserModel(
-    userId: userId,
-    email: email,
+    id: id,
+    userName: userName,
     role: role,
     firstName: firstName,
     lastName: lastName,

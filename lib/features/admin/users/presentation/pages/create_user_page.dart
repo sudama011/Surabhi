@@ -62,9 +62,7 @@ class _CreateUserPageState extends State<CreateUserPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Create User (Admin)')),
-      body: Padding(
+    return Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
@@ -118,7 +116,6 @@ class _CreateUserPageState extends State<CreateUserPage> {
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 }

@@ -10,6 +10,17 @@ import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
+  String _getAvatarInitial(UserEntity user) {
+    // Priority: firstName + lastName, then userName, then email first char
+    if (user.firstName?.isNotEmpty ?? false) {
+      if (user.lastName?.isNotEmpty ?? false) {
+        return '${user.firstName![0]}${user.lastName![0]}';
+      }
+      return user.firstName![0];
+    }
+    return user.userName[0];
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
@@ -49,7 +60,8 @@ class ProfilePage extends StatelessWidget {
                 const SizedBox(height: 24),
                 // Logout Button
                 _buildLogoutButton(context),
-                const SizedBox(height: 24),
+                // Extra space for device buttons (safe area)
+                const SizedBox(height: 80),
               ],
             ),
           ),
@@ -77,7 +89,7 @@ class ProfilePage extends StatelessWidget {
                 backgroundImage: user.image != null ? NetworkImage(user.image!) : null,
                 child: user.image == null
                     ? Text(
-                        (user.firstName?.isNotEmpty ?? false ? user.firstName![0] : user.userName[0]).toUpperCase(),
+                        _getAvatarInitial(user).toUpperCase(),
                         style: const TextStyle(fontSize: 40, color: Colors.white, fontWeight: FontWeight.bold),
                       )
                     : null,

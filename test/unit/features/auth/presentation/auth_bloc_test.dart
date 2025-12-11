@@ -39,7 +39,7 @@ void main() {
   });
 
   group('AuthBloc', () {
-    const testUser = UserEntity(userId: '1', email: 'test@example.com', role: 'admin');
+    const testUser = UserEntity(id: '1', userName: 'test@example.com', role: 'admin');
 
     const testLoginParams = LoginParams(email: 'test@example.com', password: 'password123');
 

@@ -3,44 +3,67 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:surabhi/core/constants/app_constants.dart';
 import 'package:surabhi/core/domain/entities/navigation_item.dart';
+import 'package:surabhi/core/theme/theme_cubit.dart';
+import 'package:surabhi/core/theme/app_colors.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 
 class AppShell extends StatelessWidget {
   final Widget child;
-  final List<NavigationItem> items;
-  final int currentIndex;
-  final Function(int) onDestinationSelected;
+  final List<NavigationItem> sideNavigationItems;
+  final List<NavigationItem> bottomNavigationitems;
+  final Function(String) onNavigationSelected;
   final String pageTitle;
-
-  // Optional: Actions for the top bar (e.g. Profile picture)
-  final List<Widget>? actions;
 
   const AppShell({
     super.key,
     required this.child,
-    required this.items,
-    required this.currentIndex,
-    required this.onDestinationSelected,
+    required this.sideNavigationItems,
+    required this.bottomNavigationitems,
+    required this.onNavigationSelected,
     required this.pageTitle,
-    this.actions,
   });
+
+  String _getAvatarInitial(dynamic user) {
+    // Priority: firstName + lastName, then userName, then email first char
+    if (user.firstName?.isNotEmpty ?? false) {
+      if (user.lastName?.isNotEmpty ?? false) {
+        return '${user.firstName![0]}${user.lastName![0]}';
+      }
+      return user.firstName![0];
+    }
+    return user.userName[0];
+  }
+
+  bool _isRouteSelected(String currentRoute, String itemRoute) {
+    // Check if the current route matches the item route
+    return currentRoute == itemRoute;
+  }
+
+  int _getSelectedBottomNavIndex(String currentRoute) {
+    // Find the index of the matching bottom nav item
+    for (int i = 0; i < bottomNavigationitems.length; i++) {
+      if (currentRoute == bottomNavigationitems[i].route) {
+        return i;
+      }
+    }
+    // Return 0 as default if no match found
+    return 0;
+  }
 
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
     final isDesktop = width >= AppConstants.tablet;
     final isMobile = width < AppConstants.mobile;
+    final currentRoute = GoRouterState.of(context).uri.path;
 
     // Validate navigation items
-    if (items.isEmpty) {
+    if (sideNavigationItems.isEmpty && bottomNavigationitems.isEmpty) {
       return Scaffold(
         appBar: AppBar(title: Text(pageTitle)),
         body: const Center(child: Text('No navigation items configured')),
       );
     }
-
-    // Ensure currentIndex is within bounds
-    final validIndex = currentIndex.clamp(0, items.length - 1);
 
     return Scaffold(
       // 2. Common Top App Bar
@@ -80,29 +103,45 @@ class AppShell extends StatelessWidget {
 
           const SizedBox(width: 8),
 
-          // Extra Actions (Profile, etc passed from parent)
-          if (actions != null) ...actions!,
+          // Profile Button with Avatar
+          BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, authState) {
+              if (authState is AuthAuthenticated) {
+                final user = authState.user;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: GestureDetector(
+                    onTap: () => context.push('/profile'),
+                    child: CircleAvatar(
+                      radius: 18,
+                      backgroundColor: AppColors.primaryColor,
+                      backgroundImage: user.image != null ? NetworkImage(user.image!) : null,
+                      child: user.image == null
+                          ? Text(
+                              _getAvatarInitial(user).toUpperCase(),
+                              style: const TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold),
+                            )
+                          : null,
+                    ),
+                  ),
+                );
+              }
+              return IconButton(icon: const Icon(Icons.person_outline), onPressed: () => context.push('/profile'));
+            },
+          ),
 
-          const SizedBox(width: 16),
+          const SizedBox(width: 8),
         ],
       ),
 
       // 3. Common Drawer (Left Side Menu)
       drawer: NavigationDrawer(
-        selectedIndex: validIndex,
+        selectedIndex: -1, // Don't use index-based selection
         onDestinationSelected: (index) {
           try {
             Navigator.pop(context); // Close drawer
-            // Handle Profile and Logout separately
-            if (index == items.length) {
-              // Profile
-              context.go('/profile');
-            } else if (index == items.length + 1) {
-              // Logout
-              context.read<AuthBloc>().add(LogoutRequested());
-              context.go('/', extra: false);
-            } else if (index < items.length) {
-              onDestinationSelected(index);
+            if (index < sideNavigationItems.length) {
+              onNavigationSelected(sideNavigationItems[index].route);
             }
           } catch (e) {
             debugPrint('Error in drawer navigation: $e');
@@ -113,16 +152,31 @@ class AppShell extends StatelessWidget {
             padding: EdgeInsets.fromLTRB(28, 16, 16, 10),
             child: Text('Menu', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
-          ...items.map(
+          ...sideNavigationItems.map(
             (item) => NavigationDrawerDestination(
-              icon: Icon(item.icon),
+              icon: _isRouteSelected(currentRoute, item.route) ? Icon(item.selectedIcon ?? item.icon) : Icon(item.icon),
               selectedIcon: Icon(item.selectedIcon ?? item.icon),
               label: Text(item.label),
             ),
           ),
           const Divider(indent: 28, endIndent: 28),
-          const NavigationDrawerDestination(icon: Icon(Icons.person_outlined), label: Text('Profile')),
-          const NavigationDrawerDestination(icon: Icon(Icons.logout), label: Text('Logout')),
+          // Common Settings Section
+          const Padding(
+            padding: EdgeInsets.fromLTRB(28, 16, 16, 10),
+            child: Text('Settings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+          ),
+          // Theme Toggle
+          BlocBuilder<ThemeCubit, ThemeMode>(
+            builder: (context, themeMode) {
+              final isDark = themeMode == ThemeMode.dark;
+              return SwitchListTile(
+                secondary: Icon(isDark ? Icons.dark_mode : Icons.light_mode),
+                title: const Text('Dark Mode'),
+                value: isDark,
+                onChanged: (val) => context.read<ThemeCubit>().toggleTheme(val),
+              );
+            },
+          ),
         ],
       ),
 
@@ -133,19 +187,21 @@ class AppShell extends StatelessWidget {
           if (!isMobile)
             NavigationRail(
               extended: isDesktop, // Text labels visible on Desktop
-              selectedIndex: validIndex,
+              selectedIndex: -1, // Don't use index-based selection
               onDestinationSelected: (index) {
                 try {
-                  onDestinationSelected(index);
+                  onNavigationSelected(sideNavigationItems[index].route);
                 } catch (e) {
                   debugPrint('Error in navigation rail: $e');
                 }
               },
               labelType: isDesktop ? NavigationRailLabelType.none : NavigationRailLabelType.all,
-              destinations: items
+              destinations: sideNavigationItems
                   .map(
                     (item) => NavigationRailDestination(
-                      icon: Icon(item.icon),
+                      icon: _isRouteSelected(currentRoute, item.route)
+                          ? Icon(item.selectedIcon ?? item.icon)
+                          : Icon(item.icon),
                       selectedIcon: Icon(item.selectedIcon ?? item.icon),
                       label: Text(item.label),
                     ),
@@ -163,18 +219,20 @@ class AppShell extends StatelessWidget {
       // 5. Mobile: Show Bottom Bar
       bottomNavigationBar: isMobile
           ? NavigationBar(
-              selectedIndex: validIndex,
+              selectedIndex: _getSelectedBottomNavIndex(currentRoute),
               onDestinationSelected: (index) {
                 try {
-                  onDestinationSelected(index);
+                  onNavigationSelected(bottomNavigationitems[index].route);
                 } catch (e) {
                   debugPrint('Error in bottom navigation: $e');
                 }
               },
-              destinations: items
+              destinations: bottomNavigationitems
                   .map(
                     (item) => NavigationDestination(
-                      icon: Icon(item.icon),
+                      icon: _isRouteSelected(currentRoute, item.route)
+                          ? Icon(item.selectedIcon ?? item.icon)
+                          : Icon(item.icon),
                       selectedIcon: Icon(item.selectedIcon ?? item.icon),
                       label: item.label,
                     ),

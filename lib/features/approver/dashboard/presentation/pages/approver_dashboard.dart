@@ -1,28 +1,17 @@
 // lib/features/approver/dashboard/presentation/pages/approver_dashboard.dart
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:surabhi/core/domain/entities/navigation_item.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
 import 'package:surabhi/core/widgets/app_shell.dart';
 
-class ApproverDashboard extends StatefulWidget {
+class ApproverDashboard extends StatelessWidget {
   const ApproverDashboard({super.key});
 
-  @override
-  State<ApproverDashboard> createState() => _ApproverDashboardState();
-}
-
-class _ApproverDashboardState extends State<ApproverDashboard> {
-  int _currentIndex = 0;
-
-  final List<NavigationItem> _navigationItems = [
-    const NavigationItem(
-      icon: Icons.home_outlined,
-      selectedIcon: Icons.home,
-      label: 'Home',
-      route: '/approver-dashboard',
-    ),
-    const NavigationItem(
+  final List<NavigationItem> _navigationItems = const [
+    NavigationItem(icon: Icons.home_outlined, selectedIcon: Icons.home, label: 'Home', route: '/approver-dashboard'),
+    NavigationItem(
       icon: Icons.check_circle_outlined,
       selectedIcon: Icons.check_circle,
       label: 'Approvals',
@@ -30,13 +19,13 @@ class _ApproverDashboardState extends State<ApproverDashboard> {
     ),
   ];
 
-  void _onNavigationSelected(int index) {
-    setState(() => _currentIndex = index);
+  void _onNavigationSelected(String route, BuildContext context) {
+    context.go(route);
   }
 
-  Widget _buildContent() {
-    switch (_currentIndex) {
-      case 1:
+  Widget _buildContent(String currentLocation, BuildContext context) {
+    switch (currentLocation) {
+      case '/approver-dashboard/approvals':
         return const Center(child: Text('Pending Approvals coming soon'));
       default:
         return Center(
@@ -59,12 +48,13 @@ class _ApproverDashboardState extends State<ApproverDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final location = GoRouterState.of(context).uri.path;
     return AppShell(
       pageTitle: 'Approver Dashboard',
-      items: _navigationItems,
-      currentIndex: _currentIndex,
-      onDestinationSelected: _onNavigationSelected,
-      child: _buildContent(),
+      sideNavigationItems: _navigationItems,
+      bottomNavigationitems: _navigationItems,
+      onNavigationSelected: (route) => _onNavigationSelected(route, context),
+      child: _buildContent(location, context),
     );
   }
 }
