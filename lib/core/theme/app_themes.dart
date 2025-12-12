@@ -3,10 +3,39 @@
 import 'package:flutter/material.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
 
+/// Disable page transition animations globally to avoid the "shrinking" effect
+/// when navigating between routes.
+class NoAnimationPageTransitionsBuilder extends PageTransitionsBuilder {
+  const NoAnimationPageTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    return child; // No animation
+  }
+}
+
 final ThemeData lightTheme = ThemeData(
   primaryColor: AppColors.primaryColor,
   visualDensity: VisualDensity.adaptivePlatformDensity,
   scaffoldBackgroundColor: AppColors.lightBackground,
+
+  // Remove page transition animations (no zoom/shrink on route changes)
+  pageTransitionsTheme: const PageTransitionsTheme(
+    builders: {
+      TargetPlatform.android: NoAnimationPageTransitionsBuilder(),
+      TargetPlatform.iOS: NoAnimationPageTransitionsBuilder(),
+      TargetPlatform.macOS: NoAnimationPageTransitionsBuilder(),
+      TargetPlatform.windows: NoAnimationPageTransitionsBuilder(),
+      TargetPlatform.linux: NoAnimationPageTransitionsBuilder(),
+      TargetPlatform.fuchsia: NoAnimationPageTransitionsBuilder(),
+    },
+  ),
 
   // Define light color scheme
   colorScheme: const ColorScheme.light(
@@ -85,6 +114,18 @@ final ThemeData darkTheme = ThemeData(
   primaryColor: AppColors.primaryColor,
   visualDensity: VisualDensity.adaptivePlatformDensity,
   scaffoldBackgroundColor: AppColors.darkBackground,
+
+  // Remove page transition animations (no zoom/shrink on route changes)
+  pageTransitionsTheme: const PageTransitionsTheme(
+    builders: {
+      TargetPlatform.android: NoAnimationPageTransitionsBuilder(),
+      TargetPlatform.iOS: NoAnimationPageTransitionsBuilder(),
+      TargetPlatform.macOS: NoAnimationPageTransitionsBuilder(),
+      TargetPlatform.windows: NoAnimationPageTransitionsBuilder(),
+      TargetPlatform.linux: NoAnimationPageTransitionsBuilder(),
+      TargetPlatform.fuchsia: NoAnimationPageTransitionsBuilder(),
+    },
+  ),
 
   // Define dark color scheme
   colorScheme: const ColorScheme.dark(
