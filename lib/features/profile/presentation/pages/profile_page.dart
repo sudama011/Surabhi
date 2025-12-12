@@ -1,6 +1,7 @@
 // lib/features/profile/presentation/pages/profile_page.dart
 
 import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -37,11 +38,18 @@ class _ProfilePageState extends State<ProfilePage> {
 
       setState(() => _isUploadingAvatar = true);
 
+      // Backend expects multipart/form-data with field name "File"
       final bytes = await pickedFile.readAsBytes();
-      final base64String = base64Encode(bytes);
+      final fileName = pickedFile.name;
+
+      final formData = FormData.fromMap({'File': MultipartFile.fromBytes(bytes, filename: fileName)});
 
       final api = di.sl<ApiClient>();
-      final response = await api.dio.post(ApiConstants.uploadAvatarPath, data: {'avatar': base64String});
+      final response = await api.dio.post(
+        ApiConstants.uploadAvatarPath,
+        data: formData,
+        options: Options(contentType: Headers.multipartFormDataContentType),
+      );
 
       if (response.statusCode == 200) {
         if (mounted) {
@@ -60,7 +68,6 @@ class _ProfilePageState extends State<ProfilePage> {
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {

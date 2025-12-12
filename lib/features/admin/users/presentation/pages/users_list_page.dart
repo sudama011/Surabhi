@@ -7,7 +7,6 @@ import 'package:surabhi/core/widgets/error_display.dart';
 import 'package:surabhi/features/admin/users/domain/entities/register_user_entity.dart';
 import 'package:surabhi/features/admin/users/presentation/bloc/users_bloc.dart';
 import 'package:surabhi/features/admin/users/presentation/pages/user_details_page.dart';
-import 'package:surabhi/features/auth/domain/entities/user_entity.dart';
 
 class UsersListPage extends StatefulWidget {
   const UsersListPage({super.key});

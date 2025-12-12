@@ -139,6 +139,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _show2FAChoice = false;
       _show2FAVerify = false;
+      _showLoginForm = true;
       _selectedTwoFAMethod = 'email';
       for (var controller in _otpControllers) {
         controller.clear();
@@ -155,11 +156,12 @@ class _LoginPageState extends State<LoginPage> {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
+            UiUtils.showSnackBar(context, 'Login successful', backgroundColor: AppColors.successColor);
             AppNavigator.navigateBasedOnRole(context, state.user.role);
           } else if (state is Auth2FARequired) {
             setState(() {
               _show2FAChoice = true;
-              _showLoginForm = false;
+              _showLoginForm = false; // Hide login form when 2FA starts
             });
           } else if (state is Auth2FAOTPSent) {
             setState(() {
@@ -167,7 +169,14 @@ class _LoginPageState extends State<LoginPage> {
               _show2FAChoice = false;
             });
           } else if (state is AuthUnauthenticated) {
-            setState(() => _showAuthCheck = false);
+            setState(() {
+              _showAuthCheck = false;
+              _showLoginForm = true; // Show login form (and events) once auth check or login fails
+            });
+            // Show error on login failure (e.g., incorrect email/password)
+            if (state.message != null && state.message!.isNotEmpty) {
+              UiUtils.showSnackBar(context, state.message!, backgroundColor: AppColors.errorColor);
+            }
           } else if (state is AuthError) {
             UiUtils.showSnackBar(context, state.message, backgroundColor: AppColors.errorColor);
           } else if (state is Auth2FAError) {
