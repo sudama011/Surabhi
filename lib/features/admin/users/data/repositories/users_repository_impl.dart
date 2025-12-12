@@ -35,6 +35,23 @@ class UsersRepositoryImpl implements UsersRepository {
   }
 
   @override
+  Future<Either<Failure, bool>> createUser({
+    required String email,
+    required String password,
+    required String phoneNumber,
+    required String role,
+  }) async {
+    try {
+      await remoteDataSource.createUser(email: email, password: password, phoneNumber: phoneNumber, role: role);
+      return const Right(true);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    } catch (e) {
+      return Left(ServerFailure(message: 'Unexpected error: $e'));
+    }
+  }
+
+  @override
   Future<Either<Failure, bool>> resetUserPassword(String email, String newPassword) async {
     try {
       await remoteDataSource.resetUserPassword(email, newPassword);

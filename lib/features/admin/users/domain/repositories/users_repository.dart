@@ -9,6 +9,14 @@ abstract class UsersRepository {
   /// Returns a list of users for the given page and size
   Future<Either<Failure, List<RegisterUserEntity>>> getUsers({int page = 1, int size = 20});
 
+  /// Create a new user (admin only)
+  Future<Either<Failure, bool>> createUser({
+    required String email,
+    required String password,
+    required String phoneNumber,
+    required String role,
+  });
+
   /// Reset a user's password (admin only)
   Future<Either<Failure, bool>> resetUserPassword(String email, String newPassword);
 

@@ -17,7 +17,15 @@ import 'package:surabhi/features/admin/users/domain/usecases/get_users_usecase.d
 import 'package:surabhi/features/admin/users/domain/usecases/reset_user_password_usecase.dart' as admin_users;
 import 'package:surabhi/features/admin/users/domain/usecases/remove_user_usecase.dart' as admin_users;
 import 'package:surabhi/features/admin/users/domain/usecases/change_user_role_usecase.dart' as admin_users;
+import 'package:surabhi/features/admin/users/domain/usecases/create_user_usecase.dart' as admin_users;
 import 'package:surabhi/features/admin/users/presentation/bloc/users_bloc.dart' as admin_users;
+import 'package:surabhi/features/admin/users/presentation/cubit/create_user_cubit.dart' as admin_users;
+
+import 'package:surabhi/features/admin/roles/data/datasources/roles_remote_datasource.dart' as admin_roles;
+import 'package:surabhi/features/admin/roles/data/repositories/roles_repository_impl.dart' as admin_roles;
+import 'package:surabhi/features/admin/roles/domain/repositories/roles_repository.dart' as admin_roles;
+import 'package:surabhi/features/admin/roles/domain/usecases/get_roles_usecase.dart' as admin_roles;
+import 'package:surabhi/features/admin/roles/presentation/cubit/roles_cubit.dart' as admin_roles;
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -65,6 +73,7 @@ Future<void> init() async {
   sl.registerLazySingleton<admin_users.ChangeUserRoleUseCase>(
     () => admin_users.ChangeUserRoleUseCase(repository: sl()),
   );
+  sl.registerLazySingleton<admin_users.CreateUserUseCase>(() => admin_users.CreateUserUseCase(repository: sl()));
   sl.registerFactory(
     () => admin_users.UsersBloc(
       getUsersUseCase: sl(),
@@ -73,4 +82,15 @@ Future<void> init() async {
       changeUserRoleUseCase: sl(),
     ),
   );
+
+  // Admin Create User
+  sl.registerFactory<admin_users.CreateUserCubit>(() => admin_users.CreateUserCubit(createUserUseCase: sl()));
+
+  // Admin Roles
+  sl.registerLazySingleton<admin_roles.RolesRemoteDataSource>(
+    () => admin_roles.RolesRemoteDataSourceImpl(apiClient: sl()),
+  );
+  sl.registerLazySingleton<admin_roles.RolesRepository>(() => admin_roles.RolesRepositoryImpl(remoteDataSource: sl()));
+  sl.registerLazySingleton<admin_roles.GetRolesUseCase>(() => admin_roles.GetRolesUseCase(sl()));
+  sl.registerFactory(() => admin_roles.RolesCubit(getRolesUseCase: sl()));
 }

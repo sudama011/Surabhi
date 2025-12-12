@@ -11,6 +11,14 @@ abstract class UsersRemoteDataSource {
   /// Fetch users with pagination support for infinite scroll
   Future<List<RegisterUserModel>> getUsers({int page = 1, int size = 20});
 
+  /// Create a new user (admin only)
+  Future<void> createUser({
+    required String email,
+    required String password,
+    required String phoneNumber,
+    required String role,
+  });
+
   Future<void> resetUserPassword(String email, String newPassword);
 
   Future<void> removeUser(String email);
@@ -44,6 +52,34 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
     } on DioException catch (e) {
       // Extract user-friendly message from API response
       final errorMessage = ErrorUtils.getComprehensiveErrorMessage(e, 'Failed to fetch users');
+      throw ServerException(message: errorMessage);
+    } catch (e) {
+      throw ServerException(message: 'Unexpected error occurred: $e');
+    }
+  }
+
+  @override
+  Future<void> createUser({
+    required String email,
+    required String password,
+    required String phoneNumber,
+    required String role,
+  }) async {
+    try {
+      final data = <String, dynamic>{
+        'email': email.toLowerCase(),
+        'password': password,
+        'phoneNumber': phoneNumber,
+        'userRole': role,
+      };
+
+      await apiClient.dio.post(
+        ApiConstants.registerPath,
+        data: data,
+        options: Options(contentType: Headers.jsonContentType),
+      );
+    } on DioException catch (e) {
+      final errorMessage = ErrorUtils.getComprehensiveErrorMessage(e, 'Failed to create user');
       throw ServerException(message: errorMessage);
     } catch (e) {
       throw ServerException(message: 'Unexpected error occurred: $e');
