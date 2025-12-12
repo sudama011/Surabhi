@@ -1,13 +1,12 @@
 // lib/features/auth/domain/repositories/auth_repository.dart
 import 'package:dartz/dartz.dart';
 import 'package:surabhi/core/errors/failures.dart';
-import 'package:surabhi/core/domain/entities/user_entity.dart';
+import 'package:surabhi/features/auth/domain/entities/user_entity.dart';
 import 'package:surabhi/features/auth/domain/usecases/login_usecase.dart';
 
 abstract class AuthRepository {
   /// Login with email and password
-  /// If 2FA is required, provide twoFactorCode in the second attempt
-  Future<Either<Failure, UserEntity>> login(LoginParams params, {String? twoFactorCode});
+  Future<Either<Failure, UserEntity>> login(LoginParams params);
 
   Future<Either<Failure, bool>> logout();
 

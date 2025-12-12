@@ -2,11 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:surabhi/core/domain/entities/user_entity.dart';
+import 'package:surabhi/features/admin/users/domain/entities/register_user_entity.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
 
 class UserDetailsPage extends StatelessWidget {
-  final UserEntity user;
+  final RegisterUserEntity user;
 
   const UserDetailsPage({super.key, required this.user});
 
@@ -14,7 +14,19 @@ class UserDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return SingleChildScrollView(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('User Details'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            }
+          },
+        ),
+      ),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -26,16 +38,15 @@ class UserDetailsPage extends StatelessWidget {
 
             // User Information Cards
             _buildInfoCard(context, 'Personal Information', [
-              _buildInfoRow('First Name', user.firstName ?? 'Not provided'),
-              _buildInfoRow('Last Name', user.lastName ?? 'Not provided'),
-              _buildInfoRow('Email', user.userName),
-              _buildInfoRow('Phone', user.phoneNumber ?? 'Not provided'),
+              _buildInfoRow('Name', 'Not provided'),
+              _buildInfoRow('Email', user.email),
+              _buildInfoRow('Mobile', user.mobileNumber ?? 'Not provided'),
             ]),
 
             const SizedBox(height: 16),
 
             _buildInfoCard(context, 'Account Information', [
-              _buildInfoRow('User ID', user.userName),
+              _buildInfoRow('User ID', user.email),
               _buildInfoRow('Role', user.role.toUpperCase()),
             ]),
 
@@ -45,6 +56,7 @@ class UserDetailsPage extends StatelessWidget {
             _buildActionButtons(context),
           ],
         ),
+      ),
     );
   }
 
@@ -57,13 +69,11 @@ class UserDetailsPage extends StatelessWidget {
             // Avatar
             CircleAvatar(
               radius: 40,
-              backgroundImage: user.image != null && user.image!.isNotEmpty ? NetworkImage(user.image!) : null,
-              child: user.image == null || user.image!.isEmpty
-                  ? Text(
-                      user.userName.isNotEmpty ? user.userName[0].toUpperCase() : '?',
-                      style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                    )
-                  : null,
+              backgroundColor: AppColors.primaryColor,
+              child: Text(
+                user.avatarInitial,
+                style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
             ),
 
             const SizedBox(width: 20),
@@ -74,14 +84,12 @@ class UserDetailsPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    user.firstName != null && user.lastName != null
-                        ? '${user.firstName} ${user.lastName}'
-                        : user.userName,
+                    user.email,
                     style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    user.userName,
+                    user.email,
                     style: theme.textTheme.bodyLarge?.copyWith(
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
@@ -148,22 +156,44 @@ class UserDetailsPage extends StatelessWidget {
   }
 
   Widget _buildActionButtons(BuildContext context) {
-    return Row(
+    return Column(
+      spacing: 12,
       children: [
-        Expanded(
+        // Change Role Button
+        SizedBox(
+          width: double.infinity,
           child: OutlinedButton.icon(
-            onPressed: () {
-              // TODO: Implement edit user functionality
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('Edit user functionality coming soon')));
-            },
-            icon: const Icon(Icons.edit),
-            label: const Text('Edit User'),
+            onPressed: () => _showChangeRoleDialog(context),
+            icon: const Icon(Icons.security),
+            label: const Text('Change Role'),
           ),
         ),
-        const SizedBox(width: 16),
-        Expanded(
+        // Edit Password Button
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () => _showEditPasswordDialog(context),
+            icon: const Icon(Icons.lock),
+            label: const Text('Edit Password'),
+          ),
+        ),
+        // Remove User Button
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () => _showRemoveUserDialog(context),
+            icon: const Icon(Icons.delete_outline),
+            label: const Text('Remove User'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.red,
+              side: const BorderSide(color: Colors.red),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        // Back Button
+        SizedBox(
+          width: double.infinity,
           child: ElevatedButton.icon(
             onPressed: () {
               if (context.mounted) {
@@ -175,6 +205,50 @@ class UserDetailsPage extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  void _showChangeRoleDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Change Role'),
+        content: const Text('Change role functionality coming soon'),
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
+      ),
+    );
+  }
+
+  void _showEditPasswordDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Password'),
+        content: const Text('Edit password functionality coming soon'),
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
+      ),
+    );
+  }
+
+  void _showRemoveUserDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Remove User'),
+        content: Text('Are you sure you want to remove ${user.email}?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text('Remove user functionality coming soon')));
+            },
+            child: const Text('Remove', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
     );
   }
 

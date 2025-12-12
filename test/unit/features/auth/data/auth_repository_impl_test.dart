@@ -5,21 +5,20 @@ import 'package:surabhi/core/errors/failures.dart';
 import 'package:surabhi/core/shared_preferences/preferences_service.dart';
 import 'package:surabhi/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:surabhi/features/auth/data/models/auth_response_model.dart';
-import 'package:surabhi/features/auth/data/models/user_profile_model.dart';
-import 'package:surabhi/core/data/models/user_model.dart';
+import 'package:surabhi/features/auth/data/models/user_model.dart';
 import 'package:surabhi/features/auth/data/repositories/auth_repository_impl.dart';
-import 'package:surabhi/core/domain/entities/user_entity.dart';
+import 'package:surabhi/features/auth/domain/entities/user_entity.dart';
 import 'package:surabhi/features/auth/domain/usecases/login_usecase.dart';
 
 class _RemoteFake implements AuthRemoteDataSource {
   AuthResponseModel? response;
-  UserProfileModel? profileResponse;
+  UserModel? profileResponse;
 
   @override
-  Future<AuthResponseModel> login(LoginParams params, {String? twoFactorCode}) async => response!;
+  Future<AuthResponseModel> login(LoginParams params) async => response!;
 
   @override
-  Future<UserProfileModel?> getUserProfile(String email) async => profileResponse;
+  Future<UserModel?> getUserProfile(String email) async => profileResponse;
 
   @override
   Future<void> sendTwoFactor(String email, String provider) async {}
@@ -85,12 +84,12 @@ void main() {
       refreshTokenExpiresAt: DateTime.now().add(const Duration(days: 7)),
       roles: ['admin'],
     );
-    remote.profileResponse = UserProfileModel(userId: '1', email: 'e');
+    remote.profileResponse = UserModel(id: '1', email: 'e');
 
     final res = await repo.login(LoginParams(email: 'e', password: 'p'));
     expect(res.isRight(), true);
     final entity = (res as Right).value as UserEntity;
-    expect(entity.userName, 'e');
+    expect(entity.email, 'e');
     expect(entity.role, 'admin');
   });
 
@@ -102,12 +101,12 @@ void main() {
   });
 
   test('checkAuthStatus returns entity from stored json', () async {
-    final user = UserModel(id: '1', userName: 'e', role: 'admin');
+    final user = UserModel(id: '1', email: 'e');
     await prefs.saveUserJson(json.encode(user.toJson()));
     final res = await repo.checkAuthStatus();
     expect(res.isRight(), true);
     final entity = (res as Right).value as UserEntity;
-    expect(entity.role, 'admin');
+    expect(entity.email, 'e');
   });
 
   test('checkAuthStatus returns failure when no json', () async {

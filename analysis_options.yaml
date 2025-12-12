@@ -12,7 +12,7 @@ linter:
     prefer_const_literals_to_create_immutables: true
 
     # Code quality
-    avoid_print: true  # Allow print statements for debugging
+    avoid_print: false  # Allow print statements for debugging
     avoid_unnecessary_containers: true
     avoid_web_libraries_in_flutter: true
 

@@ -2,7 +2,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:surabhi/features/auth/domain/repositories/auth_repository.dart';
-import 'package:surabhi/core/domain/entities/user_entity.dart';
+import 'package:surabhi/features/auth/domain/entities/user_entity.dart';
 import 'package:surabhi/features/auth/domain/usecases/login_usecase.dart';
 import 'package:surabhi/features/auth/domain/usecases/request_2fa_usecase.dart';
 import 'package:surabhi/features/auth/domain/usecases/verify_otp_usecase.dart';
@@ -36,12 +36,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onLoginRequested(LoginRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     final result = await loginUseCase(LoginParams(email: event.email, password: event.password));
-    result.fold((failure) => emit(AuthUnauthenticated(message: failure.message)), (user) {
-      _pendingUser = user;
-      _pendingEmail = user.userName;
-      // Always emit authenticated - fingerprint setup will be handled in UI
-      emit(AuthAuthenticated(user: user));
-    });
+    result.fold(
+      (failure) {
+        print('❌ Login Failed: ${failure.message}');
+        print('❌ Failure Type: ${failure.runtimeType}');
+        emit(AuthUnauthenticated(message: failure.message));
+      },
+      (user) {
+        _pendingUser = user;
+        _pendingEmail = user.email;
+        // Always emit authenticated - fingerprint setup will be handled in UI
+        print('✅ User logged in: ${user.name ?? user.email}');
+        print('✅ User Role: ${user.role}');
+        print('✅ User ID: ${user.id}');
+        emit(AuthAuthenticated(user: user));
+      },
+    );
   }
 
   Future<void> _onAppStarted(AppStarted event, Emitter<AuthState> emit) async {

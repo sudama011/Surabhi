@@ -7,8 +7,8 @@ import 'dart:async' as _i4;
 
 import 'package:dartz/dartz.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:surabhi/core/domain/entities/user_entity.dart' as _i6;
 import 'package:surabhi/core/errors/failures.dart' as _i5;
+import 'package:surabhi/features/auth/domain/entities/user_entity.dart' as _i6;
 import 'package:surabhi/features/auth/domain/repositories/auth_repository.dart'
     as _i3;
 import 'package:surabhi/features/auth/domain/usecases/login_usecase.dart'
@@ -43,24 +43,15 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
 
   @override
   _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>> login(
-    _i7.LoginParams? params, {
-    String? twoFactorCode,
-  }) =>
+    _i7.LoginParams? params,
+  ) =>
       (super.noSuchMethod(
-            Invocation.method(
-              #login,
-              [params],
-              {#twoFactorCode: twoFactorCode},
-            ),
+            Invocation.method(#login, [params]),
             returnValue:
                 _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>>.value(
                   _FakeEither_0<_i5.Failure, _i6.UserEntity>(
                     this,
-                    Invocation.method(
-                      #login,
-                      [params],
-                      {#twoFactorCode: twoFactorCode},
-                    ),
+                    Invocation.method(#login, [params]),
                   ),
                 ),
           )

@@ -14,7 +14,7 @@ class UsersInitial extends UsersState {}
 class UsersLoading extends UsersState {}
 
 class UsersLoadingMore extends UsersState {
-  final List<UserEntity> users;
+  final List<RegisterUserEntity> users;
   final bool hasMoreData;
 
   const UsersLoadingMore({required this.users, required this.hasMoreData});
@@ -24,7 +24,7 @@ class UsersLoadingMore extends UsersState {
 }
 
 class UsersLoaded extends UsersState {
-  final List<UserEntity> users;
+  final List<RegisterUserEntity> users;
   final bool hasMoreData;
 
   const UsersLoaded({required this.users, required this.hasMoreData});

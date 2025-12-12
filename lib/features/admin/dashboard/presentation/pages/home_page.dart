@@ -10,8 +10,8 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
-        final firstName = (state is AuthAuthenticated) ? state.user.firstName : 'User';
-        return Center(child: Text('Hare Krishna $firstName'));
+        final name = (state is AuthAuthenticated) ? (state.user.name ?? state.user.email) : 'User';
+        return Center(child: Text('Hare Krishna $name'));
       },
     );
   }

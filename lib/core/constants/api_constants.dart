@@ -24,7 +24,10 @@ class ApiConstants {
   static const String send2FAPath = '/Account/twofactor/send';
   static const String verify2FAPath = '/Account/twofactor/verify';
   static const String userProfilePath = '/Account/profile';
+  static const String uploadAvatarPath = '/Account/upload-avatar';
+  static const String userRolesPath = '/Account/roles'; // get the list of roles available in the system
 
   // User Management Endpoints (Admin)
   static const String userListPath = '/Admin/registered-users';
+  static const String devoteeListPath = '/Admin/devotees';
 }

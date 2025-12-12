@@ -55,17 +55,16 @@ class AppRouter {
           GoRoute(path: 'donate', name: 'admin-donate', builder: (context, state) => const AdminDashboard()),
           GoRoute(path: 'donations', name: 'admin-donations', builder: (context, state) => const AdminDashboard()),
           GoRoute(path: 'reports', name: 'admin-reports', builder: (context, state) => const AdminDashboard()),
-          GoRoute(path: 'users', name: 'admin-users', builder: (context, state) => const AdminDashboard(),
-          routes: [
-            GoRoute(path: 'details', name: 'user-details', builder: (context, state) => const AdminDashboard()),
-          ],
-          ),
-         
           GoRoute(
-            path: 'register-user',
-            name: 'register-user',
+            path: 'users',
+            name: 'admin-users',
             builder: (context, state) => const AdminDashboard(),
+            routes: [
+              GoRoute(path: 'details', name: 'user-details', builder: (context, state) => const AdminDashboard()),
+            ],
           ),
+          GoRoute(path: 'devotees', name: 'devotees', builder: (context, state) => const AdminDashboard()),
+          GoRoute(path: 'register-user', name: 'register-user', builder: (context, state) => const AdminDashboard()),
         ],
       ),
       GoRoute(
@@ -126,7 +125,8 @@ class AppRouter {
 
       // 4. If authenticated and trying to go to home, redirect to their dashboard
       if (isAuthenticated && isGoingToPublicPath) {
-        return _getDashboardPathForRole(loggedInRole);
+        final dashboardPath = _getDashboardPathForRole(loggedInRole);
+        return dashboardPath;
       }
 
       return null; // No redirect needed

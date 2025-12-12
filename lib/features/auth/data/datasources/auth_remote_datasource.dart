@@ -1,9 +1,9 @@
 // lib/features/auth/data/datasources/auth_remote_datasource.dart
 import 'package:dio/dio.dart';
+import 'package:surabhi/features/auth/data/models/user_model.dart';
 import 'package:surabhi/core/errors/exceptions.dart';
 import 'package:surabhi/core/network/api_client.dart';
 import 'package:surabhi/features/auth/data/models/auth_response_model.dart';
-import 'package:surabhi/features/auth/data/models/user_profile_model.dart';
 import 'package:surabhi/core/constants/api_constants.dart';
 import 'package:surabhi/features/auth/domain/usecases/login_usecase.dart';
 import 'package:surabhi/core/utils/error_utils.dart';
@@ -11,11 +11,11 @@ import 'package:surabhi/core/utils/error_utils.dart';
 abstract class AuthRemoteDataSource {
   /// Login with email and password
   /// If 2FA is required, provide twoFactorCode in the second attempt
-  Future<AuthResponseModel> login(LoginParams params, {String? twoFactorCode});
+  Future<AuthResponseModel> login(LoginParams params);
 
   /// Get user profile information
   /// Requires email parameter as the API endpoint needs it
-  Future<UserProfileModel?> getUserProfile(String email);
+  Future<UserModel?> getUserProfile(String email);
 
   /// Send 2FA code via email or phone
   Future<void> sendTwoFactor(String email, String provider);
@@ -35,17 +35,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   AuthRemoteDataSourceImpl(this.apiClient);
 
   @override
-  Future<AuthResponseModel> login(LoginParams params, {String? twoFactorCode}) async {
-    // API expects JSON format with email field
-    // If 2FA is required, provide twoFactorCode in the second attempt
+  Future<AuthResponseModel> login(LoginParams params) async {
     try {
-      final data = {'email': params.email, 'password': params.password};
-
-      // Only include 2FA fields if provided
-      if (twoFactorCode != null) {
-        data['twoFactorCode'] = twoFactorCode;
-      }
-
+      final data = {'email': params.email, 'password': params.password, 'rememberMe': true};
       final response = await apiClient.dio.post(
         ApiConstants.loginPath,
         data: data,
@@ -63,7 +55,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<UserProfileModel?> getUserProfile(String email) async {
+  Future<UserModel?> getUserProfile(String email) async {
     try {
       final response = await apiClient.dio.post(
         ApiConstants.userProfilePath,
@@ -72,7 +64,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        return UserProfileModel.fromJson(response.data);
+        return UserModel.fromJson(response.data);
       }
       return null;
     } on DioException catch (e) {

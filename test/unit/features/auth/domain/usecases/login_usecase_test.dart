@@ -2,7 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:surabhi/core/domain/entities/user_entity.dart';
+import 'package:surabhi/features/auth/domain/entities/user_entity.dart';
 import 'package:surabhi/core/errors/failures.dart';
 import 'package:surabhi/features/auth/domain/repositories/auth_repository.dart';
 import 'package:surabhi/features/auth/domain/usecases/login_usecase.dart';

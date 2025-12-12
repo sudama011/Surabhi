@@ -9,6 +9,7 @@ import 'package:surabhi/features/admin/dashboard/presentation/pages/home_page.da
 import 'package:surabhi/features/admin/users/presentation/bloc/users_bloc.dart' as admin_users;
 import 'package:surabhi/features/admin/users/presentation/pages/users_list_page.dart';
 import 'package:surabhi/features/admin/users/presentation/pages/create_user_page.dart';
+import 'package:surabhi/features/admin/devotees/presentation/pages/devotees_page.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:surabhi/injector.dart' as di;
 
@@ -61,6 +62,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
       label: 'Add User',
       route: '/admin-dashboard/register-user',
     ),
+    const NavigationItem(
+      icon: Icons.groups_outlined,
+      selectedIcon: Icons.groups,
+      label: 'Devotees',
+      route: '/admin-dashboard/devotees',
+    ),
   ];
 
   void _onNavigationSelected(String route) {
@@ -76,6 +83,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
       );
     } else if (currentLocation == '/admin-dashboard/register-user') {
       return const CreateUserPage();
+    } else if (currentLocation == '/admin-dashboard/devotees') {
+      return const DevoteesPage();
     }
 
     // Check bottom nav routes
@@ -102,7 +111,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
         final location = GoRouterState.of(context).uri.path;
 
         return AppShell(
-          pageTitle: 'Dashboard',
           sideNavigationItems: _sideNavigationItems,
           bottomNavigationitems: _bottomNavigationItems,
           onNavigationSelected: _onNavigationSelected,

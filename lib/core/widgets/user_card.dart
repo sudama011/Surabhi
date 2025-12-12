@@ -1,11 +1,11 @@
 // lib/core/widgets/user_card.dart
 
 import 'package:flutter/material.dart';
-import 'package:surabhi/core/domain/entities/user_entity.dart';
+import 'package:surabhi/features/admin/users/domain/entities/register_user_entity.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
 
 class UserCard extends StatelessWidget {
-  final UserEntity user;
+  final RegisterUserEntity user;
   final VoidCallback? onTap;
   final Widget? trailing;
   final bool showRole;
@@ -28,20 +28,21 @@ class UserCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundImage: user.image != null && user.image!.isNotEmpty ? NetworkImage(user.image!) : null,
-          child: user.image == null || user.image!.isEmpty
-              ? Text(user.userName.isNotEmpty ? user.userName[0].toUpperCase() : '?')
-              : null,
+          backgroundColor: AppColors.primaryColor,
+          child: Text(
+            user.email.isNotEmpty ? user.email[0].toUpperCase() : '?',
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
         ),
         title: Text(
-          user.firstName != null && user.lastName != null ? '${user.firstName} ${user.lastName}' : user.userName,
+          user.email,
           style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              user.userName,
+              user.email,
               style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
             ),
             if (showRole) ...[

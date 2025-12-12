@@ -2,14 +2,14 @@
 
 import 'package:dio/dio.dart';
 import 'package:surabhi/core/constants/api_constants.dart';
-import 'package:surabhi/core/data/models/user_model.dart';
+import 'package:surabhi/features/admin/users/data/models/register_user_model.dart';
 import 'package:surabhi/core/errors/exceptions.dart';
 import 'package:surabhi/core/network/api_client.dart';
 import 'package:surabhi/core/utils/error_utils.dart';
 
 abstract class UsersRemoteDataSource {
   /// Fetch users with pagination support for infinite scroll
-  Future<List<UserModel>> getUsers({int page = 1, int size = 20});
+  Future<List<RegisterUserModel>> getUsers({int page = 1, int size = 20});
 
   Future<void> resetUserPassword(String email, String newPassword);
 
@@ -24,16 +24,21 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
   UsersRemoteDataSourceImpl({required this.apiClient});
 
   @override
-  Future<List<UserModel>> getUsers({int page = 1, int size = 20}) async {
+  Future<List<RegisterUserModel>> getUsers({int page = 1, int size = 20}) async {
     try {
-      final response = await apiClient.dio.get(
-        ApiConstants.userListPath,
-      );
+      final response = await apiClient.dio.get(ApiConstants.userListPath);
 
       // Handle both array and paginated response formats
-      List<dynamic> itemsList = response.data['users'] as List<dynamic>;
+      List<dynamic> itemsList;
+      if (response.data is List) {
+        itemsList = response.data as List<dynamic>;
+      } else if (response.data is Map && response.data['users'] != null) {
+        itemsList = response.data['users'] as List<dynamic>;
+      } else {
+        itemsList = [];
+      }
 
-      final items = itemsList.map((e) => UserModel.fromJson(e as Map<String, dynamic>)).toList();
+      final items = itemsList.map((e) => RegisterUserModel.fromJson(e as Map<String, dynamic>)).toList();
 
       return items;
     } on DioException catch (e) {

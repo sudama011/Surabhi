@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:surabhi/core/widgets/user_card.dart';
 import 'package:surabhi/core/widgets/error_display.dart';
+import 'package:surabhi/features/admin/users/domain/entities/register_user_entity.dart';
 import 'package:surabhi/features/admin/users/presentation/bloc/users_bloc.dart';
 import 'package:surabhi/features/admin/users/presentation/pages/user_details_page.dart';
-import 'package:surabhi/core/domain/entities/user_entity.dart';
+import 'package:surabhi/features/auth/domain/entities/user_entity.dart';
 
 class UsersListPage extends StatefulWidget {
   const UsersListPage({super.key});
@@ -69,7 +70,7 @@ class _UsersListPageState extends State<UsersListPage> {
     );
   }
 
-  Widget _buildUsersList(List<UserEntity> users, bool hasMoreData) {
+  Widget _buildUsersList(List<RegisterUserEntity> users, bool hasMoreData) {
     if (users.isEmpty) {
       return const Center(child: Text('No users found'));
     }

@@ -2,7 +2,8 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:surabhi/core/domain/entities/user_entity.dart';
+import 'package:surabhi/features/admin/users/domain/entities/register_user_entity.dart';
+import 'package:surabhi/features/auth/domain/entities/user_entity.dart';
 import 'package:surabhi/features/admin/users/domain/usecases/get_users_usecase.dart';
 import 'package:surabhi/features/admin/users/domain/usecases/reset_user_password_usecase.dart';
 import 'package:surabhi/features/admin/users/domain/usecases/remove_user_usecase.dart';
@@ -22,7 +23,7 @@ class UsersBloc extends Bloc<UsersEvent, UsersState> {
   static const _pageSize = 20; // Items per request for infinite scroll
 
   int _currentOffset = 0; // Track offset for infinite scroll
-  List<UserEntity> _allUsers = []; // Accumulate all loaded users
+  List<RegisterUserEntity> _allUsers = []; // Accumulate all loaded users
   bool _hasMoreData = true; // Track if there are more users to load
 
   UsersBloc({

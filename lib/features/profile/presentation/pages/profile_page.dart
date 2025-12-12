@@ -1,25 +1,66 @@
 // lib/features/profile/presentation/pages/profile_page.dart
 
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
-import 'package:surabhi/core/domain/entities/user_entity.dart';
+import 'package:surabhi/features/auth/domain/entities/user_entity.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:surabhi/core/network/api_client.dart';
+import 'package:surabhi/core/constants/api_constants.dart';
+import 'package:surabhi/core/utils/ui_utils.dart';
+import 'package:surabhi/injector.dart' as di;
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
-  String _getAvatarInitial(UserEntity user) {
-    // Priority: firstName + lastName, then userName, then email first char
-    if (user.firstName?.isNotEmpty ?? false) {
-      if (user.lastName?.isNotEmpty ?? false) {
-        return '${user.firstName![0]}${user.lastName![0]}';
-      }
-      return user.firstName![0];
-    }
-    return user.userName[0];
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  late bool _isUploadingAvatar;
+
+  @override
+  void initState() {
+    super.initState();
+    _isUploadingAvatar = false;
   }
+
+  Future<void> _uploadAvatar() async {
+    final picker = ImagePicker();
+    try {
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile == null) return;
+
+      setState(() => _isUploadingAvatar = true);
+
+      final bytes = await pickedFile.readAsBytes();
+      final base64String = base64Encode(bytes);
+
+      final api = di.sl<ApiClient>();
+      final response = await api.dio.post(ApiConstants.uploadAvatarPath, data: {'avatar': base64String});
+
+      if (response.statusCode == 200) {
+        if (mounted) {
+          UiUtils.showSnackBar(context, 'Avatar updated successfully', backgroundColor: AppColors.successColor);
+          // Refresh user data by triggering auth event
+          context.read<AuthBloc>().add(AppStarted());
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        UiUtils.showSnackBar(context, 'Failed to upload avatar: $e', backgroundColor: AppColors.errorColor);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isUploadingAvatar = false);
+      }
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -86,10 +127,10 @@ class ProfilePage extends StatelessWidget {
               CircleAvatar(
                 radius: 60,
                 backgroundColor: AppColors.primaryColor,
-                backgroundImage: user.image != null ? NetworkImage(user.image!) : null,
-                child: user.image == null
+                backgroundImage: _getAvatarImage(user),
+                child: _getAvatarImage(user) == null
                     ? Text(
-                        _getAvatarInitial(user).toUpperCase(),
+                        user.avatarInitial,
                         style: const TextStyle(fontSize: 40, color: Colors.white, fontWeight: FontWeight.bold),
                       )
                     : null,
@@ -99,12 +140,7 @@ class ProfilePage extends StatelessWidget {
                 bottom: 0,
                 right: 0,
                 child: GestureDetector(
-                  onTap: () {
-                    // TODO: Implement image picker
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(const SnackBar(content: Text('Change profile picture - Coming soon')));
-                  },
+                  onTap: _isUploadingAvatar ? null : _uploadAvatar,
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
@@ -112,7 +148,16 @@ class ProfilePage extends StatelessWidget {
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 2),
                     ),
-                    child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                    child: _isUploadingAvatar
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Icon(Icons.camera_alt, color: Colors.white, size: 20),
                   ),
                 ),
               ),
@@ -121,7 +166,7 @@ class ProfilePage extends StatelessWidget {
           const SizedBox(height: 16),
           // User Name
           Text(
-            '${user.firstName ?? ''} ${user.lastName ?? ''}'.trim(),
+            user.displayName,
             style: Theme.of(
               context,
             ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold, color: AppColors.primaryColor),
@@ -141,6 +186,21 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
+  ImageProvider? _getAvatarImage(UserEntity user) {
+    // Priority: avatar (base64)
+    if (user.avatar != null && user.avatarContentType != null) {
+      try {
+        final imageData = user.avatar!;
+        // Decode base64 string to bytes
+        final bytes = base64Decode(imageData);
+        return MemoryImage(bytes);
+      } catch (e) {
+        debugPrint('Error loading avatar: $e');
+      }
+    }
+    return null;
+  }
+
   Widget _buildUserDetailsSection(BuildContext context, UserEntity user) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -152,16 +212,14 @@ class ProfilePage extends StatelessWidget {
             style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          _buildDetailCard(context, label: 'First Name', value: user.firstName ?? 'Not provided', icon: Icons.person),
+          _buildDetailCard(context, label: 'Name', value: user.name ?? 'Not provided', icon: Icons.person),
           const SizedBox(height: 12),
-          _buildDetailCard(context, label: 'Last Name', value: user.lastName ?? 'Not provided', icon: Icons.person),
-          const SizedBox(height: 12),
-          _buildDetailCard(context, label: 'Email', value: user.userName, icon: Icons.email),
+          _buildDetailCard(context, label: 'Email', value: user.email, icon: Icons.email),
           const SizedBox(height: 12),
           _buildDetailCard(
             context,
-            label: 'Phone Number',
-            value: user.phoneNumber ?? 'Not provided',
+            label: 'Mobile Number',
+            value: user.mobileNumber ?? 'Not provided',
             icon: Icons.phone,
           ),
         ],

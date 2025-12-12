@@ -50,7 +50,6 @@ class EmployeeDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
     return AppShell(
-      pageTitle: 'Employee Dashboard',
       sideNavigationItems: _navigationItems,
       bottomNavigationitems: _navigationItems,
       onNavigationSelected: (route) => _onNavigationSelected(route, context),

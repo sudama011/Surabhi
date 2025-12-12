@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -7,12 +8,11 @@ import 'package:surabhi/core/theme/theme_cubit.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 
-class AppShell extends StatelessWidget {
+class AppShell extends StatefulWidget {
   final Widget child;
   final List<NavigationItem> sideNavigationItems;
   final List<NavigationItem> bottomNavigationitems;
   final Function(String) onNavigationSelected;
-  final String pageTitle;
 
   const AppShell({
     super.key,
@@ -20,18 +20,70 @@ class AppShell extends StatelessWidget {
     required this.sideNavigationItems,
     required this.bottomNavigationitems,
     required this.onNavigationSelected,
-    required this.pageTitle,
   });
 
-  String _getAvatarInitial(dynamic user) {
-    // Priority: firstName + lastName, then userName, then email first char
-    if (user.firstName?.isNotEmpty ?? false) {
-      if (user.lastName?.isNotEmpty ?? false) {
-        return '${user.firstName![0]}${user.lastName![0]}';
+  @override
+  State<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends State<AppShell> {
+  late String pageTitle;
+
+  @override
+  void initState() {
+    super.initState();
+    pageTitle = 'Surabhi';
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _updatePageTitle();
+  }
+
+  void _updatePageTitle() {
+    final currentRoute = GoRouterState.of(context).uri.path;
+
+    // Check side navigation items
+    for (final item in widget.sideNavigationItems) {
+      if (currentRoute == item.route) {
+        if (pageTitle != item.label) {
+          pageTitle = item.label;
+        }
+        return;
       }
-      return user.firstName![0];
+    }
+
+    // Check bottom navigation items
+    for (final item in widget.bottomNavigationitems) {
+      if (currentRoute == item.route) {
+        if (pageTitle != item.label) {
+          pageTitle = item.label;
+        }
+        return;
+      }
+    }
+  }
+
+  String _getAvatarInitial(dynamic user) {
+    // Priority: name, then email first char
+    if (user.name != null && user.name!.isNotEmpty) {
+      return user.name![0];
     }
     return user.userName[0];
+  }
+
+  ImageProvider? _getAvatarImage(dynamic user) {
+    if (user.avatar != null && user.avatarContentType != null) {
+      try {
+        final imageData = user.avatar!;
+        final bytes = base64Decode(imageData);
+        return MemoryImage(bytes);
+      } catch (e) {
+        debugPrint('Error loading avatar: $e');
+      }
+    }
+    return null;
   }
 
   bool _isRouteSelected(String currentRoute, String itemRoute) {
@@ -41,8 +93,8 @@ class AppShell extends StatelessWidget {
 
   int _getSelectedBottomNavIndex(String currentRoute) {
     // Find the index of the matching bottom nav item
-    for (int i = 0; i < bottomNavigationitems.length; i++) {
-      if (currentRoute == bottomNavigationitems[i].route) {
+    for (int i = 0; i < widget.bottomNavigationitems.length; i++) {
+      if (currentRoute == widget.bottomNavigationitems[i].route) {
         return i;
       }
     }
@@ -57,8 +109,11 @@ class AppShell extends StatelessWidget {
     final isMobile = width < AppConstants.mobile;
     final currentRoute = GoRouterState.of(context).uri.path;
 
+    // Update page title based on current route
+    _updatePageTitle();
+
     // Validate navigation items
-    if (sideNavigationItems.isEmpty && bottomNavigationitems.isEmpty) {
+    if (widget.sideNavigationItems.isEmpty && widget.bottomNavigationitems.isEmpty) {
       return Scaffold(
         appBar: AppBar(title: Text(pageTitle)),
         body: const Center(child: Text('No navigation items configured')),
@@ -115,8 +170,8 @@ class AppShell extends StatelessWidget {
                     child: CircleAvatar(
                       radius: 18,
                       backgroundColor: AppColors.primaryColor,
-                      backgroundImage: user.image != null ? NetworkImage(user.image!) : null,
-                      child: user.image == null
+                      backgroundImage: _getAvatarImage(user),
+                      child: _getAvatarImage(user) == null
                           ? Text(
                               _getAvatarInitial(user).toUpperCase(),
                               style: const TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold),
@@ -140,8 +195,8 @@ class AppShell extends StatelessWidget {
         onDestinationSelected: (index) {
           try {
             Navigator.pop(context); // Close drawer
-            if (index < sideNavigationItems.length) {
-              onNavigationSelected(sideNavigationItems[index].route);
+            if (index < widget.sideNavigationItems.length) {
+              widget.onNavigationSelected(widget.sideNavigationItems[index].route);
             }
           } catch (e) {
             debugPrint('Error in drawer navigation: $e');
@@ -152,7 +207,7 @@ class AppShell extends StatelessWidget {
             padding: EdgeInsets.fromLTRB(28, 16, 16, 10),
             child: Text('Menu', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
-          ...sideNavigationItems.map(
+          ...widget.sideNavigationItems.map(
             (item) => NavigationDrawerDestination(
               icon: _isRouteSelected(currentRoute, item.route) ? Icon(item.selectedIcon ?? item.icon) : Icon(item.icon),
               selectedIcon: Icon(item.selectedIcon ?? item.icon),
@@ -185,34 +240,37 @@ class AppShell extends StatelessWidget {
         children: [
           // Tablet/Desktop: Show Rail on the side
           if (!isMobile)
-            NavigationRail(
-              extended: isDesktop, // Text labels visible on Desktop
-              selectedIndex: -1, // Don't use index-based selection
-              onDestinationSelected: (index) {
-                try {
-                  onNavigationSelected(sideNavigationItems[index].route);
-                } catch (e) {
-                  debugPrint('Error in navigation rail: $e');
-                }
-              },
-              labelType: isDesktop ? NavigationRailLabelType.none : NavigationRailLabelType.all,
-              destinations: sideNavigationItems
-                  .map(
-                    (item) => NavigationRailDestination(
-                      icon: _isRouteSelected(currentRoute, item.route)
-                          ? Icon(item.selectedIcon ?? item.icon)
-                          : Icon(item.icon),
-                      selectedIcon: Icon(item.selectedIcon ?? item.icon),
-                      label: Text(item.label),
-                    ),
-                  )
-                  .toList(),
+            SizedBox(
+              width: isDesktop ? 256 : 80, // Fixed width: 256 for extended, 80 for compact
+              child: NavigationRail(
+                extended: isDesktop, // Text labels visible on Desktop
+                selectedIndex: -1, // Don't use index-based selection
+                onDestinationSelected: (index) {
+                  try {
+                    widget.onNavigationSelected(widget.sideNavigationItems[index].route);
+                  } catch (e) {
+                    debugPrint('Error in navigation rail: $e');
+                  }
+                },
+                labelType: isDesktop ? NavigationRailLabelType.none : NavigationRailLabelType.all,
+                destinations: widget.sideNavigationItems
+                    .map(
+                      (item) => NavigationRailDestination(
+                        icon: _isRouteSelected(currentRoute, item.route)
+                            ? Icon(item.selectedIcon ?? item.icon)
+                            : Icon(item.icon),
+                        selectedIcon: Icon(item.selectedIcon ?? item.icon),
+                        label: Text(item.label),
+                      ),
+                    )
+                    .toList(),
+              ),
             ),
 
           if (!isMobile) const VerticalDivider(thickness: 1, width: 1),
 
           // Main Content
-          Expanded(child: child),
+          Expanded(child: widget.child),
         ],
       ),
 
@@ -222,12 +280,12 @@ class AppShell extends StatelessWidget {
               selectedIndex: _getSelectedBottomNavIndex(currentRoute),
               onDestinationSelected: (index) {
                 try {
-                  onNavigationSelected(bottomNavigationitems[index].route);
+                  widget.onNavigationSelected(widget.bottomNavigationitems[index].route);
                 } catch (e) {
                   debugPrint('Error in bottom navigation: $e');
                 }
               },
-              destinations: bottomNavigationitems
+              destinations: widget.bottomNavigationitems
                   .map(
                     (item) => NavigationDestination(
                       icon: _isRouteSelected(currentRoute, item.route)

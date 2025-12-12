@@ -5,8 +5,7 @@ import 'package:surabhi/core/errors/exceptions.dart';
 import 'package:surabhi/core/errors/failures.dart';
 import 'package:surabhi/core/shared_preferences/preferences_service.dart';
 import 'package:surabhi/features/auth/data/datasources/auth_remote_datasource.dart';
-import 'package:surabhi/core/data/models/user_model.dart';
-import 'package:surabhi/core/domain/entities/user_entity.dart';
+import 'package:surabhi/features/auth/domain/entities/user_entity.dart';
 import 'package:surabhi/features/auth/domain/usecases/login_usecase.dart';
 import 'package:surabhi/features/auth/domain/repositories/auth_repository.dart';
 
@@ -17,43 +16,44 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({required this.remoteDataSource, required this.preferencesService});
 
   @override
-  Future<Either<Failure, UserEntity>> login(LoginParams params, {String? twoFactorCode}) async {
+  Future<Either<Failure, UserEntity>> login(LoginParams params) async {
     try {
-      final authResponse = await remoteDataSource.login(params, twoFactorCode: twoFactorCode);
+      final authResponse = await remoteDataSource.login(params);
 
       // Save tokens
       await preferencesService.saveAccessToken(authResponse.token);
       await preferencesService.saveRefreshToken(authResponse.refreshToken);
 
-      // Get user profile data from the profile endpoint
-      final profileResult = await remoteDataSource.getUserProfile(params.email);
+      final profileInfo = await remoteDataSource.getUserProfile(params.email);
 
-      UserModel user;
-      if (profileResult != null) {
-        // Use the profile data and add the role from login response
-        user = UserModel(
-          id: profileResult.userId,
-          userName: profileResult.email,
-          role: authResponse.roles.isNotEmpty ? authResponse.roles.first : 'user',
-          firstName: profileResult.firstName,
-          lastName: profileResult.lastName,
-          phoneNumber: profileResult.phoneNumber,
-          image: profileResult.image,
-          emailVerified: profileResult.emailVerified,
-          phoneVerified: profileResult.phoneVerified,
+      String userRole = 'volunteer';
+      if (authResponse.roles.isNotEmpty) {
+        userRole = authResponse.roles.first;
+      }
+
+      UserEntity user;
+      if (profileInfo != null) {
+        // Use the profile data and role from login response
+        user = UserEntity(
+          id: profileInfo.id,
+          code: profileInfo.code,
+          role: userRole,
+          mobileNumber: profileInfo.mobileNumber,
+          email: profileInfo.email,
+          name: profileInfo.name,
+          avatar: profileInfo.avatar,
+          avatarContentType: profileInfo.avatarContentType,
+          emailVerified: profileInfo.emailVerified,
+          mobileVerified: profileInfo.mobileVerified,
         );
       } else {
-        // Fallback: Create user from login response
-        user = UserModel(
-          id: params.email,
-          userName: params.email,
-          role: authResponse.roles.isNotEmpty ? authResponse.roles.first : 'user',
-          image: null,
-        );
+        // Fallback: Create minimal user entity with default role
+        user = UserEntity(id: 1, code: 'unknown', role: userRole, email: params.email);
       }
 
       final userJson = json.encode(user.toJson());
       await preferencesService.saveUserJson(userJson);
+  
       return Right(user);
     } on AuthException catch (e) {
       return Left(AuthFailure(message: e.message));
@@ -85,7 +85,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
     try {
       final Map<String, dynamic> userMap = json.decode(userJson);
-      final userModel = UserModel.fromJson(userMap);
+      final userModel = UserEntity.fromJson(userMap);
       return Right(userModel);
     } catch (e) {
       return const Left(CacheFailure(message: 'Failed to parse user data.'));
@@ -129,16 +129,12 @@ class AuthRepositoryImpl implements AuthRepository {
       final userJson = preferencesService.getUserJson();
       if (userJson != null && userJson.isNotEmpty && userJson != '{}') {
         final userMap = jsonDecode(userJson) as Map<String, dynamic>;
-        final user = UserModel.fromJson(userMap);
+        final user = UserEntity.fromJson(userMap);
         return Right(user);
       }
 
-      // Fallback: Create minimal user entity with role from response
-      final user = UserModel(
-        id: 'unknown',
-        userName: 'unknown',
-        role: authResponse.roles.isNotEmpty ? authResponse.roles.first : 'user',
-      );
+      // Fallback: Create minimal user entity with default role
+      final user = const UserEntity(id: 1, code: 'unknown', role: 'volunteer', email: 'unknown');
       return Right(user);
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));
