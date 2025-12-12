@@ -1,9 +1,13 @@
 // lib/features/admin/users/presentation/pages/user_details_page.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:surabhi/features/admin/users/domain/entities/register_user_entity.dart';
+import 'package:surabhi/core/constants/role_constants.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
+import 'package:surabhi/core/utils/ui_utils.dart';
+import 'package:surabhi/features/admin/users/domain/entities/register_user_entity.dart';
+import 'package:surabhi/features/admin/users/presentation/bloc/users_bloc.dart';
 
 class UserDetailsPage extends StatelessWidget {
   final RegisterUserEntity user;
@@ -14,47 +18,63 @@ class UserDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('User Details'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            }
-          },
+    return BlocListener<UsersBloc, UsersState>(
+      listener: (context, state) {
+        if (state is AdminOperationSuccess) {
+          UiUtils.showSnackBar(context, state.message, backgroundColor: AppColors.successColor);
+
+          // Refresh users list so changes reflect when we go back
+          context.read<UsersBloc>().add(const GetUsersEvent());
+
+          if (context.canPop()) {
+            context.pop();
+          }
+        } else if (state is AdminOperationError) {
+          UiUtils.showSnackBar(context, state.message, backgroundColor: AppColors.errorColor);
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('User Details'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              }
+            },
+          ),
         ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // User Avatar and Basic Info
-            _buildUserHeader(context, theme),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // User Avatar and Basic Info
+              _buildUserHeader(context, theme),
 
-            const SizedBox(height: 24),
+              const SizedBox(height: 24),
 
-            // User Information Cards
-            _buildInfoCard(context, 'Personal Information', [
-              _buildInfoRow('Name', 'Not provided'),
-              _buildInfoRow('Email', user.email),
-              _buildInfoRow('Mobile', user.mobileNumber ?? 'Not provided'),
-            ]),
+              // User Information Cards
+              _buildInfoCard(context, 'Personal Information', [
+                _buildInfoRow('Name', 'Not provided'),
+                _buildInfoRow('Email', user.email),
+                _buildInfoRow('Mobile', user.mobileNumber ?? 'Not provided'),
+              ]),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            _buildInfoCard(context, 'Account Information', [
-              _buildInfoRow('User ID', user.email),
-              _buildInfoRow('Role', user.role.toUpperCase()),
-            ]),
+              _buildInfoCard(context, 'Account Information', [
+                _buildInfoRow('User ID', user.email),
+                _buildInfoRow('Role', user.role.toUpperCase()),
+              ]),
 
-            const SizedBox(height: 24),
+              const SizedBox(height: 24),
 
-            // Action Buttons
-            _buildActionButtons(context),
-          ],
+              // Action Buttons
+              _buildActionButtons(context),
+            ],
+          ),
         ),
       ),
     );
@@ -83,10 +103,7 @@ class UserDetailsPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    user.email,
-                    style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-                  ),
+                  Text(user.email, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
                   Text(
                     user.email,
@@ -209,28 +226,97 @@ class UserDetailsPage extends StatelessWidget {
   }
 
   void _showChangeRoleDialog(BuildContext context) {
+    final usersBloc = context.read<UsersBloc>();
+    String selectedRole = user.role;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Change Role'),
-        content: const Text('Change role functionality coming soon'),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
-      ),
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Change Role'),
+              content: DropdownButtonFormField<String>(
+                value: selectedRole,
+                items: RoleConstants.roles
+                    .map(
+                      (role) =>
+                          DropdownMenuItem<String>(value: role, child: Text(RoleConstants.getRoleDisplayName(role))),
+                    )
+                    .toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() => selectedRole = value);
+                  }
+                },
+                decoration: const InputDecoration(labelText: 'Select new role'),
+              ),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancel')),
+                TextButton(
+                  onPressed: () {
+                    if (selectedRole.isEmpty || selectedRole == user.role) {
+                      Navigator.pop(dialogContext);
+                      return;
+                    }
+
+                    Navigator.pop(dialogContext);
+                    usersBloc.add(ChangeUserRoleEvent(email: user.email, newRole: selectedRole));
+                  },
+                  child: const Text('Update'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
   void _showEditPasswordDialog(BuildContext context) {
+    final usersBloc = context.read<UsersBloc>();
+    final formKey = GlobalKey<FormState>();
+    final passwordController = TextEditingController();
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Edit Password'),
-        content: const Text('Edit password functionality coming soon'),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
-      ),
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Edit Password'),
+          content: Form(
+            key: formKey,
+            child: TextFormField(
+              controller: passwordController,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: 'New Password', hintText: 'Min 6 characters'),
+              validator: (value) {
+                if (value == null || value.trim().length < 6) {
+                  return 'Password must be at least 6 characters';
+                }
+                return null;
+              },
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancel')),
+            TextButton(
+              onPressed: () {
+                if (!formKey.currentState!.validate()) return;
+
+                final newPassword = passwordController.text.trim();
+                Navigator.pop(dialogContext);
+                usersBloc.add(ResetUserPasswordEvent(email: user.email, newPassword: newPassword));
+              },
+              child: const Text('Update'),
+            ),
+          ],
+        );
+      },
     );
   }
 
   void _showRemoveUserDialog(BuildContext context) {
+    final usersBloc = context.read<UsersBloc>();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -241,9 +327,7 @@ class UserDetailsPage extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('Remove user functionality coming soon')));
+              usersBloc.add(RemoveUserEvent(email: user.email));
             },
             child: const Text('Remove', style: TextStyle(color: Colors.red)),
           ),

@@ -90,7 +90,15 @@ class _UsersListPageState extends State<UsersListPage> {
         return UserCard(
           user: user,
           onTap: () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (context) => UserDetailsPage(user: user)));
+            final usersBloc = context.read<UsersBloc>();
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => BlocProvider.value(
+                  value: usersBloc,
+                  child: UserDetailsPage(user: user),
+                ),
+              ),
+            );
           },
         );
       },
