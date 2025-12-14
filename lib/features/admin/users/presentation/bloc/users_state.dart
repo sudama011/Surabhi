@@ -2,63 +2,49 @@
 
 part of 'users_bloc.dart';
 
-abstract class UsersState extends Equatable {
-  const UsersState();
+enum UsersStatus { initial, loading, loaded, error }
 
-  @override
-  List<Object> get props => [];
-}
+enum AdminOpStatus { initial, loading, success, failure }
 
-class UsersInitial extends UsersState {}
-
-class UsersLoading extends UsersState {}
-
-class UsersLoadingMore extends UsersState {
-  final List<RegisterUserEntity> users;
+class UsersState extends Equatable {
+  // Data State
+  final UsersStatus status;
+  final List<RegisteredUserModel> users;
   final bool hasMoreData;
+  final String errorMessage;
 
-  const UsersLoadingMore({required this.users, required this.hasMoreData});
+  // Admin Operation State (Reset Pass, Delete, Change Role)
+  final AdminOpStatus adminOpStatus;
+  final String? adminOpMessage; // Holds success or error message for SnackBar
 
-  @override
-  List<Object> get props => [users, hasMoreData];
-}
+  const UsersState({
+    this.status = UsersStatus.initial,
+    this.users = const [],
+    this.hasMoreData = true,
+    this.errorMessage = '',
+    this.adminOpStatus = AdminOpStatus.initial,
+    this.adminOpMessage,
+  });
 
-class UsersLoaded extends UsersState {
-  final List<RegisterUserEntity> users;
-  final bool hasMoreData;
-
-  const UsersLoaded({required this.users, required this.hasMoreData});
-
-  @override
-  List<Object> get props => [users, hasMoreData];
-}
-
-class UsersError extends UsersState {
-  final String message;
-
-  const UsersError(this.message);
-
-  @override
-  List<Object> get props => [message];
-}
-
-// Admin operation states
-class AdminOperationLoading extends UsersState {}
-
-class AdminOperationSuccess extends UsersState {
-  final String message;
-
-  const AdminOperationSuccess(this.message);
-
-  @override
-  List<Object> get props => [message];
-}
-
-class AdminOperationError extends UsersState {
-  final String message;
-
-  const AdminOperationError(this.message);
+  /// Helper to update state without losing existing data
+  UsersState copyWith({
+    UsersStatus? status,
+    List<RegisteredUserModel>? users,
+    bool? hasMoreData,
+    String? errorMessage,
+    AdminOpStatus? adminOpStatus,
+    String? adminOpMessage,
+  }) {
+    return UsersState(
+      status: status ?? this.status,
+      users: users ?? this.users,
+      hasMoreData: hasMoreData ?? this.hasMoreData,
+      errorMessage: errorMessage ?? this.errorMessage,
+      adminOpStatus: adminOpStatus ?? this.adminOpStatus,
+      adminOpMessage: adminOpMessage ?? this.adminOpMessage,
+    );
+  }
 
   @override
-  List<Object> get props => [message];
+  List<Object?> get props => [status, users, hasMoreData, errorMessage, adminOpStatus, adminOpMessage];
 }

@@ -28,15 +28,6 @@ class LoadMoreUsersEvent extends UsersEvent {
   List<Object> get props => [size];
 }
 
-class ChangePageSizeEvent extends UsersEvent {
-  final int newSize;
-
-  const ChangePageSizeEvent({required this.newSize});
-
-  @override
-  List<Object> get props => [newSize];
-}
-
 class ResetUserPasswordEvent extends UsersEvent {
   final String email;
   final String newPassword;
@@ -58,10 +49,27 @@ class RemoveUserEvent extends UsersEvent {
 
 class ChangeUserRoleEvent extends UsersEvent {
   final String email;
-  final String newRole;
+  final Role newRole;
 
   const ChangeUserRoleEvent({required this.email, required this.newRole});
 
   @override
   List<Object> get props => [email, newRole];
+}
+
+class CreateUserRequested extends UsersEvent {
+  final String email;
+  final String password;
+  final String phoneNumber;
+  final Role role;
+
+  const CreateUserRequested({
+    required this.email,
+    required this.password,
+    required this.phoneNumber,
+    required this.role,
+  });
+
+  @override
+  List<Object> get props => [email, password, phoneNumber, role];
 }

@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/foundation.dart'; // For ChangeNotifier
+import 'package:surabhi/core/constants/app_constants.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 
 import 'package:surabhi/features/auth/presentation/pages/login_page.dart';
@@ -100,7 +101,7 @@ class AppRouter {
       final bool isLoading = authState is AuthLoading || authState is AuthInitial;
       final bool is2FARequired = authState is Auth2FARequired;
 
-      final String? loggedInRole = isAuthenticated ? (authState).user.role : null;
+      final Role? loggedInRole = isAuthenticated ? (authState).user.role : null;
 
       const publicPaths = ['/'];
       final bool isGoingToPublicPath = publicPaths.contains(state.fullPath);
@@ -134,19 +135,21 @@ class AppRouter {
   );
 }
 
-String _getDashboardPathForRole(String? role) {
+String _getDashboardPathForRole(Role? role) {
   switch (role) {
-    case 'admin':
+    case Role.admin:
       return '/admin-dashboard';
-    case 'employee':
+    case Role.employee:
       return '/employee-dashboard';
-    case 'preacher':
+    case Role.preacher:
       return '/preacher-dashboard';
-    case 'approver':
+    case Role.approver:
       return '/approver-dashboard';
-    case 'volunteer':
+    case Role.volunteer:
       return '/volunteer-dashboard';
+    case Role.social:
+      return '/social-dashboard';
     default:
-      return '/admin-dashboard';
+      return '/social-dashboard';
   }
 }

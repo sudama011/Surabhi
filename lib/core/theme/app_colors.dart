@@ -1,6 +1,7 @@
 // lib/core/theme/app_colors.dart
 
 import 'package:flutter/material.dart';
+import 'package:surabhi/core/constants/app_constants.dart';
 
 class AppColors {
   AppColors._();
@@ -52,19 +53,19 @@ class AppColors {
   static const Color darkTextColor = Colors.white;
 
   // Helper methods
-  static Color getRoleColor(String role) {
-    switch (role.toLowerCase()) {
-      case 'admin':
+  static Color getRoleColor(Role role) {
+    switch (role) {
+      case Role.admin:
         return adminColor;
-      case 'employee':
+      case Role.employee:
         return employeeColor;
-      case 'preacher':
+      case Role.preacher:
         return preacherColor;
-      case 'approver':
+      case Role.approver:
         return approverColor;
-      case 'volunteer':
+      case Role.volunteer:
         return volunteerColor;
-      default:
+      case Role.social:
         return defaultRoleColor;
     }
   }

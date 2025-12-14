@@ -1,382 +1,75 @@
-// lib/features/profile/presentation/pages/profile_page.dart
-
-import 'dart:convert';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:surabhi/core/theme/app_colors.dart';
-import 'package:surabhi/features/auth/domain/entities/user_entity.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:surabhi/core/network/api_client.dart';
-import 'package:surabhi/core/constants/api_constants.dart';
-import 'package:surabhi/core/utils/ui_utils.dart';
+import 'package:surabhi/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:surabhi/features/profile/presentation/widgets/profile_actions_section.dart';
+import 'package:surabhi/features/profile/presentation/widgets/profile_header.dart';
+import 'package:surabhi/features/profile/presentation/widgets/user_details_section.dart';
 import 'package:surabhi/injector.dart' as di;
+import 'package:surabhi/core/theme/app_colors.dart';
+import 'package:surabhi/core/utils/ui_utils.dart';
 
-class ProfilePage extends StatefulWidget {
+class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(create: (_) => di.sl<ProfileBloc>(), child: const _ProfilePageView());
+  }
 }
 
-class _ProfilePageState extends State<ProfilePage> {
-  late bool _isUploadingAvatar;
-
-  @override
-  void initState() {
-    super.initState();
-    _isUploadingAvatar = false;
-  }
-
-  Future<void> _uploadAvatar() async {
-    final picker = ImagePicker();
-    try {
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-      if (pickedFile == null) return;
-
-      setState(() => _isUploadingAvatar = true);
-
-      // Backend expects multipart/form-data with field name "File"
-      final bytes = await pickedFile.readAsBytes();
-      final fileName = pickedFile.name;
-
-      final formData = FormData.fromMap({'File': MultipartFile.fromBytes(bytes, filename: fileName)});
-
-      final api = di.sl<ApiClient>();
-      final response = await api.dio.post(
-        ApiConstants.uploadAvatarPath,
-        data: formData,
-        options: Options(contentType: Headers.multipartFormDataContentType),
-      );
-
-      if (response.statusCode == 200) {
-        if (mounted) {
-          UiUtils.showSnackBar(context, 'Avatar updated successfully', backgroundColor: AppColors.successColor);
-          // Refresh user data by triggering auth event
-          context.read<AuthBloc>().add(AppStarted());
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        UiUtils.showSnackBar(context, 'Failed to upload avatar: $e', backgroundColor: AppColors.errorColor);
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isUploadingAvatar = false);
-      }
-    }
-  }
+class _ProfilePageView extends StatelessWidget {
+  const _ProfilePageView();
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AuthBloc, AuthState>(
-      builder: (context, authState) {
-        if (authState is! AuthAuthenticated) {
-          return const Center(child: Text('Not authenticated'));
+    return BlocListener<ProfileBloc, ProfileState>(
+      listener: (context, state) {
+        if (state is ProfileAvatarUploadSuccess) {
+          UiUtils.showSnackBar(context, 'Avatar updated successfully', backgroundColor: AppColors.successColor);
+          context.read<AuthBloc>().add(AppStarted());
+        } else if (state is ProfileAvatarUploadFailure) {
+          UiUtils.showSnackBar(context, state.message, backgroundColor: AppColors.errorColor);
         }
-
-        final user = authState.user;
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Profile'),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () {
-                // Use GoRouter's pop() method for proper navigation
-                if (context.canPop()) {
-                  context.pop();
-                } else {
-                  // Fallback: navigate back to admin dashboard
-                  context.go('/admin-dashboard');
-                }
-              },
-            ),
-          ),
-          body: SingleChildScrollView(
-            child: Column(
-              children: [
-                // Profile Header
-                _buildProfileHeader(context, user),
-                const SizedBox(height: 24),
-                // User Details Section
-                _buildUserDetailsSection(context, user),
-                const SizedBox(height: 24),
-                // Verification Section
-                _buildVerificationSection(context, user),
-                const SizedBox(height: 24),
-                // Logout Button
-                _buildLogoutButton(context),
-                // Extra space for device buttons (safe area)
-                const SizedBox(height: 80),
-              ],
-            ),
-          ),
-        );
       },
-    );
-  }
+      child: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, authState) {
+          if (authState is! AuthAuthenticated) {
+            return const Center(child: Text('Not authenticated'));
+          }
 
-  Widget _buildProfileHeader(BuildContext context, UserEntity user) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-      decoration: BoxDecoration(
-        color: AppColors.primaryColor.withValues(alpha: 0.1),
-        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(20), bottomRight: Radius.circular(20)),
-      ),
-      child: Column(
-        children: [
-          // Profile Image
-          Stack(
-            children: [
-              CircleAvatar(
-                radius: 60,
-                backgroundColor: AppColors.primaryColor,
-                backgroundImage: _getAvatarImage(user),
-                child: _getAvatarImage(user) == null
-                    ? Text(
-                        user.avatarInitial,
-                        style: const TextStyle(fontSize: 40, color: Colors.white, fontWeight: FontWeight.bold),
-                      )
-                    : null,
+          final user = authState.user;
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Profile'),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => context.canPop() ? context.pop() : context.go('/home'),
               ),
-              // Change Profile Picture Button
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: GestureDetector(
-                  onTap: _isUploadingAvatar ? null : _uploadAvatar,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryColor,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                    child: _isUploadingAvatar
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                        : const Icon(Icons.camera_alt, color: Colors.white, size: 20),
-                  ),
-                ),
+            ),
+            body: SingleChildScrollView(
+              child: Column(
+                children: [
+                  // 1. Header (Avatar + Name)
+                  ProfileHeader(user: user),
+
+                  const SizedBox(height: 24),
+
+                  // 2. Details (List of info)
+                  UserDetailsSection(user: user),
+
+                  const SizedBox(height: 24),
+
+                  // 3. Actions (Change Pass, Logout)
+                  const ProfileActionsSection(),
+
+                  const SizedBox(height: 80),
+                ],
               ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // User Name
-          Text(
-            user.displayName,
-            style: Theme.of(
-              context,
-            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold, color: AppColors.primaryColor),
-          ),
-          const SizedBox(height: 4),
-          // Role Badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(color: AppColors.primaryColor, borderRadius: BorderRadius.circular(20)),
-            child: Text(
-              user.role.toUpperCase(),
-              style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  ImageProvider? _getAvatarImage(UserEntity user) {
-    // Priority: avatar (base64)
-    if (user.avatar != null && user.avatarContentType != null) {
-      try {
-        final imageData = user.avatar!;
-        // Decode base64 string to bytes
-        final bytes = base64Decode(imageData);
-        return MemoryImage(bytes);
-      } catch (e) {
-        debugPrint('Error loading avatar: $e');
-      }
-    }
-    return null;
-  }
-
-  Widget _buildUserDetailsSection(BuildContext context, UserEntity user) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Personal Information',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          _buildDetailCard(context, label: 'Name', value: user.name ?? 'Not provided', icon: Icons.person),
-          const SizedBox(height: 12),
-          _buildDetailCard(context, label: 'Email', value: user.email, icon: Icons.email),
-          const SizedBox(height: 12),
-          _buildDetailCard(
-            context,
-            label: 'Mobile Number',
-            value: user.mobileNumber ?? 'Not provided',
-            icon: Icons.phone,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailCard(
-    BuildContext context, {
-    required String label,
-    required String value,
-    required IconData icon,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: AppColors.primaryColor, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey)),
-                const SizedBox(height: 4),
-                Text(
-                  value,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildVerificationSection(BuildContext context, UserEntity user) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Verification', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 16),
-          _buildVerificationItem(
-            context,
-            label: 'Email Verification',
-            isVerified: true,
-            onTap: () {
-              // TODO: Implement email verification
-            },
-          ),
-          const SizedBox(height: 12),
-          _buildVerificationItem(
-            context,
-            label: 'Phone Verification',
-            isVerified: false,
-            onTap: () {
-              // TODO: Implement phone verification
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildVerificationItem(
-    BuildContext context, {
-    required String label,
-    required bool isVerified,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        children: [
-          Icon(isVerified ? Icons.verified : Icons.pending, color: isVerified ? Colors.green : Colors.orange, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)),
-                Text(
-                  isVerified ? 'Verified' : 'Not verified',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(color: isVerified ? Colors.green : Colors.orange),
-                ),
-              ],
-            ),
-          ),
-          if (!isVerified) TextButton(onPressed: onTap, child: const Text('Verify')),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLogoutButton(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: SizedBox(
-        width: double.infinity,
-        child: ElevatedButton.icon(
-          onPressed: () {
-            _showLogoutConfirmation(context);
-          },
-          icon: const Icon(Icons.logout),
-          label: const Text('Logout'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 12),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showLogoutConfirmation(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to logout?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(dialogContext);
-              context.read<AuthBloc>().add(LogoutRequested());
-              // Navigate to home with checkAuthOnInit: false to skip auth check
-              context.go('/', extra: false);
-            },
-            child: const Text('Logout', style: TextStyle(color: Colors.red)),
-          ),
-        ],
+          );
+        },
       ),
     );
   }

@@ -11,3 +11,5 @@ class AppConstants {
   static const double mobile = 600;
   static const double tablet = 1100;
 }
+
+enum Role { admin, employee, preacher, approver, volunteer, social }

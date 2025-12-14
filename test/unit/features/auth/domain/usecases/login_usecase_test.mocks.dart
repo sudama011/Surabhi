@@ -8,11 +8,8 @@ import 'dart:async' as _i4;
 import 'package:dartz/dartz.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:surabhi/core/errors/failures.dart' as _i5;
-import 'package:surabhi/features/auth/domain/entities/user_entity.dart' as _i6;
-import 'package:surabhi/features/auth/domain/repositories/auth_repository.dart'
-    as _i3;
-import 'package:surabhi/features/auth/domain/usecases/login_usecase.dart'
-    as _i7;
+import 'package:surabhi/core/models/user_model.dart' as _i6;
+import 'package:surabhi/features/auth/repositories/auth_repository.dart' as _i3;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -42,20 +39,22 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
   }
 
   @override
-  _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>> login(
-    _i7.LoginParams? params,
+  _i4.Future<_i2.Either<_i5.Failure, _i6.UserModel>> login(
+    String? email,
+    String? password,
+    bool? rememberMe,
   ) =>
       (super.noSuchMethod(
-            Invocation.method(#login, [params]),
+            Invocation.method(#login, [email, password, rememberMe]),
             returnValue:
-                _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>>.value(
-                  _FakeEither_0<_i5.Failure, _i6.UserEntity>(
+                _i4.Future<_i2.Either<_i5.Failure, _i6.UserModel>>.value(
+                  _FakeEither_0<_i5.Failure, _i6.UserModel>(
                     this,
-                    Invocation.method(#login, [params]),
+                    Invocation.method(#login, [email, password, rememberMe]),
                   ),
                 ),
           )
-          as _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>>);
+          as _i4.Future<_i2.Either<_i5.Failure, _i6.UserModel>>);
 
   @override
   _i4.Future<_i2.Either<_i5.Failure, bool>> logout() =>
@@ -71,18 +70,18 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
           as _i4.Future<_i2.Either<_i5.Failure, bool>>);
 
   @override
-  _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>> checkAuthStatus() =>
+  _i4.Future<_i2.Either<_i5.Failure, _i6.UserModel>> checkAuthStatus() =>
       (super.noSuchMethod(
             Invocation.method(#checkAuthStatus, []),
             returnValue:
-                _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>>.value(
-                  _FakeEither_0<_i5.Failure, _i6.UserEntity>(
+                _i4.Future<_i2.Either<_i5.Failure, _i6.UserModel>>.value(
+                  _FakeEither_0<_i5.Failure, _i6.UserModel>(
                     this,
                     Invocation.method(#checkAuthStatus, []),
                   ),
                 ),
           )
-          as _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>>);
+          as _i4.Future<_i2.Either<_i5.Failure, _i6.UserModel>>);
 
   @override
   _i4.Future<_i2.Either<_i5.Failure, bool>> sendTwoFactorCode(
@@ -106,6 +105,7 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
     String? provider,
     String? code,
     bool? rememberMe,
+    String? preAuthRefreshToken,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#verifyTwoFactorCode, [
@@ -113,6 +113,7 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
               provider,
               code,
               rememberMe,
+              preAuthRefreshToken,
             ]),
             returnValue: _i4.Future<_i2.Either<_i5.Failure, bool>>.value(
               _FakeEither_0<_i5.Failure, bool>(
@@ -122,6 +123,7 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
                   provider,
                   code,
                   rememberMe,
+                  preAuthRefreshToken,
                 ]),
               ),
             ),
@@ -129,16 +131,16 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
           as _i4.Future<_i2.Either<_i5.Failure, bool>>);
 
   @override
-  _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>> refreshToken() =>
+  _i4.Future<_i2.Either<_i5.Failure, _i6.UserModel>> refreshToken() =>
       (super.noSuchMethod(
             Invocation.method(#refreshToken, []),
             returnValue:
-                _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>>.value(
-                  _FakeEither_0<_i5.Failure, _i6.UserEntity>(
+                _i4.Future<_i2.Either<_i5.Failure, _i6.UserModel>>.value(
+                  _FakeEither_0<_i5.Failure, _i6.UserModel>(
                     this,
                     Invocation.method(#refreshToken, []),
                   ),
                 ),
           )
-          as _i4.Future<_i2.Either<_i5.Failure, _i6.UserEntity>>);
+          as _i4.Future<_i2.Either<_i5.Failure, _i6.UserModel>>);
 }

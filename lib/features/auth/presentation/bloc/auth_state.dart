@@ -14,7 +14,7 @@ class AuthInitial extends AuthState {}
 class AuthLoading extends AuthState {}
 
 class AuthAuthenticated extends AuthState {
-  final UserEntity user;
+  final UserModel user;
 
   const AuthAuthenticated({required this.user});
 
@@ -41,7 +41,7 @@ class AuthError extends AuthState {
 
 // 2FA States
 class Auth2FARequired extends AuthState {
-  final UserEntity user;
+  final UserModel user;
 
   const Auth2FARequired({required this.user});
 

@@ -2,30 +2,15 @@
 import 'package:get_it/get_it.dart';
 import 'package:surabhi/core/network/api_client.dart';
 import 'package:surabhi/core/shared_preferences/preferences_service.dart';
-import 'package:surabhi/core/services/security_service.dart';
-import 'package:surabhi/features/auth/data/datasources/auth_remote_datasource.dart';
-import 'package:surabhi/features/auth/data/repositories/auth_repository_impl.dart';
-import 'package:surabhi/features/auth/domain/repositories/auth_repository.dart';
-import 'package:surabhi/features/auth/domain/usecases/login_usecase.dart';
-import 'package:surabhi/features/auth/domain/usecases/request_2fa_usecase.dart';
-import 'package:surabhi/features/auth/domain/usecases/verify_otp_usecase.dart';
+import 'package:surabhi/features/auth/datasources/auth_remote_datasource.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:surabhi/features/admin/users/data/datasources/users_remote_datasource.dart' as admin_users;
-import 'package:surabhi/features/admin/users/data/repositories/users_repository_impl.dart' as admin_users;
-import 'package:surabhi/features/admin/users/domain/repositories/users_repository.dart' as admin_users;
-import 'package:surabhi/features/admin/users/domain/usecases/get_users_usecase.dart';
-import 'package:surabhi/features/admin/users/domain/usecases/reset_user_password_usecase.dart' as admin_users;
-import 'package:surabhi/features/admin/users/domain/usecases/remove_user_usecase.dart' as admin_users;
-import 'package:surabhi/features/admin/users/domain/usecases/change_user_role_usecase.dart' as admin_users;
-import 'package:surabhi/features/admin/users/domain/usecases/create_user_usecase.dart' as admin_users;
+import 'package:surabhi/features/auth/repositories/auth_repository.dart';
+import 'package:surabhi/features/admin/users/datasources/users_remote_datasource.dart' as admin_users;
+import 'package:surabhi/features/admin/users/repositories/users_repository.dart' as admin_users;
 import 'package:surabhi/features/admin/users/presentation/bloc/users_bloc.dart' as admin_users;
-import 'package:surabhi/features/admin/users/presentation/cubit/create_user_cubit.dart' as admin_users;
-
-import 'package:surabhi/features/admin/roles/data/datasources/roles_remote_datasource.dart' as admin_roles;
-import 'package:surabhi/features/admin/roles/data/repositories/roles_repository_impl.dart' as admin_roles;
-import 'package:surabhi/features/admin/roles/domain/repositories/roles_repository.dart' as admin_roles;
-import 'package:surabhi/features/admin/roles/domain/usecases/get_roles_usecase.dart' as admin_roles;
-import 'package:surabhi/features/admin/roles/presentation/cubit/roles_cubit.dart' as admin_roles;
+import 'package:surabhi/features/profile/datasources/profile_remote_datasource.dart';
+import 'package:surabhi/features/profile/repositories/profile_repository.dart';
+import 'package:surabhi/features/profile/presentation/bloc/profile_bloc.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -49,48 +34,22 @@ Future<void> init() async {
   sl.registerLazySingleton(() => ThemeCubit(sl()));
 
   // --- 3. Features ---
-  sl.registerLazySingleton<AuthRemoteDataSource>(() => AuthRemoteDataSourceImpl(sl()));
 
+  // Auth Feature
+  sl.registerLazySingleton<AuthRemoteDataSource>(() => AuthRemoteDataSourceImpl(sl()));
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(remoteDataSource: sl(), preferencesService: sl()));
-  sl.registerLazySingleton<LoginUseCase>(() => LoginUseCase(sl()));
-  sl.registerLazySingleton<SecurityService>(() => SecurityService(sl<Request2FAUseCase>()));
-  sl.registerLazySingleton<Request2FAUseCase>(() => Request2FAUseCase(sl()));
-  sl.registerLazySingleton<VerifyOTPUseCase>(() => VerifyOTPUseCase(sl()));
-  sl.registerFactory(
-    () => AuthBloc(authRepository: sl(), loginUseCase: sl(), request2FAUseCase: sl(), verifyOTPUseCase: sl()),
-  );
+  sl.registerFactory(() => AuthBloc(authRepository: sl()));
+
+  // Profile Feature
+  sl.registerLazySingleton<ProfileRemoteDataSource>(() => ProfileRemoteDataSourceImpl(sl()));
+  sl.registerLazySingleton<ProfileRepository>(() => ProfileRepositoryImpl(remoteDataSource: sl()));
+  sl.registerFactory(() => ProfileBloc(profileRepository: sl()));
 
   // Admin Users
   sl.registerLazySingleton<admin_users.UsersRemoteDataSource>(
     () => admin_users.UsersRemoteDataSourceImpl(apiClient: sl()),
   );
   sl.registerLazySingleton<admin_users.UsersRepository>(() => admin_users.UsersRepositoryImpl(remoteDataSource: sl()));
-  sl.registerLazySingleton<GetUsersUseCase>(() => GetUsersUseCase(sl()));
-  sl.registerLazySingleton<admin_users.ResetUserPasswordUseCase>(
-    () => admin_users.ResetUserPasswordUseCase(repository: sl()),
-  );
-  sl.registerLazySingleton<admin_users.RemoveUserUseCase>(() => admin_users.RemoveUserUseCase(repository: sl()));
-  sl.registerLazySingleton<admin_users.ChangeUserRoleUseCase>(
-    () => admin_users.ChangeUserRoleUseCase(repository: sl()),
-  );
-  sl.registerLazySingleton<admin_users.CreateUserUseCase>(() => admin_users.CreateUserUseCase(repository: sl()));
-  sl.registerFactory(
-    () => admin_users.UsersBloc(
-      getUsersUseCase: sl(),
-      resetUserPasswordUseCase: sl(),
-      removeUserUseCase: sl(),
-      changeUserRoleUseCase: sl(),
-    ),
-  );
-
-  // Admin Create User
-  sl.registerFactory<admin_users.CreateUserCubit>(() => admin_users.CreateUserCubit(createUserUseCase: sl()));
-
-  // Admin Roles
-  sl.registerLazySingleton<admin_roles.RolesRemoteDataSource>(
-    () => admin_roles.RolesRemoteDataSourceImpl(apiClient: sl()),
-  );
-  sl.registerLazySingleton<admin_roles.RolesRepository>(() => admin_roles.RolesRepositoryImpl(remoteDataSource: sl()));
-  sl.registerLazySingleton<admin_roles.GetRolesUseCase>(() => admin_roles.GetRolesUseCase(sl()));
-  sl.registerFactory(() => admin_roles.RolesCubit(getRolesUseCase: sl()));
+  sl.registerFactory(() => admin_users.UsersBloc(usersRepository: sl()));
+  
 }

@@ -45,7 +45,7 @@ get:
 
 # Development - Run Commands
 .PHONY: run run-android run-ios run-web
-run: get generate
+run: generate
 	@echo "🏃 Running application..."
 	$(FLUTTER_CMD) run
 

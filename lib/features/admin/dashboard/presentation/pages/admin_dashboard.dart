@@ -3,15 +3,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:surabhi/core/domain/entities/navigation_item.dart';
+import 'package:surabhi/core/models/navigation_item.dart';
 import 'package:surabhi/core/widgets/app_shell.dart';
 import 'package:surabhi/features/admin/dashboard/presentation/pages/home_page.dart';
 import 'package:surabhi/features/admin/users/presentation/bloc/users_bloc.dart' as admin_users;
 import 'package:surabhi/features/admin/users/presentation/pages/users_list_page.dart';
 import 'package:surabhi/features/admin/users/presentation/pages/create_user_page.dart';
 import 'package:surabhi/features/admin/devotees/presentation/pages/devotees_page.dart';
-import 'package:surabhi/features/admin/roles/presentation/cubit/roles_cubit.dart' as admin_roles;
-import 'package:surabhi/features/admin/users/presentation/cubit/create_user_cubit.dart' as admin_users;
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:surabhi/injector.dart' as di;
 
@@ -84,13 +82,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
         child: const UsersListPage(),
       );
     } else if (currentLocation == '/admin-dashboard/register-user') {
-      return MultiBlocProvider(
-        providers: [
-          BlocProvider(create: (context) => di.sl<admin_roles.RolesCubit>()..fetchRoles()),
-          BlocProvider(create: (context) => di.sl<admin_users.CreateUserCubit>()),
-        ],
-        child: const CreateUserPage(),
-      );
+      return const CreateUserPage();
     } else if (currentLocation == '/admin-dashboard/devotees') {
       return const DevoteesPage();
     }

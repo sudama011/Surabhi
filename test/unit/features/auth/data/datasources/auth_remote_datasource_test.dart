@@ -5,7 +5,7 @@ import 'package:mockito/mockito.dart';
 import 'package:surabhi/core/constants/api_constants.dart';
 import 'package:surabhi/core/errors/exceptions.dart';
 import 'package:surabhi/core/network/api_client.dart';
-import 'package:surabhi/features/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:surabhi/features/auth/datasources/auth_remote_datasource.dart';
 import 'package:surabhi/features/auth/domain/usecases/login_usecase.dart';
 
 import 'auth_remote_datasource_test.mocks.dart';

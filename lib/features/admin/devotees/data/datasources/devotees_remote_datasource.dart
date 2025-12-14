@@ -33,7 +33,7 @@ class DevoteesRemoteDataSourceImpl implements DevoteesRemoteDataSource {
 
       return devoteesList.map((devotee) => DevoteeModel.fromJson(devotee as Map<String, dynamic>)).toList();
     } on DioException catch (e) {
-      final errorMessage = ErrorUtils.getComprehensiveErrorMessage(e, 'Failed to fetch devotees');
+      final errorMessage = ErrorUtils.errorMessageFrom(e, defaultMessage: 'Failed to fetch devotees');
       throw ServerException(message: errorMessage);
     } catch (e) {
       throw ServerException(message: 'Unexpected error occurred: $e');

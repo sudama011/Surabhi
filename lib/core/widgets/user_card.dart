@@ -1,11 +1,12 @@
 // lib/core/widgets/user_card.dart
 
 import 'package:flutter/material.dart';
-import 'package:surabhi/features/admin/users/domain/entities/register_user_entity.dart';
+import 'package:surabhi/core/constants/app_constants.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
+import 'package:surabhi/features/admin/users/models/registered_user_model.dart';
 
 class UserCard extends StatelessWidget {
-  final RegisterUserEntity user;
+  final RegisteredUserModel user;
   final VoidCallback? onTap;
   final Widget? trailing;
   final bool showRole;
@@ -55,7 +56,7 @@ class UserCard extends StatelessWidget {
                   border: Border.all(color: _getRoleColor(user.role).withValues(alpha: 0.3)),
                 ),
                 child: Text(
-                  user.role.toUpperCase(),
+                  user.role.name.toUpperCase(),
                   style: TextStyle(color: _getRoleColor(user.role), fontWeight: FontWeight.bold, fontSize: 10),
                 ),
               ),
@@ -68,7 +69,7 @@ class UserCard extends StatelessWidget {
     );
   }
 
-  Color _getRoleColor(String role) {
+  Color _getRoleColor(Role role) {
     return AppColors.getRoleColor(role);
   }
 }

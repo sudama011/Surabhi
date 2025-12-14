@@ -1,31 +1,31 @@
 // lib/routes/app_navigator.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:surabhi/core/constants/app_constants.dart';
 
 class AppNavigator {
   AppNavigator._();
 
-  static void navigateBasedOnRole(BuildContext context, String role) {
+  static void navigateBasedOnRole(BuildContext context, Role role) {
     String path;
     switch (role) {
-      case 'admin':
+      case Role.admin:
         path = '/admin-dashboard';
         break;
-      case 'employee':
+      case Role.employee:
         path = '/employee-dashboard';
         break;
-      case 'preacher':
+      case Role.preacher:
         path = '/preacher-dashboard';
         break;
-      case 'approver':
+      case Role.approver:
         path = '/approver-dashboard';
         break;
-      case 'volunteer':
+      case Role.volunteer:
         path = '/volunteer-dashboard';
         break;
-      default:
-        path = '/admin-dashboard'; // Fallback to a generic home page
+      case Role.social:
+        path = '/social-dashboard';
         break;
     }
     context.go(path);
@@ -53,34 +53,5 @@ class AppNavigator {
     } else {
       context.go('/'); // Or to a sensible default if no previous page
     }
-  }
-
-  // Get role-specific menu items
-  static List<String> getRoleSpecificMenuItems(String role) {
-    switch (role.toLowerCase()) {
-      case 'admin':
-        return ['User Management', 'Register User'];
-      case 'employee':
-        return ['My Tasks'];
-      case 'preacher':
-        return ['Sermons'];
-      case 'approver':
-        return ['Pending Approvals'];
-      case 'volunteer':
-        return ['Activities'];
-      default:
-        return [];
-    }
-  }
-
-  // A more robust initial navigation based on BLoC state
-  static void navigateOnAuthChange(BuildContext context, AuthState state) {
-    if (state is AuthAuthenticated) {
-      AppNavigator.navigateBasedOnRole(context, state.user.role);
-    } else if (state is AuthUnauthenticated) {
-      AppNavigator.navigateToHome(context);
-    }
-    // No action needed for AuthInitial or AuthLoading, those are transient.
-    // AuthError usually shows a Snackbar, then might lead to unauthenticated or login.
   }
 }

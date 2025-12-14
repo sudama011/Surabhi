@@ -2,150 +2,144 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:surabhi/features/admin/users/domain/entities/register_user_entity.dart';
-import 'package:surabhi/features/auth/domain/entities/user_entity.dart';
-import 'package:surabhi/features/admin/users/domain/usecases/get_users_usecase.dart';
-import 'package:surabhi/features/admin/users/domain/usecases/reset_user_password_usecase.dart';
-import 'package:surabhi/features/admin/users/domain/usecases/remove_user_usecase.dart';
-import 'package:surabhi/features/admin/users/domain/usecases/change_user_role_usecase.dart';
+import 'package:surabhi/core/constants/app_constants.dart';
+import 'package:surabhi/features/admin/users/models/registered_user_model.dart';
+import 'package:surabhi/features/admin/users/repositories/users_repository.dart';
 
 part 'users_event.dart';
 part 'users_state.dart';
 
 class UsersBloc extends Bloc<UsersEvent, UsersState> {
-  final GetUsersUseCase getUsersUseCase;
-  final ResetUserPasswordUseCase resetUserPasswordUseCase;
-  final RemoveUserUseCase removeUserUseCase;
-  final ChangeUserRoleUseCase changeUserRoleUseCase;
+  final UsersRepository usersRepository;
 
-  DateTime? _lastRequestTime;
-  static const _debounceDelay = Duration(milliseconds: 500);
-  static const _pageSize = 20; // Items per request for infinite scroll
+  static const _pageSize = 20;
+  int _currentPage = 1;
 
-  int _currentOffset = 0; // Track offset for infinite scroll
-  List<RegisterUserEntity> _allUsers = []; // Accumulate all loaded users
-  bool _hasMoreData = true; // Track if there are more users to load
-
-  UsersBloc({
-    required this.getUsersUseCase,
-    required this.resetUserPasswordUseCase,
-    required this.removeUserUseCase,
-    required this.changeUserRoleUseCase,
-  }) : super(UsersInitial()) {
+  UsersBloc({required this.usersRepository}) : super(const UsersState()) {
     on<GetUsersEvent>(_onGetUsers);
     on<LoadMoreUsersEvent>(_onLoadMoreUsers);
-    on<ChangePageSizeEvent>(_onChangePageSize);
     on<ResetUserPasswordEvent>(_onResetUserPassword);
     on<RemoveUserEvent>(_onRemoveUser);
     on<ChangeUserRoleEvent>(_onChangeUserRole);
+    on<CreateUserRequested>(_onCreateUser);
   }
 
   Future<void> _onGetUsers(GetUsersEvent event, Emitter<UsersState> emit) async {
-    // Debouncing: Prevent rapid successive calls
-    final now = DateTime.now();
-    if (_lastRequestTime != null && now.difference(_lastRequestTime!) < _debounceDelay) {
-      print('🚫 Debouncing: Ignoring rapid successive GetUsersEvent');
-      return;
-    }
-    _lastRequestTime = now;
+    if (state.status == UsersStatus.loading) return;
 
-    // Prevent multiple simultaneous requests
-    if (state is UsersLoading) {
-      print('🚫 Already loading: Ignoring GetUsersEvent');
-      return;
-    }
+    emit(state.copyWith(status: UsersStatus.loading));
+    _currentPage = 1; // Reset page
 
-    print('📥 Processing GetUsersEvent: Fetching first batch of users');
-    emit(UsersLoading());
+    final result = await usersRepository.getUsers(page: _currentPage, size: _pageSize);
 
-    // Reset for new fetch
-    _currentOffset = 0;
-    _allUsers = [];
-    _hasMoreData = true;
-
-    final result = await getUsersUseCase(page: 1, size: _pageSize);
     result.fold(
-      (failure) {
-        print('❌ GetUsers failed: ${failure.message}');
-        emit(UsersError(failure.message));
-      },
-      (users) {
-        print('✅ GetUsers success: ${users.length} users loaded');
-        _allUsers = users;
-        _currentOffset = users.length;
-        _hasMoreData = users.length >= _pageSize;
-        emit(UsersLoaded(users: _allUsers, hasMoreData: _hasMoreData));
-      },
+      (failure) => emit(state.copyWith(status: UsersStatus.error, errorMessage: failure.message)),
+      (users) => emit(state.copyWith(status: UsersStatus.loaded, users: users, hasMoreData: users.length >= _pageSize)),
     );
   }
 
   Future<void> _onLoadMoreUsers(LoadMoreUsersEvent event, Emitter<UsersState> emit) async {
-    final currentState = state;
+    if (!state.hasMoreData || state.status != UsersStatus.loaded) return;
 
-    // Prevent multiple simultaneous load more requests
-    if (currentState is UsersLoadingMore) {
-      print('🚫 Already loading more: Ignoring LoadMoreUsersEvent');
-      return;
-    }
+    // Optional: Add a specific "loading more" status if you want a footer spinner
+    // For now, we just keep it 'loaded' and append data
 
-    if (currentState is UsersLoaded && _hasMoreData) {
-      print('📥 Processing LoadMoreUsersEvent: offset=$_currentOffset');
-      emit(UsersLoadingMore(users: _allUsers, hasMoreData: _hasMoreData));
+    final nextPage = _currentPage + 1;
+    final result = await usersRepository.getUsers(page: nextPage, size: _pageSize);
 
-      final result = await getUsersUseCase(page: (_currentOffset ~/ _pageSize) + 1, size: _pageSize);
-
-      result.fold(
-        (failure) {
-          print('❌ LoadMoreUsers failed: ${failure.message}');
-          // On error, revert to the previous loaded state
-          emit(UsersLoaded(users: _allUsers, hasMoreData: _hasMoreData));
-        },
-        (newUsers) {
-          print('✅ LoadMoreUsers success: ${newUsers.length} more users loaded');
-          _allUsers.addAll(newUsers);
-          _currentOffset = _allUsers.length;
-          _hasMoreData = newUsers.length >= _pageSize;
-          emit(UsersLoaded(users: _allUsers, hasMoreData: _hasMoreData));
-        },
-      );
-    } else {
-      print('🚫 Cannot load more: No more data available');
-    }
+    result.fold(
+      (failure) => emit(
+        state.copyWith(
+          // Don't change main status to error, just show snackbar or ignore
+          adminOpStatus: AdminOpStatus.failure,
+          adminOpMessage: 'Failed to load more: ${failure.message}',
+        ),
+      ),
+      (newUsers) {
+        _currentPage = nextPage;
+        emit(state.copyWith(users: List.of(state.users)..addAll(newUsers), hasMoreData: newUsers.length >= _pageSize));
+      },
+    );
   }
 
-  Future<void> _onChangePageSize(ChangePageSizeEvent event, Emitter<UsersState> emit) async {
-    // For infinite scroll, page size changes don't apply
-    // Just reload the first batch
-    print('📏 Reloading users (page size changes not applicable for infinite scroll)');
-    add(const GetUsersEvent());
-  }
+  // --- Admin Operations (Preserves List Data) ---
 
   Future<void> _onResetUserPassword(ResetUserPasswordEvent event, Emitter<UsersState> emit) async {
-    emit(AdminOperationLoading());
-    final result = await resetUserPasswordUseCase(
-      ResetUserPasswordParams(email: event.email, newPassword: event.newPassword),
-    );
+    emit(state.copyWith(adminOpStatus: AdminOpStatus.loading));
+
+    final result = await usersRepository.resetUserPassword(event.email, event.newPassword);
+
     result.fold(
-      (failure) => emit(AdminOperationError(failure.message)),
-      (_) => emit(AdminOperationSuccess('Password reset successfully for ${event.email}')),
+      (failure) => emit(state.copyWith(adminOpStatus: AdminOpStatus.failure, adminOpMessage: failure.message)),
+      (_) => emit(state.copyWith(adminOpStatus: AdminOpStatus.success, adminOpMessage: 'Password reset successfully')),
     );
   }
 
   Future<void> _onRemoveUser(RemoveUserEvent event, Emitter<UsersState> emit) async {
-    emit(AdminOperationLoading());
-    final result = await removeUserUseCase(RemoveUserParams(email: event.email));
+    emit(state.copyWith(adminOpStatus: AdminOpStatus.loading));
+
+    final result = await usersRepository.removeUser(event.email);
+
     result.fold(
-      (failure) => emit(AdminOperationError(failure.message)),
-      (_) => emit(AdminOperationSuccess('User ${event.email} removed successfully')),
+      (failure) => emit(state.copyWith(adminOpStatus: AdminOpStatus.failure, adminOpMessage: failure.message)),
+      (_) {
+        // Optimistically remove user from list locally to feel faster
+        final updatedUsers = state.users.where((u) => u.email != event.email).toList();
+
+        emit(
+          state.copyWith(
+            adminOpStatus: AdminOpStatus.success,
+            adminOpMessage: 'User removed successfully',
+            users: updatedUsers, // Update list
+          ),
+        );
+      },
     );
   }
 
   Future<void> _onChangeUserRole(ChangeUserRoleEvent event, Emitter<UsersState> emit) async {
-    emit(AdminOperationLoading());
-    final result = await changeUserRoleUseCase(ChangeUserRoleParams(email: event.email, newRole: event.newRole));
+    emit(state.copyWith(adminOpStatus: AdminOpStatus.loading));
+
+    final result = await usersRepository.changeUserRole(event.email, event.newRole);
+
     result.fold(
-      (failure) => emit(AdminOperationError(failure.message)),
-      (_) => emit(AdminOperationSuccess('Role changed to ${event.newRole} for ${event.email}')),
+      (failure) => emit(state.copyWith(adminOpStatus: AdminOpStatus.failure, adminOpMessage: failure.message)),
+      (_) {
+        // Optimistically update user role locally
+        final updatedUsers = state.users.map((u) {
+          return u.email == event.email ? u.copyWith(role: event.newRole) : u;
+        });
+
+        emit(
+          state.copyWith(
+            adminOpStatus: AdminOpStatus.success,
+            adminOpMessage: 'Role changed successfully',
+            users: updatedUsers as List<RegisteredUserModel>,
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _onCreateUser(CreateUserRequested event, Emitter<UsersState> emit) async {
+    emit(state.copyWith(adminOpStatus: AdminOpStatus.loading));
+
+    final result = await usersRepository.createUser(
+      email: event.email,
+      password: event.password,
+      phoneNumber: event.phoneNumber,
+      role: event.role,
+    );
+
+    result.fold(
+      (failure) => emit(state.copyWith(adminOpStatus: AdminOpStatus.failure, adminOpMessage: failure.message)),
+      (_) {
+        // 1. Emit Success to close the form
+        emit(state.copyWith(adminOpStatus: AdminOpStatus.success, adminOpMessage: 'User created successfully'));
+
+        // 2. Refresh the list automatically
+        add(const GetUsersEvent());
+      },
     );
   }
 }

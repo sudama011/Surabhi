@@ -14,16 +14,17 @@ class AppStarted extends AuthEvent {}
 class LoginRequested extends AuthEvent {
   final String email;
   final String password;
+  final bool rememberMe;
 
-  const LoginRequested({required this.email, required this.password});
+  const LoginRequested({required this.email, required this.password, this.rememberMe = false});
 }
 
 class LogoutRequested extends AuthEvent {}
 
-class TwoFAMethodSelected extends AuthEvent {
-  final String method; // 'email' or 'phone'
+class SendOTPRequested extends AuthEvent {
+  final String method; // 'Email' or 'Phone'
 
-  const TwoFAMethodSelected({required this.method});
+  const SendOTPRequested({required this.method});
 
   @override
   List<Object> get props => [method];
@@ -31,9 +32,11 @@ class TwoFAMethodSelected extends AuthEvent {
 
 class OTPVerificationRequested extends AuthEvent {
   final String otp;
-  final String method;
+  final String method; // 'Email' or 'Phone'
+  final bool rememberMe;
+  final String preAuthRefreshToken;
 
-  const OTPVerificationRequested({required this.otp, required this.method});
+  const OTPVerificationRequested({required this.otp, required this.method, this.rememberMe = false, this.preAuthRefreshToken = ''});
 
   @override
   List<Object> get props => [otp, method];

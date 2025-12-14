@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:surabhi/core/constants/app_constants.dart';
-import 'package:surabhi/core/domain/entities/navigation_item.dart';
+import 'package:surabhi/core/models/navigation_item.dart';
 import 'package:surabhi/core/theme/theme_cubit.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';

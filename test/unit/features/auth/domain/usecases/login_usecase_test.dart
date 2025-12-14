@@ -4,7 +4,7 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:surabhi/features/auth/domain/entities/user_entity.dart';
 import 'package:surabhi/core/errors/failures.dart';
-import 'package:surabhi/features/auth/domain/repositories/auth_repository.dart';
+import 'package:surabhi/features/auth/repositories/auth_repository.dart';
 import 'package:surabhi/features/auth/domain/usecases/login_usecase.dart';
 
 import 'login_usecase_test.mocks.dart';

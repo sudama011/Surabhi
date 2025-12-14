@@ -31,7 +31,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _showLoginForm = false;
   bool _show2FAChoice = false;
   bool _show2FAVerify = false;
-  String _selectedTwoFAMethod = 'email';
+  String _selectedTwoFAMethod = 'Email';
   bool _biometricAttempted = false;
 
   String get _timeBasedGreeting {
@@ -48,7 +48,9 @@ class _LoginPageState extends State<LoginPage> {
 
     if (_showAuthCheck) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        BlocProvider.of<AuthBloc>(context).add(AppStarted());
+        if(mounted){
+          BlocProvider.of<AuthBloc>(context).add(AppStarted());
+        }
       });
     } else {
       _initializeBiometric();
@@ -111,7 +113,7 @@ class _LoginPageState extends State<LoginPage> {
   void _login() {
     if (_formKey.currentState!.validate()) {
       BlocProvider.of<AuthBloc>(context).add(
-        LoginRequested(email: _emailController.text.trim().toLowerCase(), password: _passwordController.text.trim()),
+        LoginRequested(email: _emailController.text.trim().toLowerCase(), password: _passwordController.text),
       );
     }
   }
@@ -123,7 +125,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _sendOTP() {
-    context.read<AuthBloc>().add(TwoFAMethodSelected(method: _selectedTwoFAMethod));
+    context.read<AuthBloc>().add(SendOTPRequested(method: _selectedTwoFAMethod));
   }
 
   void _verifyOTP() {
@@ -140,7 +142,7 @@ class _LoginPageState extends State<LoginPage> {
       _show2FAChoice = false;
       _show2FAVerify = false;
       _showLoginForm = true;
-      _selectedTwoFAMethod = 'email';
+      _selectedTwoFAMethod = 'Email';
       for (var controller in _otpControllers) {
         controller.clear();
       }
@@ -282,17 +284,7 @@ class _LoginPageState extends State<LoginPage> {
             ],
           ),
         ),
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton(
-            onPressed: () {},
-            child: Text(
-              'Forgot password?',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.primaryColor),
-            ),
-          ),
-        ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 16),
         BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
             final isLoading = state is AuthLoading;
@@ -331,7 +323,7 @@ class _LoginPageState extends State<LoginPage> {
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       side: const BorderSide(color: Colors.grey),
                     ),
-                    child: const Text('RESET'),
+                    child: const Text('CLEAR'),
                   ),
                 ),
               ],
@@ -367,9 +359,9 @@ class _LoginPageState extends State<LoginPage> {
           child: RadioListTile<String>(
             title: const Text('Email'),
             subtitle: const Text('Receive OTP via email'),
-            value: 'email',
+            value: 'Email',
             groupValue: _selectedTwoFAMethod,
-            onChanged: (v) => setState(() => _selectedTwoFAMethod = v ?? 'email'),
+            onChanged: (v) => setState(() => _selectedTwoFAMethod = v ?? 'Email'),
             secondary: const Icon(Icons.email),
           ),
         ),
@@ -378,9 +370,9 @@ class _LoginPageState extends State<LoginPage> {
           child: RadioListTile<String>(
             title: const Text('Phone'),
             subtitle: const Text('Receive OTP via SMS'),
-            value: 'phone',
+            value: 'Phone',
             groupValue: _selectedTwoFAMethod,
-            onChanged: (v) => setState(() => _selectedTwoFAMethod = v ?? 'phone'),
+            onChanged: (v) => setState(() => _selectedTwoFAMethod = v ?? 'Phone'),
             secondary: const Icon(Icons.phone),
           ),
         ),
@@ -417,7 +409,7 @@ class _LoginPageState extends State<LoginPage> {
         ),
         const SizedBox(height: 12),
         Text(
-          'Enter the verification code sent to your ${_selectedTwoFAMethod == 'email' ? 'email' : 'phone'}',
+          'Enter the verification code sent to your ${_selectedTwoFAMethod == 'Email' ? 'Email' : 'Phone'}',
           style: Theme.of(
             context,
           ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),

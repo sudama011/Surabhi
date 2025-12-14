@@ -2,15 +2,15 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:surabhi/features/auth/domain/usecases/request_2fa_usecase.dart';
+import 'package:surabhi/features/auth/repositories/auth_repository.dart';
 
 enum SecurityMethod { biometric, otp, none }
 
 class SecurityService {
   final LocalAuthentication _localAuth = LocalAuthentication();
-  final Request2FAUseCase _request2FAUseCase;
+  final AuthRepository _authRepository;
 
-  SecurityService(this._request2FAUseCase);
+  SecurityService(this._authRepository);
 
   /// Decides which security method to use based on Platform
   Future<SecurityMethod> getAvailableMethod() async {
@@ -42,6 +42,6 @@ class SecurityService {
   /// Web: Triggers Backend OTP
   Future<void> triggerWebOtp(String email) async {
     // Reusing your existing UseCase
-    await _request2FAUseCase(Request2FAParams(email: email, method: 'email')); // or 'authenticator'
+    await _authRepository.sendTwoFactorCode(email, 'Email',);
   }
 }
