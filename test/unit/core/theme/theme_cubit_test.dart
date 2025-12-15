@@ -33,6 +33,10 @@ class _PrefsFake implements PreferencesService {
   Future<void> disableBiometric() async {}
   @override
   Future<bool> get isBiometricEnabled async => false;
+  @override
+  Future<void> saveTokenExpiry(DateTime expiry) async {}
+  @override
+  DateTime? getTokenExpiry() => null;
 }
 
 void main() {

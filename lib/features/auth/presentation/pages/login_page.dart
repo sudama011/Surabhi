@@ -6,11 +6,10 @@ import 'package:surabhi/core/theme/app_colors.dart';
 import 'package:surabhi/core/utils/ui_utils.dart';
 import 'package:surabhi/features/auth/models/twofa_provider_model.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:surabhi/features/auth/presentation/widgets/auth_page_layout.dart'; // Import layout
+import 'package:surabhi/features/auth/presentation/widgets/auth_page_layout.dart';
 import 'package:surabhi/features/auth/presentation/widgets/login_form.dart';
 import 'package:surabhi/features/auth/presentation/widgets/two_fa_selection_form.dart';
 import 'package:surabhi/features/auth/presentation/widgets/two_fa_verification_form.dart';
-import 'package:surabhi/routes/app_navigator.dart';
 
 class LoginPage extends StatefulWidget {
   final bool checkAuthOnInit;
@@ -32,7 +31,9 @@ class _LoginPageState extends State<LoginPage> {
 
     if (_isCheckingAuth) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.read<AuthBloc>().add(AppStarted());
+        if (mounted) {
+          context.read<AuthBloc>().add(AppStarted());
+        }
       });
     }
   }
@@ -45,7 +46,6 @@ class _LoginPageState extends State<LoginPage> {
         listener: (context, state) {
           if (state is AuthAuthenticated) {
             UiUtils.showSnackBar(context, 'Login successful', backgroundColor: AppColors.successColor);
-            AppNavigator.navigateBasedOnRole(context, state.user.role);
           } else if (state is Auth2FARequired) {
             setState(() {
               _isCheckingAuth = false;

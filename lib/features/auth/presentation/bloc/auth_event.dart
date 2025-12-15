@@ -41,4 +41,6 @@ class OTPVerificationRequested extends AuthEvent {
 
 class BiometricLoginRequested extends AuthEvent {}
 
+class SessionExtendRequested extends AuthEvent {}
+
 class LogoutRequested extends AuthEvent {}

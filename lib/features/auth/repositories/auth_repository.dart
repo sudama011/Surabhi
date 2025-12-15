@@ -178,6 +178,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   Future<void> _saveAuthData(AuthResponseModel response) async {
     await preferencesService.saveAccessToken(response.token!);
+    await preferencesService.saveTokenExpiry(response.expiresAt!);
     await preferencesService.saveRefreshToken(response.refreshToken);
 
     if (response.profile != null) {

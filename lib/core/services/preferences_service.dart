@@ -7,6 +7,7 @@ class PreferencesService {
   final FlutterSecureStorage _secureStorage;
 
   static const String _accessTokenKey = 'accessToken';
+  static const _accessTokenExpiryKey = 'access_token_expiry';
   static const String _refreshTokenKey = 'refreshToken';
   static const String _biometricEnabledKey = 'is_biometric_enabled';
   static const String _userJsonKey = 'userJson';
@@ -43,6 +44,16 @@ class PreferencesService {
   Future<bool> get isBiometricEnabled async {
     final val = await _secureStorage.read(key: _biometricEnabledKey);
     return val == 'true';
+  }
+
+  Future<void> saveTokenExpiry(DateTime expiry) async {
+    await _prefs.setString(_accessTokenExpiryKey, expiry.toIso8601String());
+  }
+
+  DateTime? getTokenExpiry() {
+    final dateStr = _prefs.getString(_accessTokenExpiryKey);
+    if (dateStr == null) return null;
+    return DateTime.tryParse(dateStr);
   }
 
   Future<void> saveThemeMode(String themeMode) async {

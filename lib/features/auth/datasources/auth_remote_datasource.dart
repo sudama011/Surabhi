@@ -37,7 +37,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final response = await apiClient.dio.post(
         ApiConstants.loginPath,
         data: data,
-        options: Options(contentType: Headers.jsonContentType, extra: {'requiresAuth': false}),
+        options: Options(extra: {'requiresAuth': false}),
       );
 
       return AuthResponseModel.fromJson(response.data);
@@ -57,7 +57,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       await apiClient.dio.post(
         ApiConstants.send2FAPath,
         data: data,
-        options: Options(contentType: Headers.jsonContentType, extra: {'requiresAuth': false}),
+        options: Options(extra: {'requiresAuth': false}),
       );
     } on DioException catch (e) {
       final errorMessage = ErrorUtils.errorMessageFrom(e, defaultMessage: 'Failed to send 2FA code');
@@ -86,7 +86,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final response = await apiClient.dio.post(
         ApiConstants.verify2FAPath,
         data: data,
-        options: Options(contentType: Headers.jsonContentType, extra: {'requiresAuth': false}),
+        options: Options(extra: {'requiresAuth': false}),
       );
 
       return AuthResponseModel.fromJson(response.data);
@@ -104,7 +104,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final response = await apiClient.dio.post(
         ApiConstants.refreshPath,
         data: {'refreshToken': refreshToken},
-        options: Options(contentType: Headers.jsonContentType, extra: {'requiresAuth': false}),
+        options: Options(extra: {'requiresAuth': false}),
       );
 
       return AuthResponseModel.fromJson(response.data);
@@ -120,7 +120,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<void> logout() async {
     try {
       // don't await this call
-      apiClient.dio.post(ApiConstants.logoutPath, options: Options(contentType: Headers.jsonContentType));
+      apiClient.dio.post(ApiConstants.logoutPath);
     } catch (e) {
       // Logout failure is not critical, continue with local logout
     }

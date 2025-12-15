@@ -10,6 +10,10 @@ class AppConstants {
   // Breakpoints for responsive design
   static const double mobile = 600;
   static const double tablet = 1100;
+
+  // session timeout constants
+  static const sessionDuration = Duration(minutes: 15);
+  static const warningDuration = Duration(minutes: 3);
 }
 
 enum Role { admin, employee, preacher, approver, volunteer, social }

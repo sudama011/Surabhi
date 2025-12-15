@@ -23,6 +23,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<OTPVerificationRequested>(_onOTPVerificationRequested);
     on<AppStarted>(_onAppStarted);
     on<BiometricLoginRequested>(_onBiometricLoginRequested);
+    on<SessionExtendRequested>(_onSessionExtendRequested);
     on<LogoutRequested>(_onLogoutRequested);
   }
 
@@ -126,5 +127,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       _rememberMe = false;
       emit(AuthAuthenticated(user: user));
     });
+  }
+
+  Future<void> _onSessionExtendRequested(SessionExtendRequested event, Emitter<AuthState> emit) async {
+    final result = await authRepository.refreshToken();
+    result.fold(
+      (failure) {
+        // If extension fails, we must logout
+        add(LogoutRequested());
+        emit(const AuthUnauthenticated(message: 'Session expired. Please login again.'));
+      },
+      (user) {
+        // Success! Token is refreshed (Repo saves new token/expiry automatically)
+        emit(AuthAuthenticated(user: user));
+      },
+    );
   }
 }

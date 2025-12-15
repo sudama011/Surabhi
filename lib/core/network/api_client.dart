@@ -32,9 +32,8 @@ class ApiClient {
     _dio.options.followRedirects = false;
     _dio.options.receiveDataWhenStatusError = true;
 
-    if (!_dio.interceptors.contains(apiInterceptor)) {
-      _dio.interceptors.add(apiInterceptor);
-    }
+    _dio.interceptors.add(apiInterceptor);
+
     _dio.interceptors.add(
       PrettyDioLogger(requestHeader: true, requestBody: true, responseHeader: true, responseBody: true),
     );

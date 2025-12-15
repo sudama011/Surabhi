@@ -33,7 +33,7 @@ Future<void> init() async {
 
   // --- 2. Core Services (Depend on External) ---
   sl.registerLazySingleton<PreferencesService>(() => PreferencesService(sl(), sl()));
-  sl.registerLazySingleton<ApiInterceptor>(() => ApiInterceptor(dio: sl(), preferencesService: sl()));
+  sl.registerLazySingleton<ApiInterceptor>(() => ApiInterceptor(preferencesService: sl()));
   sl.registerLazySingleton<ApiClient>(() => ApiClient(sl<Dio>(), sl<ApiInterceptor>()));
   sl.registerLazySingleton(() => ThemeCubit(sl()));
 
