@@ -2,25 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:surabhi/features/auth/domain/entities/user_entity.dart';
-import 'package:surabhi/features/auth/data/models/user_model.dart';
+import 'package:surabhi/core/constants/app_constants.dart';
+import 'package:surabhi/core/models/user_model.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 
 /// Test helper utilities for common test operations
 class TestHelpers {
   /// Creates a test user entity
-  static UserEntity createTestUser({
-    String id = '1',
+  static UserModel createTestUser({
+    int id = 1,
     String email = 'test@example.com',
-    String role = 'admin',
+    Role role = Role.admin,
     String? code,
     String? mobileNumber,
     String? name,
     String? avatar,
     String? avatarContentType,
-    bool? emailVerified,
-    bool? mobileVerified,
-  }) => UserEntity(
+  }) => UserModel(
     id: id,
     email: email,
     role: role,
@@ -29,31 +27,6 @@ class TestHelpers {
     name: name,
     avatar: avatar,
     avatarContentType: avatarContentType,
-    emailVerified: emailVerified,
-    mobileVerified: mobileVerified,
-  );
-
-  /// Creates a test user model
-  static UserModel createTestUserModel({
-    String id = '1',
-    String email = 'test@example.com',
-    String? code,
-    String? mobileNumber,
-    String? name,
-    String? avatar,
-    String? avatarContentType,
-    bool? emailVerified,
-    bool? mobileVerified,
-  }) => UserModel(
-    id: id,
-    email: email,
-    code: code,
-    mobileNumber: mobileNumber,
-    name: name,
-    avatar: avatar,
-    avatarContentType: avatarContentType,
-    emailVerified: emailVerified,
-    mobileVerified: mobileVerified,
   );
 
   /// Creates a test list of users (for infinite scroll)

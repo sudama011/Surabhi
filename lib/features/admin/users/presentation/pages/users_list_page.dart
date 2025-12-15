@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:surabhi/core/widgets/user_card.dart';
 import 'package:surabhi/core/widgets/error_display.dart';
 import 'package:surabhi/features/admin/users/models/registered_user_model.dart';
@@ -55,7 +56,11 @@ class _UsersListPageState extends State<UsersListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Users Management')),
+      backgroundColor: Colors.transparent,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.go('/admin/create-user'),
+        child: const Icon(Icons.add),
+      ),
       body: RefreshIndicator(
         onRefresh: () async {
           context.read<UsersBloc>().add(const GetUsersEvent());

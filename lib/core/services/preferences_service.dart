@@ -1,4 +1,4 @@
-// lib/core/shared_preferences/preferences_service.dart
+// lib/core/services/preferences_service.dart
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -8,7 +8,7 @@ class PreferencesService {
 
   static const String _accessTokenKey = 'accessToken';
   static const String _refreshTokenKey = 'refreshToken';
-  static const String _roleKey = 'userRole';
+  static const String _biometricEnabledKey = 'is_biometric_enabled';
   static const String _userJsonKey = 'userJson';
   static const String _themeModeKey = 'themeMode';
 
@@ -30,20 +30,27 @@ class PreferencesService {
     return await _secureStorage.read(key: _refreshTokenKey);
   }
 
+  Future<void> enableBiometric(String refreshToken) async {
+    await _secureStorage.write(key: _refreshTokenKey, value: refreshToken);
+    await _secureStorage.write(key: _biometricEnabledKey, value: 'true');
+  }
+
+  Future<void> disableBiometric() async {
+    await _secureStorage.delete(key: _refreshTokenKey);
+    await _secureStorage.write(key: _biometricEnabledKey, value: 'false');
+  }
+
+  Future<bool> get isBiometricEnabled async {
+    final val = await _secureStorage.read(key: _biometricEnabledKey);
+    return val == 'true';
+  }
+
   Future<void> saveThemeMode(String themeMode) async {
     await _prefs.setString(_themeModeKey, themeMode);
   }
 
   Future<String?> getThemeMode() async {
     return _prefs.getString(_themeModeKey);
-  }
-
-  Future<void> saveUserRole(String role) async {
-    await _prefs.setString(_roleKey, role);
-  }
-
-  String? getUserRole() {
-    return _prefs.getString(_roleKey);
   }
 
   Future<void> saveUserJson(String json) async {
@@ -57,7 +64,7 @@ class PreferencesService {
   Future<void> clearAuthData() async {
     await _secureStorage.delete(key: _accessTokenKey);
     await _secureStorage.delete(key: _refreshTokenKey);
-    await _prefs.remove(_roleKey);
+    await _secureStorage.delete(key: _biometricEnabledKey);
     await _prefs.remove(_userJsonKey);
   }
 }

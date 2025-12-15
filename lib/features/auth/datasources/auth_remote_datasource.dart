@@ -1,4 +1,5 @@
-// lib/features/auth/data/datasources/auth_remote_datasource.dart
+// lib/features/auth/datasources/auth_remote_datasource.dart
+
 import 'package:dio/dio.dart';
 import 'package:surabhi/core/errors/exceptions.dart';
 import 'package:surabhi/core/network/api_client.dart';
@@ -9,9 +10,9 @@ import 'package:surabhi/core/utils/error_utils.dart';
 abstract class AuthRemoteDataSource {
   Future<AuthResponseModel> login(String email, String password, bool rememberMe);
 
-  Future<void> sendTwoFactor(String email, String provider);
+  Future<void> sendTwoFactor(String email, String provider, String preAuthRefreshToken);
 
-  Future<bool> verifyTwoFactor(
+  Future<AuthResponseModel> verifyTwoFactor(
     String email,
     String provider,
     String code, {
@@ -19,7 +20,7 @@ abstract class AuthRemoteDataSource {
     String preAuthRefreshToken,
   });
 
-  Future<AuthResponseModel> refreshToken();
+  Future<AuthResponseModel> refreshToken(String refreshToken);
 
   Future<void> logout();
 }
@@ -50,13 +51,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<void> sendTwoFactor(String email, String provider) async {
+  Future<void> sendTwoFactor(String email, String provider, String preAuthRefreshToken) async {
     try {
-      final data = {'email': email, 'provider': provider};
+      final data = {'email': email, 'provider': provider, 'preAuthRefreshToken': preAuthRefreshToken};
       await apiClient.dio.post(
         ApiConstants.send2FAPath,
         data: data,
-        options: Options(contentType: Headers.jsonContentType),
+        options: Options(contentType: Headers.jsonContentType, extra: {'requiresAuth': false}),
       );
     } on DioException catch (e) {
       final errorMessage = ErrorUtils.errorMessageFrom(e, defaultMessage: 'Failed to send 2FA code');
@@ -67,7 +68,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<bool> verifyTwoFactor(
+  Future<AuthResponseModel> verifyTwoFactor(
     String email,
     String provider,
     String code, {
@@ -79,7 +80,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         'email': email,
         'provider': provider,
         'code': code,
-        'rememberMe': rememberMe,
+        'rememberClient': rememberMe,
         'preAuthRefreshToken': preAuthRefreshToken,
       };
       final response = await apiClient.dio.post(
@@ -88,7 +89,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         options: Options(contentType: Headers.jsonContentType, extra: {'requiresAuth': false}),
       );
 
-      return response.statusCode == 200;
+      return AuthResponseModel.fromJson(response.data);
     } on DioException catch (e) {
       final errorMessage = ErrorUtils.errorMessageFrom(e, defaultMessage: 'Failed to verify 2FA code');
       throw ServerException(message: errorMessage);
@@ -98,14 +99,15 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<AuthResponseModel> refreshToken() async {
+  Future<AuthResponseModel> refreshToken(String refreshToken) async {
     try {
       final response = await apiClient.dio.post(
         ApiConstants.refreshPath,
-        options: Options(contentType: Headers.jsonContentType),
+        data: {'refreshToken': refreshToken},
+        options: Options(contentType: Headers.jsonContentType, extra: {'requiresAuth': false}),
       );
 
-      return AuthResponseModel.fromJson(response.data as Map<String, dynamic>);
+      return AuthResponseModel.fromJson(response.data);
     } on DioException catch (e) {
       final errorMessage = ErrorUtils.errorMessageFrom(e, defaultMessage: 'Failed to refresh token');
       throw ServerException(message: errorMessage);

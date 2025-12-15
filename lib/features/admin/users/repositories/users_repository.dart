@@ -7,7 +7,6 @@ import 'package:surabhi/core/errors/exceptions.dart';
 import 'package:surabhi/features/admin/users/models/registered_user_model.dart';
 import 'package:surabhi/features/admin/users/datasources/users_remote_datasource.dart';
 
-
 abstract class UsersRepository {
   /// Fetch users with infinite scroll support
   Future<Either<Failure, List<RegisteredUserModel>>> getUsers({int page = 1, int size = 20});
@@ -29,7 +28,6 @@ abstract class UsersRepository {
   /// Change a user's role (admin only)
   Future<Either<Failure, bool>> changeUserRole(String email, Role newRole);
 }
-
 
 class UsersRepositoryImpl implements UsersRepository {
   final UsersRemoteDataSource remoteDataSource;

@@ -1,7 +1,9 @@
 // lib/injector.dart
 import 'package:get_it/get_it.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:surabhi/core/network/api_client.dart';
-import 'package:surabhi/core/shared_preferences/preferences_service.dart';
+import 'package:surabhi/core/services/biometric_service.dart';
+import 'package:surabhi/core/services/preferences_service.dart';
 import 'package:surabhi/features/auth/datasources/auth_remote_datasource.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:surabhi/features/auth/repositories/auth_repository.dart';
@@ -24,8 +26,10 @@ Future<void> init() async {
   // --- 1. External Dependencies (MUST be first) ---
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton(() => sharedPreferences);
+  sl.registerLazySingleton(() => LocalAuthentication());
   sl.registerLazySingleton(() => const FlutterSecureStorage());
   sl.registerLazySingleton(() => Dio());
+  sl.registerLazySingleton(() => BiometricService(localAuth: sl(), preferencesService: sl()));
 
   // --- 2. Core Services (Depend on External) ---
   sl.registerLazySingleton<PreferencesService>(() => PreferencesService(sl(), sl()));
@@ -37,7 +41,9 @@ Future<void> init() async {
 
   // Auth Feature
   sl.registerLazySingleton<AuthRemoteDataSource>(() => AuthRemoteDataSourceImpl(sl()));
-  sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(remoteDataSource: sl(), preferencesService: sl()));
+  sl.registerLazySingleton<AuthRepository>(
+    () => AuthRepositoryImpl(authRemoteDataSource: sl(), preferencesService: sl(), biometricService: sl()),
+  );
   sl.registerFactory(() => AuthBloc(authRepository: sl()));
 
   // Profile Feature
@@ -51,5 +57,5 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<admin_users.UsersRepository>(() => admin_users.UsersRepositoryImpl(remoteDataSource: sl()));
   sl.registerFactory(() => admin_users.UsersBloc(usersRepository: sl()));
-  
+  // register
 }

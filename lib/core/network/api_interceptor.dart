@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:surabhi/core/constants/api_constants.dart';
 import 'package:surabhi/core/errors/exceptions.dart';
-import 'package:surabhi/core/shared_preferences/preferences_service.dart';
+import 'package:surabhi/core/services/preferences_service.dart';
 import 'dart:async';
 
 class ApiInterceptor extends Interceptor {

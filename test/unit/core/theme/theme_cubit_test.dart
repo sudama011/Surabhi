@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:surabhi/core/shared_preferences/preferences_service.dart';
+import 'package:surabhi/core/services/preferences_service.dart';
 import 'package:surabhi/core/theme/theme_cubit.dart';
 
 class _PrefsFake implements PreferencesService {
@@ -22,15 +22,17 @@ class _PrefsFake implements PreferencesService {
   @override
   String? getUserJson() => null;
   @override
-  String? getUserRole() => null;
-  @override
   Future<void> saveAccessToken(String token) async {}
   @override
   Future<void> saveRefreshToken(String token) async {}
   @override
   Future<void> saveUserJson(String json) async {}
   @override
-  Future<void> saveUserRole(String role) async {}
+  Future<void> enableBiometric(String refreshToken) async {}
+  @override
+  Future<void> disableBiometric() async {}
+  @override
+  Future<bool> get isBiometricEnabled async => false;
 }
 
 void main() {

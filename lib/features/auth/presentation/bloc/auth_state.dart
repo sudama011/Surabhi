@@ -30,41 +30,50 @@ class AuthUnauthenticated extends AuthState {
   List<Object> get props => [message ?? ''];
 }
 
-class AuthError extends AuthState {
-  final String message;
+// --- 2FA States ---
 
-  const AuthError({required this.message});
-
-  @override
-  List<Object> get props => [message];
-}
-
-// 2FA States
 class Auth2FARequired extends AuthState {
-  final UserModel user;
+  final List<TwoFAProvider> providers;
 
-  const Auth2FARequired({required this.user});
+  const Auth2FARequired({required this.providers});
 
   @override
-  List<Object> get props => [user];
+  List<Object> get props => [providers];
 }
 
 class Auth2FALoading extends AuthState {}
 
 class Auth2FAOTPSent extends AuthState {
-  final String method;
+  final TwoFAProvider provider;
   final String message;
 
-  const Auth2FAOTPSent({required this.method, required this.message});
+  const Auth2FAOTPSent({required this.provider, required this.message});
 
   @override
-  List<Object> get props => [method, message];
+  List<Object> get props => [provider, message];
 }
 
 class Auth2FAError extends AuthState {
   final String message;
 
   const Auth2FAError({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}
+
+class TwoFactorRequiredFailure extends Failure {
+  final List<TwoFAProvider> providers;
+  final String preAuthRefreshToken;
+
+  const TwoFactorRequiredFailure({required this.providers, required this.preAuthRefreshToken})
+    : super(message: '2FA Required');
+}
+
+class AuthBiometricFailure extends AuthState {
+  final String message;
+
+  const AuthBiometricFailure({required this.message});
 
   @override
   List<Object> get props => [message];

@@ -35,10 +35,7 @@ class UserCard extends StatelessWidget {
             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
         ),
-        title: Text(
-          user.email,
-          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500),
-        ),
+        title: Text(user.email, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

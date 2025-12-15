@@ -17,27 +17,28 @@ class LoginRequested extends AuthEvent {
   final bool rememberMe;
 
   const LoginRequested({required this.email, required this.password, this.rememberMe = false});
-}
-
-class LogoutRequested extends AuthEvent {}
-
-class SendOTPRequested extends AuthEvent {
-  final String method; // 'Email' or 'Phone'
-
-  const SendOTPRequested({required this.method});
 
   @override
-  List<Object> get props => [method];
+  List<Object> get props => [email, password, rememberMe];
+}
+
+class SendOTPRequested extends AuthEvent {
+  final TwoFAProvider provider;
+
+  const SendOTPRequested({required this.provider});
+
+  @override
+  List<Object> get props => [provider];
 }
 
 class OTPVerificationRequested extends AuthEvent {
   final String otp;
-  final String method; // 'Email' or 'Phone'
-  final bool rememberMe;
-  final String preAuthRefreshToken;
-
-  const OTPVerificationRequested({required this.otp, required this.method, this.rememberMe = false, this.preAuthRefreshToken = ''});
+  const OTPVerificationRequested({required this.otp});
 
   @override
-  List<Object> get props => [otp, method];
+  List<Object> get props => [otp];
 }
+
+class BiometricLoginRequested extends AuthEvent {}
+
+class LogoutRequested extends AuthEvent {}

@@ -34,7 +34,6 @@ class UserModel {
   @JsonKey(includeFromJson: false, includeToJson: false)
   String get phoneNumber => mobileNumber ?? '';
 
-
   factory UserModel.fromJson(Map<String, dynamic> json) => _$UserModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$UserModelToJson(this);
