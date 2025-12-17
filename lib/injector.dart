@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:surabhi/core/network/api_client.dart';
 import 'package:surabhi/core/services/biometric_service.dart';
+import 'package:surabhi/core/services/device_id_service.dart';
 import 'package:surabhi/core/services/preferences_service.dart';
 import 'package:surabhi/features/auth/datasources/auth_remote_datasource.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
@@ -30,6 +31,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => const FlutterSecureStorage());
   sl.registerLazySingleton(() => Dio());
   sl.registerLazySingleton(() => BiometricService(localAuth: sl(), preferencesService: sl()));
+  sl.registerLazySingleton(() => DeviceIdService(secureStorage: sl()));
 
   // --- 2. Core Services (Depend on External) ---
   sl.registerLazySingleton<PreferencesService>(() => PreferencesService(sl(), sl()));
@@ -40,7 +42,7 @@ Future<void> init() async {
   // --- 3. Features ---
 
   // Auth Feature
-  sl.registerLazySingleton<AuthRemoteDataSource>(() => AuthRemoteDataSourceImpl(sl()));
+  sl.registerLazySingleton<AuthRemoteDataSource>(() => AuthRemoteDataSourceImpl(sl(), sl()));
   sl.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(authRemoteDataSource: sl(), preferencesService: sl(), biometricService: sl()),
   );

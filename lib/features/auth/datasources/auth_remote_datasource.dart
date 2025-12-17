@@ -3,6 +3,7 @@
 import 'package:dio/dio.dart';
 import 'package:surabhi/core/errors/exceptions.dart';
 import 'package:surabhi/core/network/api_client.dart';
+import 'package:surabhi/core/services/device_id_service.dart';
 import 'package:surabhi/features/auth/models/auth_response_model.dart';
 import 'package:surabhi/core/constants/api_constants.dart';
 import 'package:surabhi/core/utils/error_utils.dart';
@@ -27,13 +28,19 @@ abstract class AuthRemoteDataSource {
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final ApiClient apiClient;
+  final DeviceIdService deviceIdService;
 
-  AuthRemoteDataSourceImpl(this.apiClient);
+  AuthRemoteDataSourceImpl(this.apiClient, this.deviceIdService);
 
   @override
   Future<AuthResponseModel> login(String email, String password, bool rememberMe) async {
     try {
-      final data = {'email': email, 'password': password, 'rememberMe': rememberMe};
+      final data = {
+        'email': email,
+        'password': password,
+        'rememberMe': rememberMe,
+        'deviceId': await deviceIdService.getDeviceId(),
+      };
       final response = await apiClient.dio.post(
         ApiConstants.loginPath,
         data: data,
@@ -82,6 +89,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         'code': code,
         'rememberClient': rememberMe,
         'preAuthRefreshToken': preAuthRefreshToken,
+        'deviceId': await deviceIdService.getDeviceId(),
       };
       final response = await apiClient.dio.post(
         ApiConstants.verify2FAPath,

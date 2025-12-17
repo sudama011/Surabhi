@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:surabhi/core/constants/app_constants.dart';
 import 'package:surabhi/core/models/navigation_item.dart';
+import 'package:surabhi/core/models/user_model.dart';
 import 'package:surabhi/core/theme/theme_cubit.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
@@ -27,57 +28,26 @@ class AppShell extends StatefulWidget {
 }
 
 class _AppShellState extends State<AppShell> {
-  late String pageTitle;
-
-  @override
-  void initState() {
-    super.initState();
-    pageTitle = 'Surabhi';
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _updatePageTitle();
-  }
-
-  void _updatePageTitle() {
-    final currentRoute = GoRouterState.of(context).uri.path;
-
-    // Check side navigation items
-    for (final item in widget.sideNavigationItems) {
-      if (currentRoute == item.route) {
-        if (pageTitle != item.label) {
-          pageTitle = item.label;
-        }
-        return;
-      }
+  int? _getSelectedIndex(String currentRoute, List<NavigationItem> items) {
+    int index = items.indexWhere((item) => currentRoute == item.route);
+    if (index == -1) {
+      index = items.indexWhere((item) => currentRoute.startsWith(item.route) && item.route != '/');
     }
-
-    // Check bottom navigation items
-    for (final item in widget.bottomNavigationitems) {
-      if (currentRoute == item.route) {
-        if (pageTitle != item.label) {
-          pageTitle = item.label;
-        }
-        return;
-      }
-    }
+    return index != -1 ? index : null;
   }
 
-  String _getAvatarInitial(dynamic user) {
-    // Priority: name, then email first char
-    if (user.name != null && user.name!.isNotEmpty) {
-      return user.name![0];
+  String _getPageTitle(String currentRoute) {
+    final allItems = [...widget.sideNavigationItems, ...widget.bottomNavigationitems];
+    for (var item in allItems) {
+      if (currentRoute.startsWith(item.route) && item.route != '/') return item.label;
     }
-    return user.userName[0];
+    return AppConstants.appName;
   }
 
-  ImageProvider? _getAvatarImage(dynamic user) {
+  ImageProvider? _getAvatarImage(UserModel user) {
     if (user.avatar != null && user.avatarContentType != null) {
       try {
-        final imageData = user.avatar!;
-        final bytes = base64Decode(imageData);
+        final bytes = base64Decode(user.avatar!);
         return MemoryImage(bytes);
       } catch (e) {
         debugPrint('Error loading avatar: $e');
@@ -86,33 +56,25 @@ class _AppShellState extends State<AppShell> {
     return null;
   }
 
-  bool _isRouteSelected(String currentRoute, String itemRoute) {
-    // Check if the current route matches the item route
-    return currentRoute == itemRoute;
-  }
-
-  int _getSelectedBottomNavIndex(String currentRoute) {
-    // Find the index of the matching bottom nav item
-    for (int i = 0; i < widget.bottomNavigationitems.length; i++) {
-      if (currentRoute == widget.bottomNavigationitems[i].route) {
-        return i;
-      }
-    }
-    // Return 0 as default if no match found
-    return 0;
-  }
-
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
     final isDesktop = width >= AppConstants.tablet;
     final isMobile = width < AppConstants.mobile;
-    final currentRoute = GoRouterState.of(context).uri.path;
 
-    // Update page title based on current route
-    _updatePageTitle();
+    final String currentRoute = GoRouterState.of(context).uri.path;
+    final String pageTitle = _getPageTitle(currentRoute);
 
-    // Validate navigation items
+    // Merge Lists for Rail
+    final List<NavigationItem> railItems = isMobile
+        ? []
+        : [...widget.sideNavigationItems, ...widget.bottomNavigationitems];
+
+    // Calculate Indices
+    final int? drawerIndex = _getSelectedIndex(currentRoute, widget.sideNavigationItems);
+    final int? bottomNavIndex = _getSelectedIndex(currentRoute, widget.bottomNavigationitems);
+    final int? railIndex = _getSelectedIndex(currentRoute, railItems);
+
     if (widget.sideNavigationItems.isEmpty && widget.bottomNavigationitems.isEmpty) {
       return Scaffold(
         appBar: AppBar(title: Text(pageTitle)),
@@ -121,17 +83,16 @@ class _AppShellState extends State<AppShell> {
     }
 
     return Scaffold(
-      // 2. Common Top App Bar
       appBar: AppBar(
         title: Text(pageTitle),
         centerTitle: false,
-        leading: Builder(
-          builder: (context) {
-            return IconButton(icon: const Icon(Icons.menu), onPressed: () => Scaffold.of(context).openDrawer());
-          },
-        ),
+        leading: isMobile
+            ? Builder(
+                builder: (context) =>
+                    IconButton(icon: const Icon(Icons.menu), onPressed: () => Scaffold.of(context).openDrawer()),
+              )
+            : null,
         actions: [
-          // Search Bar (Expanded on desktop, Icon on mobile)
           if (isDesktop)
             Container(
               width: 300,
@@ -144,37 +105,26 @@ class _AppShellState extends State<AppShell> {
               ),
             )
           else
-            IconButton(
-              icon: const Icon(Icons.search),
-              onPressed: () {
-                // TODO: Open Search Delegate
-              },
-            ),
+            IconButton(icon: const Icon(Icons.search), onPressed: () {}),
 
-          const SizedBox(width: 8),
-
-          // Notification Icon
           IconButton(icon: const Icon(Icons.notifications_outlined), onPressed: () {}),
 
-          const SizedBox(width: 8),
-
-          // Profile Button with Avatar
           BlocBuilder<AuthBloc, AuthState>(
             builder: (context, authState) {
               if (authState is AuthAuthenticated) {
                 final user = authState.user;
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  padding: const EdgeInsets.only(right: 16, left: 8),
                   child: GestureDetector(
                     onTap: () => context.push('/profile'),
                     child: CircleAvatar(
                       radius: 18,
-                      backgroundColor: AppColors.primaryColor,
+                      backgroundColor: AppColors.secondaryColor,
                       backgroundImage: _getAvatarImage(user),
                       child: _getAvatarImage(user) == null
                           ? Text(
-                              _getAvatarInitial(user).toUpperCase(),
-                              style: const TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold),
+                              user.avatarInitial,
+                              style: const TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.bold),
                             )
                           : null,
                     ),
@@ -184,22 +134,15 @@ class _AppShellState extends State<AppShell> {
               return IconButton(icon: const Icon(Icons.person_outline), onPressed: () => context.push('/profile'));
             },
           ),
-
-          const SizedBox(width: 8),
         ],
       ),
 
-      // 3. Common Drawer (Left Side Menu)
       drawer: NavigationDrawer(
-        selectedIndex: -1, // Don't use index-based selection
+        selectedIndex: drawerIndex,
         onDestinationSelected: (index) {
-          try {
-            Navigator.pop(context); // Close drawer
-            if (index < widget.sideNavigationItems.length) {
-              widget.onNavigationSelected(widget.sideNavigationItems[index].route);
-            }
-          } catch (e) {
-            debugPrint('Error in drawer navigation: $e');
+          Navigator.pop(context);
+          if (index < widget.sideNavigationItems.length) {
+            widget.onNavigationSelected(widget.sideNavigationItems[index].route);
           }
         },
         children: [
@@ -209,18 +152,16 @@ class _AppShellState extends State<AppShell> {
           ),
           ...widget.sideNavigationItems.map(
             (item) => NavigationDrawerDestination(
-              icon: _isRouteSelected(currentRoute, item.route) ? Icon(item.selectedIcon ?? item.icon) : Icon(item.icon),
+              icon: Icon(item.icon),
               selectedIcon: Icon(item.selectedIcon ?? item.icon),
               label: Text(item.label),
             ),
           ),
           const Divider(indent: 28, endIndent: 28),
-          // Common Settings Section
           const Padding(
             padding: EdgeInsets.fromLTRB(28, 16, 16, 10),
             child: Text('Settings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
           ),
-          // Theme Toggle
           BlocBuilder<ThemeCubit, ThemeMode>(
             builder: (context, themeMode) {
               final isDark = themeMode == ThemeMode.dark;
@@ -235,69 +176,66 @@ class _AppShellState extends State<AppShell> {
         ],
       ),
 
-      // 4. Responsive Body Layout
       body: Row(
+        crossAxisAlignment: CrossAxisAlignment.start, // Align to top
         children: [
-          // Tablet/Desktop: Show Rail on the side
-          if (!isMobile)
-            SizedBox(
-              width: isDesktop ? 256 : 80, // Fixed width: 256 for extended, 80 for compact
-              child: NavigationRail(
-                extended: isDesktop, // Text labels visible on Desktop
-                selectedIndex: -1, // Don't use index-based selection
-                onDestinationSelected: (index) {
-                  try {
-                    widget.onNavigationSelected(widget.sideNavigationItems[index].route);
-                  } catch (e) {
-                    debugPrint('Error in navigation rail: $e');
-                  }
-                },
-                labelType: isDesktop ? NavigationRailLabelType.none : NavigationRailLabelType.all,
-                destinations: widget.sideNavigationItems
-                    .map(
-                      (item) => NavigationRailDestination(
-                        icon: _isRouteSelected(currentRoute, item.route)
-                            ? Icon(item.selectedIcon ?? item.icon)
-                            : Icon(item.icon),
-                        selectedIcon: Icon(item.selectedIcon ?? item.icon),
-                        label: Text(item.label),
+          // FIX: SCROLLABLE NAVIGATION RAIL
+          if (!isMobile && railItems.isNotEmpty)
+            LayoutBuilder(
+              builder: (context, constraint) {
+                // Use LayoutBuilder to get the available height
+                return SingleChildScrollView(
+                  child: ConstrainedBox(
+                    // Force the rail to be at least as tall as the screen
+                    // This keeps the background color consistent if items are few
+                    constraints: BoxConstraints(minHeight: constraint.maxHeight),
+                    child: IntrinsicHeight(
+                      child: NavigationRail(
+                        extended: isDesktop,
+                        selectedIndex: railIndex,
+                        onDestinationSelected: (index) {
+                          if (index < railItems.length) {
+                            widget.onNavigationSelected(railItems[index].route);
+                          }
+                        },
+                        labelType: isDesktop ? NavigationRailLabelType.none : NavigationRailLabelType.all,
+                        destinations: railItems.map((item) {
+                          return NavigationRailDestination(
+                            icon: Icon(item.icon),
+                            selectedIcon: Icon(item.selectedIcon ?? item.icon),
+                            label: Text(item.label),
+                          );
+                        }).toList(),
                       ),
-                    )
-                    .toList(),
-              ),
+                    ),
+                  ),
+                );
+              },
             ),
 
-          if (!isMobile) const VerticalDivider(thickness: 1, width: 1),
+          if (!isMobile && railItems.isNotEmpty) const VerticalDivider(thickness: 1, width: 1),
 
-          // Main Content
           Expanded(child: widget.child),
         ],
       ),
 
-      // 5. Mobile: Show Bottom Bar
-      bottomNavigationBar: isMobile
+      bottomNavigationBar: (isMobile && widget.bottomNavigationitems.isNotEmpty)
           ? NavigationBar(
-              selectedIndex: _getSelectedBottomNavIndex(currentRoute),
+              selectedIndex: bottomNavIndex ?? 0,
               onDestinationSelected: (index) {
-                try {
+                if (index < widget.bottomNavigationitems.length) {
                   widget.onNavigationSelected(widget.bottomNavigationitems[index].route);
-                } catch (e) {
-                  debugPrint('Error in bottom navigation: $e');
                 }
               },
-              destinations: widget.bottomNavigationitems
-                  .map(
-                    (item) => NavigationDestination(
-                      icon: _isRouteSelected(currentRoute, item.route)
-                          ? Icon(item.selectedIcon ?? item.icon)
-                          : Icon(item.icon),
-                      selectedIcon: Icon(item.selectedIcon ?? item.icon),
-                      label: item.label,
-                    ),
-                  )
-                  .toList(),
+              destinations: widget.bottomNavigationitems.map((item) {
+                return NavigationDestination(
+                  icon: Icon(item.icon),
+                  selectedIcon: Icon(item.selectedIcon ?? item.icon),
+                  label: item.label,
+                );
+              }).toList(),
             )
-          : null, // No bottom bar on tablet/desktop
+          : null,
     );
   }
 }
