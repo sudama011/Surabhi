@@ -22,7 +22,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   bool _isCheckingAuth = true;
   List<TwoFAProvider> _availableProviders = [];
-  String? _selectedMethod;
+  TwoFAProvider? _selectedProvider;
 
   @override
   void initState() {
@@ -52,9 +52,13 @@ class _LoginPageState extends State<LoginPage> {
               _availableProviders = state.providers;
             });
           } else if (state is Auth2FAOTPSent) {
-            setState(() => _selectedMethod = state.provider.type);
+            setState(() => _selectedProvider = state.provider);
           } else if (state is AuthUnauthenticated) {
-            setState(() => _isCheckingAuth = false);
+            setState(() {
+              _isCheckingAuth = false;
+              _selectedProvider = null;
+              _availableProviders = [];
+            });
             if (state.message != null) {
               UiUtils.showSnackBar(context, state.message!, backgroundColor: AppColors.errorColor);
             }
@@ -81,20 +85,49 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _getContentForState(AuthState state) {
-    if (state is Auth2FARequired || (state is Auth2FALoading && _selectedMethod == null)) {
-      return TwoFASelectionForm(
-        providers: _availableProviders,
-        onBack: () => context.read<AuthBloc>().add(LogoutRequested()),
-      );
+    // 1. VERIFICATION VIEW (Priority)
+    // Show this if a method is selected AND (OTP Sent OR Loading OR *Error*)
+    if (_selectedProvider != null) {
+      if (state is Auth2FAOTPSent || state is Auth2FALoading || state is Auth2FAError) {
+        return TwoFAVerificationForm(
+          provider: _selectedProvider!,
+          onBack: () {
+            if (_availableProviders.length > 1) {
+              // Yes: Go back to list selection
+              setState(() => _selectedProvider = null);
+            } else {
+              // No: Only 1 option exists, so 'Back' means Cancel/Logout
+              context.read<AuthBloc>().add(LogoutRequested());
+            }
+          },
+        );
+      }
     }
 
-    if (state is Auth2FAOTPSent || (state is Auth2FALoading && _selectedMethod != null)) {
-      return TwoFAVerificationForm(
-        method: _selectedMethod ?? 'Method',
-        onBack: () => context.read<AuthBloc>().add(LogoutRequested()),
-      );
+    // 2. SELECTION VIEW
+    // Show this if 2FA is Required OR (Loading/Error occurred during selection)
+    if (state is Auth2FARequired ||
+        (state is Auth2FAError && _selectedProvider == null) ||
+        (state is Auth2FALoading && _selectedProvider == null)) {
+      if (_availableProviders.isNotEmpty) {
+        return TwoFASelectionForm(
+          providers: _availableProviders,
+          onBack: () => context.read<AuthBloc>().add(LogoutRequested()),
+        );
+      }
     }
 
+    // 2. SELECTION VIEW
+    // Show this if we have providers loaded, but no specific provider is selected yet.
+    // We check `state is! AuthUnauthenticated` to prevent it from showing briefly during logout.
+    if (_availableProviders.isNotEmpty && _selectedProvider == null && state is! AuthUnauthenticated) {
+       return TwoFASelectionForm(
+         providers: _availableProviders,
+         onBack: () => context.read<AuthBloc>().add(LogoutRequested()),
+       );
+    }
+
+    // 3. DEFAULT: Login Form
     return const LoginForm();
   }
 }

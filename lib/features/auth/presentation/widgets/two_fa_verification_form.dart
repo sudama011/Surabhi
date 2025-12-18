@@ -2,13 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:surabhi/features/auth/models/twofa_provider_model.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 
 class TwoFAVerificationForm extends StatefulWidget {
-  final String method;
+  final TwoFAProvider provider;
   final VoidCallback onBack;
 
-  const TwoFAVerificationForm({super.key, required this.method, required this.onBack});
+  const TwoFAVerificationForm({super.key, required this.provider, required this.onBack});
 
   @override
   State<TwoFAVerificationForm> createState() => _TwoFAVerificationFormState();
@@ -30,7 +31,19 @@ class _TwoFAVerificationFormState extends State<TwoFAVerificationForm> {
       children: [
         const Icon(Icons.security, size: 60, color: Colors.blue),
         const SizedBox(height: 16),
-        Text('Enter code sent to ${widget.method}', style: const TextStyle(fontWeight: FontWeight.bold)),
+        Text(
+          'Verify it\'s you', 
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Enter the code sent to ${widget.provider.type}:', 
+          style: TextStyle(color: Colors.grey[600])
+        ),
+        Text(
+          widget.provider.maskedValue,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
         const SizedBox(height: 24),
 
         Row(

@@ -28,7 +28,7 @@ class UserModel {
   });
 
   @JsonKey(includeFromJson: false, includeToJson: false)
-  String get displayName => name ?? email;
+  String get displayName => (name != null && name!.isNotEmpty) ? name! : email;
   @JsonKey(includeFromJson: false, includeToJson: false)
   String get avatarInitial => name?.isNotEmpty ?? false ? name![0] : email[0];
   @JsonKey(includeFromJson: false, includeToJson: false)
