@@ -121,10 +121,10 @@ class _LoginPageState extends State<LoginPage> {
     // Show this if we have providers loaded, but no specific provider is selected yet.
     // We check `state is! AuthUnauthenticated` to prevent it from showing briefly during logout.
     if (_availableProviders.isNotEmpty && _selectedProvider == null && state is! AuthUnauthenticated) {
-       return TwoFASelectionForm(
-         providers: _availableProviders,
-         onBack: () => context.read<AuthBloc>().add(LogoutRequested()),
-       );
+      return TwoFASelectionForm(
+        providers: _availableProviders,
+        onBack: () => context.read<AuthBloc>().add(LogoutRequested()),
+      );
     }
 
     // 3. DEFAULT: Login Form

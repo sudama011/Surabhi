@@ -31,7 +31,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => const FlutterSecureStorage());
   sl.registerLazySingleton(() => Dio());
   sl.registerLazySingleton(() => BiometricService(localAuth: sl(), preferencesService: sl()));
-  sl.registerLazySingleton(() => DeviceIdService(secureStorage: sl()));
+  sl.registerLazySingleton(() => DeviceIdService(sl()));
 
   // --- 2. Core Services (Depend on External) ---
   sl.registerLazySingleton<PreferencesService>(() => PreferencesService(sl(), sl()));

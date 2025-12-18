@@ -7,8 +7,7 @@ class DeviceIdService {
   final FlutterSecureStorage _secureStorage;
   static const _deviceIdKey = 'app_device_id';
 
-  DeviceIdService({FlutterSecureStorage? secureStorage})
-    : _secureStorage = secureStorage ?? const FlutterSecureStorage();
+  DeviceIdService(this._secureStorage);
 
   Future<String> getDeviceId() async {
     // await _secureStorage.delete(key: _deviceIdKey);

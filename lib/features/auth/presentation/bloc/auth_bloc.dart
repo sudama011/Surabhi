@@ -14,7 +14,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   String? _pendingEmail;
   String? _preAuthRefreshToken;
-  bool _rememberMe = false;
   TwoFAProvider? _selectedProvider;
 
   AuthBloc({required this.authRepository}) : super(AuthInitial()) {
@@ -29,13 +28,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onLoginRequested(LoginRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
-    final result = await authRepository.login(event.email, event.password, event.rememberMe);
+    final result = await authRepository.login(event.email, event.password);
     result.fold(
       (failure) {
         if (failure is TwoFactorRequiredFailure) {
           _pendingEmail = event.email;
           _preAuthRefreshToken = failure.preAuthRefreshToken;
-          _rememberMe = event.rememberMe;
 
           // Auto-select if only 1 provider exists
           if (failure.providers.length == 1) {
@@ -115,7 +113,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       _pendingEmail!,
       _selectedProvider!.type,
       event.otp,
-      _rememberMe,
       _preAuthRefreshToken!,
     );
 
@@ -124,7 +121,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       _pendingEmail = null;
       _preAuthRefreshToken = null;
       _selectedProvider = null;
-      _rememberMe = false;
       emit(AuthAuthenticated(user: user));
     });
   }

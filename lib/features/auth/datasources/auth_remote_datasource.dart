@@ -9,17 +9,11 @@ import 'package:surabhi/core/constants/api_constants.dart';
 import 'package:surabhi/core/utils/error_utils.dart';
 
 abstract class AuthRemoteDataSource {
-  Future<AuthResponseModel> login(String email, String password, bool rememberMe);
+  Future<AuthResponseModel> login(String email, String password);
 
   Future<void> sendTwoFactor(String email, String provider, String preAuthRefreshToken);
 
-  Future<AuthResponseModel> verifyTwoFactor(
-    String email,
-    String provider,
-    String code, {
-    bool rememberMe,
-    String preAuthRefreshToken,
-  });
+  Future<AuthResponseModel> verifyTwoFactor(String email, String provider, String code, String preAuthRefreshToken);
 
   Future<AuthResponseModel> refreshToken(String refreshToken);
 
@@ -33,14 +27,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   AuthRemoteDataSourceImpl(this.apiClient, this.deviceIdService);
 
   @override
-  Future<AuthResponseModel> login(String email, String password, bool rememberMe) async {
+  Future<AuthResponseModel> login(String email, String password) async {
     try {
-      final data = {
-        'email': email,
-        'password': password,
-        'rememberMe': rememberMe,
-        'deviceId': await deviceIdService.getDeviceId(),
-      };
+      final data = {'email': email, 'password': password, 'deviceId': await deviceIdService.getDeviceId()};
       final response = await apiClient.dio.post(
         ApiConstants.loginPath,
         data: data,
@@ -78,16 +67,15 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<AuthResponseModel> verifyTwoFactor(
     String email,
     String provider,
-    String code, {
-    bool rememberMe = true,
-    String preAuthRefreshToken = '',
-  }) async {
+    String code,
+    String preAuthRefreshToken,
+  ) async {
     try {
       final data = {
         'email': email,
         'provider': provider,
         'code': code,
-        'rememberClient': rememberMe,
+        'rememberClient': true,
         'preAuthRefreshToken': preAuthRefreshToken,
         'deviceId': await deviceIdService.getDeviceId(),
       };

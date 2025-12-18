@@ -12,7 +12,7 @@ import 'package:surabhi/features/auth/models/auth_response_model.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 
 abstract class AuthRepository {
-  Future<Either<Failure, UserModel>> login(String email, String password, bool rememberMe);
+  Future<Either<Failure, UserModel>> login(String email, String password);
 
   Future<Either<Failure, bool>> logout();
 
@@ -24,7 +24,6 @@ abstract class AuthRepository {
     String email,
     String provider,
     String code,
-    bool rememberMe,
     String preAuthRefreshToken,
   );
 
@@ -43,9 +42,9 @@ class AuthRepositoryImpl implements AuthRepository {
   });
 
   @override
-  Future<Either<Failure, UserModel>> login(String email, String password, bool rememberMe) async {
+  Future<Either<Failure, UserModel>> login(String email, String password) async {
     try {
-      final response = await authRemoteDataSource.login(email, password, rememberMe);
+      final response = await authRemoteDataSource.login(email, password);
       return _handleAuthResponse(response);
     } on AuthException catch (e) {
       return Left(AuthFailure(message: e.message));
@@ -84,17 +83,10 @@ class AuthRepositoryImpl implements AuthRepository {
     String email,
     String provider,
     String code,
-    bool rememberMe,
     String preAuthRefreshToken,
   ) async {
     try {
-      final response = await authRemoteDataSource.verifyTwoFactor(
-        email,
-        provider,
-        code,
-        rememberMe: rememberMe,
-        preAuthRefreshToken: preAuthRefreshToken,
-      );
+      final response = await authRemoteDataSource.verifyTwoFactor(email, provider, code, preAuthRefreshToken);
       return _handleAuthResponse(response);
     } on AuthException catch (e) {
       return Left(AuthFailure(message: e.message));
@@ -106,22 +98,23 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  /// refreshToken is used for 2 purposes:
+  /// 1. Extending session (isForBiometricLogin = false)
+  /// 2. Biometric Login (isForBiometricLogin = true)
   Future<Either<Failure, UserModel>> refreshToken({bool isForBiometricLogin = false}) async {
     try {
       String storedRefreshToken = '';
 
       if (isForBiometricLogin) {
-        // Retrieve refresh token for biometric login
         final refreshToken = await biometricService.authenticateAndGetToken();
         if (refreshToken == null) {
           return const Left(AuthFailure(message: 'Biometric authentication cancelled or not available'));
         }
         storedRefreshToken = refreshToken;
       } else {
-        // Retrieve refresh token for session extension
         final refreshToken = await preferencesService.getRefreshToken();
         if (refreshToken == null) {
-          return const Left(AuthFailure(message: 'No refresh token found.'));
+          return const Left(AuthFailure(message: 'Session expired. Please login again.'));
         }
         storedRefreshToken = refreshToken;
       }

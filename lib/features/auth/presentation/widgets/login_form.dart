@@ -16,12 +16,11 @@ class _LoginFormState extends State<LoginForm> {
   final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
-  final bool _rememberMe = true;
 
   void _login() {
     if (_formKey.currentState!.validate()) {
       context.read<AuthBloc>().add(
-        LoginRequested(email: _emailCtrl.text.trim().toLowerCase(), password: _passCtrl.text, rememberMe: _rememberMe),
+        LoginRequested(email: _emailCtrl.text.trim().toLowerCase(), password: _passCtrl.text),
       );
     }
   }

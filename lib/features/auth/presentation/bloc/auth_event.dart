@@ -14,12 +14,11 @@ class AppStarted extends AuthEvent {}
 class LoginRequested extends AuthEvent {
   final String email;
   final String password;
-  final bool rememberMe;
 
-  const LoginRequested({required this.email, required this.password, this.rememberMe = false});
+  const LoginRequested({required this.email, required this.password});
 
   @override
-  List<Object> get props => [email, password, rememberMe];
+  List<Object> get props => [email, password];
 }
 
 class SendOTPRequested extends AuthEvent {
