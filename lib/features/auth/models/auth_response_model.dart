@@ -14,7 +14,7 @@ class AuthResponseModel {
   final bool requiresTwoFactor;
   final List<TwoFAProvider>? providers;
   final String refreshToken;
-  final DateTime? refreshTokenExpiresAt;
+  final DateTime refreshTokenExpiresAt;
   final UserModel? profile;
 
   AuthResponseModel({
@@ -24,7 +24,7 @@ class AuthResponseModel {
     required this.requiresTwoFactor,
     this.providers,
     required this.refreshToken,
-    this.refreshTokenExpiresAt,
+    required this.refreshTokenExpiresAt,
     this.profile,
   });
 

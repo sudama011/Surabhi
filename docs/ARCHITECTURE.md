@@ -53,7 +53,7 @@ The `core/` module provides the foundation for the entire application, containin
 
 ### 💾 Storage Layer
 
-#### PreferencesService (`core/shared_preferences/preferences_service.dart`)
+#### StorageService (`core/services/storage_service.dart`)
 - **Secure Storage**: Uses FlutterSecureStorage for sensitive data (tokens)
 - **Shared Preferences**: Uses SharedPreferences for non-sensitive data (theme, user info)
 - **Data Separation**: Clear distinction between secure and non-secure storage

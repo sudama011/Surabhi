@@ -1,22 +1,22 @@
 // lib/features/auth/repositories/auth_repository.dart
 
 import 'dart:convert';
+
 import 'package:dartz/dartz.dart';
 import 'package:surabhi/core/errors/failures.dart';
 import 'package:surabhi/core/models/user_model.dart';
 import 'package:surabhi/core/errors/exceptions.dart';
 import 'package:surabhi/core/services/biometric_service.dart';
-import 'package:surabhi/core/services/preferences_service.dart';
+import 'package:surabhi/core/services/storage_service.dart';
 import 'package:surabhi/features/auth/datasources/auth_remote_datasource.dart';
 import 'package:surabhi/features/auth/models/auth_response_model.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:surabhi/features/profile/datasources/profile_remote_datasource.dart';
 
 abstract class AuthRepository {
   Future<Either<Failure, UserModel>> login(String email, String password);
 
   Future<Either<Failure, bool>> logout();
-
-  Future<Either<Failure, UserModel>> checkAuthStatus();
 
   Future<Either<Failure, bool>> sendTwoFactorCode(String email, String provider, String preAuthRefreshToken);
 
@@ -27,42 +27,35 @@ abstract class AuthRepository {
     String preAuthRefreshToken,
   );
 
-  Future<Either<Failure, UserModel>> refreshToken({bool isForBiometricLogin = false});
+  Future<Either<Failure, UserModel>> loginWithBiometrics();
+
+  Future<Either<Failure, UserModel>> refreshToken();
 }
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource authRemoteDataSource;
-  final PreferencesService preferencesService;
+  final StorageService storageService;
   final BiometricService biometricService;
+  final ProfileRemoteDataSource profileRemoteDataSource;
 
-  AuthRepositoryImpl({
-    required this.authRemoteDataSource,
-    required this.preferencesService,
-    required this.biometricService,
-  });
+  AuthRepositoryImpl(
+    this.authRemoteDataSource,
+    this.storageService,
+    this.biometricService,
+    this.profileRemoteDataSource,
+  );
 
   @override
   Future<Either<Failure, UserModel>> login(String email, String password) async {
     try {
       final response = await authRemoteDataSource.login(email, password);
-      return _handleAuthResponse(response);
+      return await _handleAuthResponse(response);
     } on AuthException catch (e) {
       return Left(AuthFailure(message: e.message));
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));
     } catch (e) {
       return Left(UnhandledFailure(message: e.toString()));
-    }
-  }
-
-  @override
-  Future<Either<Failure, UserModel>> checkAuthStatus() async {
-    final userJson = preferencesService.getUserJson();
-    if (userJson == null) if (userJson == null) return const Left(AuthFailure(message: 'No session found'));
-    try {
-      return Right(UserModel.fromJson(json.decode(userJson)));
-    } catch (e) {
-      return const Left(CacheFailure(message: 'Session corrupted'));
     }
   }
 
@@ -87,7 +80,7 @@ class AuthRepositoryImpl implements AuthRepository {
   ) async {
     try {
       final response = await authRemoteDataSource.verifyTwoFactor(email, provider, code, preAuthRefreshToken);
-      return _handleAuthResponse(response);
+      return await _handleAuthResponse(response);
     } on AuthException catch (e) {
       return Left(AuthFailure(message: e.message));
     } on ServerException catch (e) {
@@ -98,41 +91,42 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  /// refreshToken is used for 2 purposes:
-  /// 1. Extending session (isForBiometricLogin = false)
-  /// 2. Biometric Login (isForBiometricLogin = true)
-  Future<Either<Failure, UserModel>> refreshToken({bool isForBiometricLogin = false}) async {
+  Future<Either<Failure, UserModel>> loginWithBiometrics() async {
     try {
-      String storedRefreshToken = '';
+      final didAuthenticate = await biometricService.authenticate();
+      if (!didAuthenticate) {
+        return const Left(AuthFailure(message: 'Biometric authentication failed.'));
+      }
+      return await refreshToken();
+    } on AuthException catch (e) {
+      return Left(AuthFailure(message: e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    } catch (e) {
+      return Left(UnhandledFailure(message: e.toString()));
+    }
+  }
 
-      if (isForBiometricLogin) {
-        final refreshToken = await biometricService.authenticateAndGetToken();
-        if (refreshToken == null) {
-          return const Left(AuthFailure(message: 'Biometric authentication cancelled or not available'));
-        }
-        storedRefreshToken = refreshToken;
-      } else {
-        final refreshToken = await preferencesService.getRefreshToken();
-        if (refreshToken == null) {
-          return const Left(AuthFailure(message: 'Session expired. Please login again.'));
-        }
-        storedRefreshToken = refreshToken;
+  @override
+  Future<Either<Failure, UserModel>> refreshToken() async {
+    try {
+      final refreshToken = await storageService.getRefreshToken();
+
+      if (refreshToken == null) {
+        return const Left(AuthFailure(message: 'Session expired. Please login again.'));
       }
 
-      final authResponse = await authRemoteDataSource.refreshToken(storedRefreshToken);
-
-      // Save new tokens
+      final authResponse = await authRemoteDataSource.refreshToken(refreshToken);
       await _saveAuthData(authResponse);
 
-      // Get stored user data to maintain role and other info
-      final userJson = preferencesService.getUserJson();
-      if (userJson != null && userJson.isNotEmpty && userJson != '{}') {
-        final userMap = jsonDecode(userJson) as Map<String, dynamic>;
-        final user = UserModel.fromJson(userMap);
-        return Right(user);
+      final userJson = await storageService.getUserJson();
+      if (userJson != null) {
+        return Right(UserModel.fromJson(json.decode(userJson)));
       }
 
-      return const Left(CacheFailure(message: 'Failed to parse user data.'));
+      final userProfile = await profileRemoteDataSource.getProfile();
+      await storageService.saveUserJson(json.encode(userProfile.toJson()));
+      return Right(userProfile);
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));
     } catch (e) {
@@ -143,14 +137,13 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, bool>> logout() async {
     try {
-      // don't await this call, for smooth logout experience
-      authRemoteDataSource.logout();
-    } catch (e) {
-      // Server-side logout failed, but we should proceed with local logout
-    }
-    await preferencesService.clearAuthData();
+      authRemoteDataSource.logout(); // Fire and forget
+    } catch (_) {}
+    await storageService.clearAuthData();
     return const Right(true);
   }
+
+  // --- HELPER METHODS ---
 
   Future<Either<Failure, UserModel>> _handleAuthResponse(AuthResponseModel response) async {
     // 1. Check for 2FA Requirement
@@ -170,13 +163,18 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   Future<void> _saveAuthData(AuthResponseModel response) async {
-    await preferencesService.saveAccessToken(response.token!);
-    await preferencesService.saveTokenExpiry(response.expiresAt!);
-    await preferencesService.saveRefreshToken(response.refreshToken);
+    if (response.token != null) {
+      await storageService.saveAccessToken(response.token!);
+    }
+    if (response.expiresAt != null) {
+      await storageService.saveTokenExpiry(response.expiresAt!);
+    }
+
+    await storageService.saveRefreshToken(response.refreshToken);
+    await storageService.saveRefreshTokenExpiry(response.refreshTokenExpiresAt);
 
     if (response.profile != null) {
-      final userJson = json.encode(response.profile!.toJson());
-      await preferencesService.saveUserJson(userJson);
+      await storageService.saveUserJson(json.encode(response.profile!.toJson()));
     }
   }
 }

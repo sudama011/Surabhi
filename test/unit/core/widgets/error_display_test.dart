@@ -10,7 +10,7 @@ void main() {
 
       // Act
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(body: ErrorDisplay(message: errorMessage)),
         ),
       );
@@ -26,7 +26,7 @@ void main() {
 
       // Act
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: ErrorDisplay(message: 'Network error', icon: customIcon),
           ),
@@ -40,7 +40,7 @@ void main() {
     testWidgets('should display default error icon when no icon provided', (WidgetTester tester) async {
       // Act
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(body: ErrorDisplay(message: 'Error message')),
         ),
       );
@@ -83,7 +83,7 @@ void main() {
     testWidgets('should not display retry button when onRetry is null', (WidgetTester tester) async {
       // Act
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(body: ErrorDisplay(message: 'Error message')),
         ),
       );

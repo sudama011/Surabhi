@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:surabhi/core/constants/app_constants.dart';
-import 'package:surabhi/core/services/preferences_service.dart';
+import 'package:surabhi/core/services/storage_service.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:surabhi/injector.dart';
 
@@ -61,7 +61,7 @@ class _SessionTimeoutManagerState extends State<SessionTimeoutManager> {
 
   // 2. Check actual Token Expiry (in case app was in background)
   Future<void> _checkTokenExpiry() async {
-    final prefs = sl<PreferencesService>();
+    final prefs = sl<StorageService>();
     final expiry = prefs.getTokenExpiry();
 
     if (expiry != null) {

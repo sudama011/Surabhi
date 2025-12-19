@@ -2,19 +2,19 @@
 
 import 'package:dio/dio.dart';
 import 'package:surabhi/core/errors/exceptions.dart';
-import 'package:surabhi/core/services/preferences_service.dart';
+import 'package:surabhi/core/services/storage_service.dart';
 
 class ApiInterceptor extends Interceptor {
-  final PreferencesService _preferencesService;
+  final StorageService _storageService;
 
-  ApiInterceptor({required PreferencesService preferencesService}) : _preferencesService = preferencesService;
+  ApiInterceptor(this._storageService);
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
     final requiresAuth = options.extra['requiresAuth'] as bool? ?? true;
 
     if (requiresAuth) {
-      final accessToken = await _preferencesService.getAccessToken();
+      final accessToken = await _storageService.getAccessToken();
       if (accessToken == null) {
         return handler.reject(
           DioException(

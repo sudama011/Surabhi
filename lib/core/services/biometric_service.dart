@@ -1,16 +1,16 @@
 // lib/core/services/biometric_service.dart
 
 import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth/error_codes.dart' as auth_error;
-import 'package:surabhi/core/services/preferences_service.dart';
 
 class BiometricService {
   final LocalAuthentication _localAuth;
-  final PreferencesService preferencesService;
+  final FlutterSecureStorage _secureStorage;
+  static const String _biometricEnabledKey = 'is_biometric_enabled';
 
-  BiometricService({LocalAuthentication? localAuth, required this.preferencesService})
-    : _localAuth = localAuth ?? LocalAuthentication();
+  BiometricService(this._localAuth, this._secureStorage);
 
   Future<bool> get isBiometricAvailable async {
     try {
@@ -22,9 +22,22 @@ class BiometricService {
     }
   }
 
-  Future<String?> authenticateAndGetToken() async {
+  Future<void> enableBiometric() async {
+    await _secureStorage.write(key: _biometricEnabledKey, value: 'true');
+  }
+
+  Future<void> disableBiometric() async {
+    await _secureStorage.write(key: _biometricEnabledKey, value: 'false');
+  }
+
+  Future<bool> get isBiometricEnabled async {
+    final val = await _secureStorage.read(key: _biometricEnabledKey);
+    return val == 'true';
+  }
+
+  Future<bool> authenticate() async {
     // A. Check availability
-    if (!await isBiometricAvailable || !await preferencesService.isBiometricEnabled) return null;
+    if (!await isBiometricAvailable || !await isBiometricEnabled) return false;
 
     try {
       // B. Prompt OS Biometric Dialog
@@ -38,14 +51,14 @@ class BiometricService {
 
       if (didAuthenticate) {
         // C. If success, return the secret token
-        return await preferencesService.getRefreshToken();
+        return true;
       }
     } on PlatformException catch (e) {
       if (e.code == auth_error.notAvailable) {
         // Handle unavailable (e.g. user removed fingerprint from settings)
-        await preferencesService.disableBiometric();
+        await disableBiometric();
       }
     }
-    return null;
+    return false;
   }
 }

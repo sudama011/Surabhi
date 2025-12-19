@@ -13,6 +13,11 @@ class AuthInitial extends AuthState {}
 
 class AuthLoading extends AuthState {}
 
+class AuthBiometricAvailable extends AuthState {
+  final bool isAvailable;
+  const AuthBiometricAvailable(this.isAvailable);
+}
+
 class AuthAuthenticated extends AuthState {
   final UserModel user;
 

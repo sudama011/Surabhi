@@ -4,7 +4,7 @@ import 'package:local_auth/local_auth.dart';
 import 'package:surabhi/core/network/api_client.dart';
 import 'package:surabhi/core/services/biometric_service.dart';
 import 'package:surabhi/core/services/device_id_service.dart';
-import 'package:surabhi/core/services/preferences_service.dart';
+import 'package:surabhi/core/services/storage_service.dart';
 import 'package:surabhi/features/auth/datasources/auth_remote_datasource.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:surabhi/features/auth/repositories/auth_repository.dart';
@@ -30,23 +30,21 @@ Future<void> init() async {
   sl.registerLazySingleton(() => LocalAuthentication());
   sl.registerLazySingleton(() => const FlutterSecureStorage());
   sl.registerLazySingleton(() => Dio());
-  sl.registerLazySingleton(() => BiometricService(localAuth: sl(), preferencesService: sl()));
-  sl.registerLazySingleton(() => DeviceIdService(sl()));
+  sl.registerLazySingleton(() => BiometricService(sl(), sl()));
+  sl.registerLazySingleton(() => DeviceIdService(sl<FlutterSecureStorage>()));
 
   // --- 2. Core Services (Depend on External) ---
-  sl.registerLazySingleton<PreferencesService>(() => PreferencesService(sl(), sl()));
-  sl.registerLazySingleton<ApiInterceptor>(() => ApiInterceptor(preferencesService: sl()));
-  sl.registerLazySingleton<ApiClient>(() => ApiClient(sl<Dio>(), sl<ApiInterceptor>()));
+  sl.registerLazySingleton<StorageService>(() => StorageService(sl(), sl()));
+  sl.registerLazySingleton<ApiInterceptor>(() => ApiInterceptor(sl()));
+  sl.registerLazySingleton<ApiClient>(() => ApiClient(sl(), sl()));
   sl.registerLazySingleton(() => ThemeCubit(sl()));
 
   // --- 3. Features ---
 
   // Auth Feature
   sl.registerLazySingleton<AuthRemoteDataSource>(() => AuthRemoteDataSourceImpl(sl(), sl()));
-  sl.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(authRemoteDataSource: sl(), preferencesService: sl(), biometricService: sl()),
-  );
-  sl.registerFactory(() => AuthBloc(authRepository: sl()));
+  sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(sl(), sl(), sl(), sl()));
+  sl.registerFactory(() => AuthBloc(sl(), sl()));
 
   // Profile Feature
   sl.registerLazySingleton<ProfileRemoteDataSource>(() => ProfileRemoteDataSourceImpl(sl()));
