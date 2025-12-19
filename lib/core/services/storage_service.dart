@@ -53,11 +53,11 @@ class StorageService {
   }
 
   Future<void> saveUserJson(String jsonString) async {
-    await _secureStorage.write(key: userDataKey, value: jsonString);
+    await _prefs.setString(userDataKey, jsonString);
   }
 
   Future<String?> getUserJson() async {
-    return await _secureStorage.read(key: userDataKey);
+    return _prefs.getString(userDataKey);
   }
 
   Future<void> saveThemeMode(String themeMode) async {
@@ -69,8 +69,10 @@ class StorageService {
   }
 
   Future<void> clearAuthData() async {
+    print('Clearing auth data...');
     await _secureStorage.delete(key: _accessTokenKey);
     await _secureStorage.delete(key: _refreshTokenKey);
+    // await _secureStorage.delete(key: userDataKey);
     await _prefs.remove(_accessTokenExpiryKey);
     await _prefs.remove(_refreshTokenExpiryKey);
   }

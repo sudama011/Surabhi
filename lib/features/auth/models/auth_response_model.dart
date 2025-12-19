@@ -11,7 +11,10 @@ class AuthResponseModel {
   final bool succeeded;
   final String? token;
   final DateTime? expiresAt;
+
+  @JsonKey(defaultValue: false)
   final bool requiresTwoFactor;
+
   final List<TwoFAProvider>? providers;
   final String refreshToken;
   final DateTime refreshTokenExpiresAt;
