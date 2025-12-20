@@ -119,9 +119,13 @@ class AuthRepositoryImpl implements AuthRepository {
       final authResponse = await authRemoteDataSource.refreshToken(refreshToken);
       await _saveAuthData(authResponse);
 
-      final userJson = await storageService.getUserJson();
-      if (userJson != null) {
-        return Right(UserModel.fromJson(json.decode(userJson)));
+      try {
+        final userJson = await storageService.getUserJson();
+        if (userJson != null) {
+          return Right(UserModel.fromJson(json.decode(userJson)));
+        }
+      } catch (e) {
+        // Ignore local parse errors, fall through to API fetch
       }
 
       final userProfile = await profileRemoteDataSource.getProfile();
