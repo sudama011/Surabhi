@@ -51,115 +51,112 @@ class _CreateUserPageState extends State<CreateUserPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Create User')),
-      body: BlocListener<UsersBloc, UsersState>(
-        listenWhen: (previous, current) => previous.adminOpStatus != current.adminOpStatus,
-        listener: (context, state) {
-          if (state.adminOpStatus == AdminOpStatus.success) {
-            UiUtils.showSnackBar(context, 'User created successfully', backgroundColor: AppColors.successColor);
-            context.pop(); // Go back to list
-          } else if (state.adminOpStatus == AdminOpStatus.failure) {
-            UiUtils.showSnackBar(
-              context,
-              state.adminOpMessage ?? 'Creation failed',
-              backgroundColor: AppColors.errorColor,
-            );
-          }
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 600), // Responsive constraint
-              child: Form(
-                key: _formKey,
-                child: ListView(
-                  children: [
-                    // Email Field
-                    TextFormField(
-                      controller: _emailController,
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        hintText: 'Enter email',
-                        prefixIcon: Icon(Icons.email_outlined),
-                      ),
-                      keyboardType: TextInputType.emailAddress,
-                      validator: AppValidators.emailValidator,
-                      onChanged: (value) {
-                        final lowercaseValue = value.toLowerCase();
-                        if (value != lowercaseValue) {
-                          _emailController.value = _emailController.value.copyWith(
-                            text: lowercaseValue,
-                            selection: TextSelection.collapsed(offset: lowercaseValue.length),
-                          );
-                        }
-                      },
+    return BlocListener<UsersBloc, UsersState>(
+      listenWhen: (previous, current) => previous.adminOpStatus != current.adminOpStatus,
+      listener: (context, state) {
+        if (state.adminOpStatus == AdminOpStatus.success) {
+          UiUtils.showSnackBar(context, 'User created successfully', backgroundColor: AppColors.successColor);
+          context.pop(); // Go back to list
+        } else if (state.adminOpStatus == AdminOpStatus.failure) {
+          UiUtils.showSnackBar(
+            context,
+            state.adminOpMessage ?? 'Creation failed',
+            backgroundColor: AppColors.errorColor,
+          );
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600), // Responsive constraint
+            child: Form(
+              key: _formKey,
+              child: ListView(
+                children: [
+                  // Email Field
+                  TextFormField(
+                    controller: _emailController,
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                      hintText: 'Enter email',
+                      prefixIcon: Icon(Icons.email_outlined),
                     ),
-                    const SizedBox(height: 16),
-
-                    // Password Field
-                    TextFormField(
-                      controller: _passwordController,
-                      decoration: const InputDecoration(
-                        labelText: 'Password',
-                        hintText: 'Enter password',
-                        prefixIcon: Icon(Icons.lock_outline),
-                      ),
-                      obscureText: true,
-                      validator: AppValidators.passwordValidator,
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Phone Field
-                    TextFormField(
-                      controller: _phoneController,
-                      decoration: const InputDecoration(
-                        labelText: 'Phone Number',
-                        hintText: 'Enter phone number',
-                        prefixIcon: Icon(Icons.phone_outlined),
-                      ),
-                      keyboardType: TextInputType.phone,
-                      validator: AppValidators.phoneValidator,
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Role Dropdown
-                    DropdownButtonFormField<Role>(
-                      value: _selectedRole,
-                      items: Role.values
-                          .map((role) => DropdownMenuItem(value: role, child: Text(role.name.toCapitalized)))
-                          .toList(),
-                      onChanged: (v) => setState(() => _selectedRole = v),
-                      decoration: const InputDecoration(
-                        labelText: 'Role',
-                        prefixIcon: Icon(Icons.admin_panel_settings_outlined),
-                      ),
-                      validator: (v) => v == null ? 'Please select a role' : null,
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    // Submit Button
-                    BlocBuilder<UsersBloc, UsersState>(
-                      builder: (context, state) {
-                        final isLoading = state.adminOpStatus == AdminOpStatus.loading;
-
-                        return ElevatedButton(
-                          onPressed: isLoading ? null : () => _submit(context),
-                          style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
-                          child: isLoading
-                              ? const SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                                )
-                              : const Text('Create User'),
+                    keyboardType: TextInputType.emailAddress,
+                    validator: AppValidators.emailValidator,
+                    onChanged: (value) {
+                      final lowercaseValue = value.toLowerCase();
+                      if (value != lowercaseValue) {
+                        _emailController.value = _emailController.value.copyWith(
+                          text: lowercaseValue,
+                          selection: TextSelection.collapsed(offset: lowercaseValue.length),
                         );
-                      },
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Password Field
+                  TextFormField(
+                    controller: _passwordController,
+                    decoration: const InputDecoration(
+                      labelText: 'Password',
+                      hintText: 'Enter password',
+                      prefixIcon: Icon(Icons.lock_outline),
                     ),
-                  ],
-                ),
+                    obscureText: true,
+                    validator: AppValidators.passwordValidator,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Phone Field
+                  TextFormField(
+                    controller: _phoneController,
+                    decoration: const InputDecoration(
+                      labelText: 'Phone Number',
+                      hintText: 'Enter phone number',
+                      prefixIcon: Icon(Icons.phone_outlined),
+                    ),
+                    keyboardType: TextInputType.phone,
+                    validator: AppValidators.phoneValidator,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Role Dropdown
+                  DropdownButtonFormField<Role>(
+                    value: _selectedRole,
+                    items: Role.values
+                        .map((role) => DropdownMenuItem(value: role, child: Text(role.name.toCapitalized)))
+                        .toList(),
+                    onChanged: (v) => setState(() => _selectedRole = v),
+                    decoration: const InputDecoration(
+                      labelText: 'Role',
+                      prefixIcon: Icon(Icons.admin_panel_settings_outlined),
+                    ),
+                    validator: (v) => v == null ? 'Please select a role' : null,
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // Submit Button
+                  BlocBuilder<UsersBloc, UsersState>(
+                    builder: (context, state) {
+                      final isLoading = state.adminOpStatus == AdminOpStatus.loading;
+
+                      return ElevatedButton(
+                        onPressed: isLoading ? null : () => _submit(context),
+                        style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+                        child: isLoading
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              )
+                            : const Text('Create User'),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
           ),

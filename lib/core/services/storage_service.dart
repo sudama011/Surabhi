@@ -69,7 +69,6 @@ class StorageService {
   }
 
   Future<void> clearAuthData() async {
-    print('Clearing auth data...');
     await _secureStorage.delete(key: _accessTokenKey);
     await _secureStorage.delete(key: _refreshTokenKey);
     // await _secureStorage.delete(key: userDataKey);

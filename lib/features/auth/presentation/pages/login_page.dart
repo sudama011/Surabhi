@@ -12,8 +12,7 @@ import 'package:surabhi/features/auth/presentation/widgets/two_fa_selection_form
 import 'package:surabhi/features/auth/presentation/widgets/two_fa_verification_form.dart';
 
 class LoginPage extends StatefulWidget {
-  final bool checkAuthOnInit;
-  const LoginPage({super.key, this.checkAuthOnInit = true});
+  const LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -27,8 +26,6 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    _isCheckingAuth = widget.checkAuthOnInit;
-
     if (_isCheckingAuth) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {

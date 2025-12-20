@@ -20,6 +20,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart';
 import 'package:surabhi/core/network/api_interceptor.dart';
 import 'package:surabhi/core/theme/theme_cubit.dart';
+import 'package:surabhi/features/settings/presentation/bloc/settings_cubit.dart';
+import 'package:surabhi/routes/app_navigator.dart';
+import 'package:surabhi/routes/app_router.dart';
 
 final sl = GetIt.instance; // sl = Service Locator
 
@@ -30,21 +33,26 @@ Future<void> init() async {
   sl.registerLazySingleton(() => LocalAuthentication());
   sl.registerLazySingleton(() => const FlutterSecureStorage());
   sl.registerLazySingleton(() => Dio());
-  sl.registerLazySingleton(() => BiometricService(sl(), sl()));
-  sl.registerLazySingleton(() => DeviceIdService(sl<FlutterSecureStorage>()));
 
   // --- 2. Core Services (Depend on External) ---
-  sl.registerLazySingleton<StorageService>(() => StorageService(sl(), sl()));
+  sl.registerLazySingleton<StorageService>(() => StorageService(sl<SharedPreferences>(), sl<FlutterSecureStorage>()));
+  sl.registerLazySingleton(() => BiometricService(sl(), sl()));
+  sl.registerLazySingleton(() => DeviceIdService(sl<FlutterSecureStorage>()));
+  sl.registerLazySingleton(() => AppNavigator());
+  sl.registerLazySingleton(() => ThemeCubit(sl<StorageService>()));
   sl.registerLazySingleton<ApiInterceptor>(() => ApiInterceptor(sl()));
   sl.registerLazySingleton<ApiClient>(() => ApiClient(sl(), sl()));
-  sl.registerLazySingleton(() => ThemeCubit(sl()));
 
   // --- 3. Features ---
+
+  // Settings Feature
+  sl.registerFactory(() => SettingsCubit(sl(), sl()));
 
   // Auth Feature
   sl.registerLazySingleton<AuthRemoteDataSource>(() => AuthRemoteDataSourceImpl(sl(), sl()));
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(sl(), sl(), sl(), sl()));
-  sl.registerFactory(() => AuthBloc(sl(), sl()));
+  sl.registerLazySingleton(() => AuthBloc(sl(), sl()));
+  sl.registerLazySingleton(() => AppRouter(sl(), sl()));
 
   // Profile Feature
   sl.registerLazySingleton<ProfileRemoteDataSource>(() => ProfileRemoteDataSourceImpl(sl()));

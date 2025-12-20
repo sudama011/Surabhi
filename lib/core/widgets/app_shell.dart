@@ -1,3 +1,5 @@
+// lib/core/widgets/app_shell.dart
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,23 +7,19 @@ import 'package:go_router/go_router.dart';
 import 'package:surabhi/core/constants/app_constants.dart';
 import 'package:surabhi/core/models/navigation_item.dart';
 import 'package:surabhi/core/models/user_model.dart';
-import 'package:surabhi/core/theme/theme_cubit.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:surabhi/routes/app_navigator.dart';
+import 'package:surabhi/injector.dart';
+import 'package:surabhi/routes/app_routes.dart';
 
 class AppShell extends StatefulWidget {
   final Widget child;
   final List<NavigationItem> sideNavigationItems;
   final List<NavigationItem> bottomNavigationitems;
-  final Function(String) onNavigationSelected;
+  final AppNavigator appNavigator = sl<AppNavigator>();
 
-  const AppShell({
-    super.key,
-    required this.child,
-    required this.sideNavigationItems,
-    required this.bottomNavigationitems,
-    required this.onNavigationSelected,
-  });
+  AppShell({super.key, required this.child, required this.sideNavigationItems, required this.bottomNavigationitems});
 
   @override
   State<AppShell> createState() => _AppShellState();
@@ -37,6 +35,9 @@ class _AppShellState extends State<AppShell> {
   }
 
   String _getPageTitle(String currentRoute) {
+    if (currentRoute == AppRoutes.settings) return 'Settings';
+    if (currentRoute == AppRoutes.profile) return 'Profile';
+
     final allItems = [...widget.sideNavigationItems, ...widget.bottomNavigationitems];
     for (var item in allItems) {
       if (currentRoute.startsWith(item.route) && item.route != '/') return item.label;
@@ -65,21 +66,22 @@ class _AppShellState extends State<AppShell> {
     final String currentRoute = GoRouterState.of(context).uri.path;
     final String pageTitle = _getPageTitle(currentRoute);
 
-    // Merge Lists for Rail
+    // 1. RAIL ITEMS (Desktop)
     final List<NavigationItem> railItems = isMobile
         ? []
-        : [...widget.sideNavigationItems, ...widget.bottomNavigationitems];
+        : [
+            ...widget.sideNavigationItems,
+            ...widget.bottomNavigationitems,
+            // Settings Item (Always at bottom of rail)
+            const NavigationItem(label: 'Settings', icon: Icons.settings, route: AppRoutes.settings),
+          ];
 
     // Calculate Indices
-    final int? drawerIndex = _getSelectedIndex(currentRoute, widget.sideNavigationItems);
     final int? bottomNavIndex = _getSelectedIndex(currentRoute, widget.bottomNavigationitems);
     final int? railIndex = _getSelectedIndex(currentRoute, railItems);
 
     if (widget.sideNavigationItems.isEmpty && widget.bottomNavigationitems.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(title: Text(pageTitle)),
-        body: const Center(child: Text('No navigation items configured')),
-      );
+      return const Center(child: Text('No navigation items configured'));
     }
 
     return Scaffold(
@@ -93,20 +95,6 @@ class _AppShellState extends State<AppShell> {
               )
             : null,
         actions: [
-          if (isDesktop)
-            Container(
-              width: 300,
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              child: SearchBar(
-                hintText: 'Search...',
-                leading: const Icon(Icons.search),
-                elevation: WidgetStateProperty.all(0),
-                backgroundColor: WidgetStateProperty.all(Theme.of(context).colorScheme.surfaceContainerHighest),
-              ),
-            )
-          else
-            IconButton(icon: const Icon(Icons.search), onPressed: () {}),
-
           IconButton(icon: const Icon(Icons.notifications_outlined), onPressed: () {}),
 
           BlocBuilder<AuthBloc, AuthState>(
@@ -116,7 +104,7 @@ class _AppShellState extends State<AppShell> {
                 return Padding(
                   padding: const EdgeInsets.only(right: 16, left: 8),
                   child: GestureDetector(
-                    onTap: () => context.push('/profile'),
+                    onTap: () => context.push(AppRoutes.profile),
                     child: CircleAvatar(
                       radius: 18,
                       backgroundColor: AppColors.secondaryColor,
@@ -131,63 +119,101 @@ class _AppShellState extends State<AppShell> {
                   ),
                 );
               }
-              return IconButton(icon: const Icon(Icons.person_outline), onPressed: () => context.push('/profile'));
-            },
-          ),
-        ],
-      ),
-
-      drawer: NavigationDrawer(
-        selectedIndex: drawerIndex,
-        onDestinationSelected: (index) {
-          Navigator.pop(context);
-          if (index < widget.sideNavigationItems.length) {
-            widget.onNavigationSelected(widget.sideNavigationItems[index].route);
-          }
-        },
-        children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(28, 16, 16, 10),
-            child: Text('Menu', style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-          ...widget.sideNavigationItems.map(
-            (item) => NavigationDrawerDestination(
-              icon: Icon(item.icon),
-              selectedIcon: Icon(item.selectedIcon ?? item.icon),
-              label: Text(item.label),
-            ),
-          ),
-          const Divider(indent: 28, endIndent: 28),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(28, 16, 16, 10),
-            child: Text('Settings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-          ),
-          BlocBuilder<ThemeCubit, ThemeMode>(
-            builder: (context, themeMode) {
-              final isDark = themeMode == ThemeMode.dark;
-              return SwitchListTile(
-                secondary: Icon(isDark ? Icons.dark_mode : Icons.light_mode),
-                title: const Text('Dark Mode'),
-                value: isDark,
-                onChanged: (val) => context.read<ThemeCubit>().toggleTheme(val),
+              return IconButton(
+                icon: const Icon(Icons.person_outline),
+                onPressed: () => widget.appNavigator.push(AppRoutes.profile),
               );
             },
           ),
         ],
       ),
 
+      // NOTE: NavigationDrawer's 'children' list allows mixing Destinations and Widgets.
+      // However, if we mix them, the 'selectedIndex' might visually misalign if we aren't careful.
+      // A cleaner way for the Drawer manual item is strictly using standard ListTiles below the NavigationDrawerDestination list.
+      // Let's refine the Drawer above to be safe:
+
+      /* REFINED DRAWER IMPLEMENTATION */
+      /* Replace the 'drawer:' parameter above with this robust version: */
+      drawer: Drawer(
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  // Header or Spacing
+                  const SizedBox(height: kToolbarHeight + 16),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(28, 16, 16, 10),
+                    child: Text('Menu', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+
+                  // Dynamic Items
+                  ...widget.sideNavigationItems
+                      .map((item) {
+                        return NavigationDrawerDestination(
+                          icon: Icon(item.icon),
+                          selectedIcon: Icon(item.selectedIcon ?? item.icon),
+                          label: Text(item.label),
+                          // We wrap this in a Theme/Config wrapper if we used the NavigationDrawer widget,
+                          // but inside a ListView, we use ListTile for total control.
+                        );
+                        // actually, let's use standard ListTiles to be 100% safe with your custom mix
+                      })
+                      .map((dest) {
+                        // Manual mapping to ListTile for the 'Drawer' widget
+                        // (Since NavigationDrawer widget is strict about its children)
+                        final item = widget.sideNavigationItems.firstWhere(
+                          (i) => Text(i.label).data == (dest.label as Text).data,
+                        );
+                        final isSelected = currentRoute == item.route;
+
+                        return ListTile(
+                          leading: isSelected ? dest.selectedIcon : dest.icon,
+                          title: dest.label,
+                          selected: isSelected,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)), // Material 3 style
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 28),
+                          onTap: () {
+                            Navigator.pop(context);
+                            widget.appNavigator.push(item.route);
+                          },
+                        );
+                      }),
+
+                  const Divider(indent: 28, endIndent: 28, height: 32),
+
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(28, 0, 16, 10),
+                    child: Text('Settings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  ),
+
+                  ListTile(
+                    leading: const Icon(Icons.settings),
+                    title: const Text('All Settings'),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 28),
+                    onTap: () {
+                      Navigator.pop(context);
+                      widget.appNavigator.push(AppRoutes.settings);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+
       body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start, // Align to top
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // FIX: SCROLLABLE NAVIGATION RAIL
+          // 3. RAIL (Desktop/Tablet)
           if (!isMobile && railItems.isNotEmpty)
             LayoutBuilder(
               builder: (context, constraint) {
-                // Use LayoutBuilder to get the available height
                 return SingleChildScrollView(
                   child: ConstrainedBox(
-                    // Force the rail to be at least as tall as the screen
-                    // This keeps the background color consistent if items are few
                     constraints: BoxConstraints(minHeight: constraint.maxHeight),
                     child: IntrinsicHeight(
                       child: NavigationRail(
@@ -195,7 +221,12 @@ class _AppShellState extends State<AppShell> {
                         selectedIndex: railIndex,
                         onDestinationSelected: (index) {
                           if (index < railItems.length) {
-                            widget.onNavigationSelected(railItems[index].route);
+                            final route = railItems[index].route;
+                            if (route == AppRoutes.settings) {
+                              widget.appNavigator.push(AppRoutes.settings);
+                            } else {
+                              widget.appNavigator.push(route);
+                            }
                           }
                         },
                         labelType: isDesktop ? NavigationRailLabelType.none : NavigationRailLabelType.all,
@@ -224,7 +255,7 @@ class _AppShellState extends State<AppShell> {
               selectedIndex: bottomNavIndex ?? 0,
               onDestinationSelected: (index) {
                 if (index < widget.bottomNavigationitems.length) {
-                  widget.onNavigationSelected(widget.bottomNavigationitems[index].route);
+                  widget.appNavigator.push(widget.bottomNavigationitems[index].route);
                 }
               },
               destinations: widget.bottomNavigationitems.map((item) {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:surabhi/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:surabhi/features/profile/presentation/widgets/profile_actions_section.dart';
@@ -40,33 +39,24 @@ class _ProfilePageView extends StatelessWidget {
           }
 
           final user = authState.user;
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Profile'),
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () => context.canPop() ? context.pop() : context.go('/home'),
-              ),
-            ),
-            body: SingleChildScrollView(
-              child: Column(
-                children: [
-                  // 1. Header (Avatar + Name)
-                  ProfileHeader(user: user),
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                // 1. Header (Avatar + Name)
+                ProfileHeader(user: user),
 
-                  const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-                  // 2. Details (List of info)
-                  UserDetailsSection(user: user),
+                // 2. Details (List of info)
+                UserDetailsSection(user: user),
 
-                  const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-                  // 3. Actions (Change Pass, Logout)
-                  const ProfileActionsSection(),
+                // 3. Actions (Change Pass, Logout)
+                const ProfileActionsSection(),
 
-                  const SizedBox(height: 80),
-                ],
-              ),
+                const SizedBox(height: 80),
+              ],
             ),
           );
         },

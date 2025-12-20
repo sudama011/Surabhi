@@ -6,6 +6,7 @@ import 'package:surabhi/core/widgets/error_display.dart';
 import 'package:surabhi/features/admin/users/models/registered_user_model.dart';
 import 'package:surabhi/features/admin/users/presentation/bloc/users_bloc.dart';
 import 'package:surabhi/features/admin/users/presentation/pages/user_details_page.dart';
+import 'package:surabhi/routes/app_routes.dart';
 
 class UsersListPage extends StatefulWidget {
   const UsersListPage({super.key});
@@ -58,7 +59,7 @@ class _UsersListPageState extends State<UsersListPage> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       floatingActionButton: FloatingActionButton(
-        onPressed: () => context.go('/admin/create-user'),
+        onPressed: () => context.go(AppRoutes.adminCreateUser),
         child: const Icon(Icons.add),
       ),
       body: RefreshIndicator(

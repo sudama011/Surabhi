@@ -35,30 +35,28 @@ class BiometricService {
     return val == 'true';
   }
 
-  Future<bool> authenticate() async {
-    // A. Check availability
-    if (!await isBiometricAvailable || !await isBiometricEnabled) return false;
+  /// [checkSettings] - If true, checks if user has enabled feature in app settings.
+  /// Set to false when enabling the feature for the first time.
+  Future<bool> authenticate({bool checkSettings = true}) async {
+    // 1. Hardware Check
+    if (!await isBiometricAvailable) return false;
+
+    // 2. Settings Check (Skip if we are currently enabling it)
+    if (checkSettings && !await isBiometricEnabled) return false;
 
     try {
-      // B. Prompt OS Biometric Dialog
+      // 3. Prompt OS Dialog
       final didAuthenticate = await _localAuth.authenticate(
         localizedReason: 'Please authenticate to login',
-        options: const AuthenticationOptions(
-          stickyAuth: true,
-          biometricOnly: true, // Forces FaceID/Fingerprint (no PIN fallback if preferred)
-        ),
+        options: const AuthenticationOptions(stickyAuth: true, biometricOnly: true),
       );
-
-      if (didAuthenticate) {
-        // C. If success, return the secret token
-        return true;
-      }
+      return didAuthenticate;
     } on PlatformException catch (e) {
-      if (e.code == auth_error.notAvailable) {
-        // Handle unavailable (e.g. user removed fingerprint from settings)
+      if (e.code == auth_error.notAvailable || e.code == auth_error.passcodeNotSet) {
+        // Auto-disable if hardware configuration changes
         await disableBiometric();
       }
+      return false;
     }
-    return false;
   }
 }

@@ -17,3 +17,5 @@ class AppConstants {
 }
 
 enum Role { admin, employee, preacher, approver, volunteer, social }
+
+enum AppTheme { light, dark, system }

@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
             theme: lightTheme,
             darkTheme: darkTheme,
             themeMode: themeMode,
-            routerConfig: AppRouter(context.read<AuthBloc>()).router,
+            routerConfig: di.sl<AppRouter>().router,
           );
         },
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:surabhi/core/constants/app_constants.dart';
 import 'package:surabhi/core/services/storage_service.dart';
 
 class ThemeCubit extends Cubit<ThemeMode> {
@@ -11,9 +12,9 @@ class ThemeCubit extends Cubit<ThemeMode> {
 
   Future<void> _loadTheme() async {
     final savedTheme = await _storageService.getThemeMode();
-    if (savedTheme == 'light') {
+    if (savedTheme == AppTheme.light.name) {
       emit(ThemeMode.light);
-    } else if (savedTheme == 'dark') {
+    } else if (savedTheme == AppTheme.dark.name) {
       emit(ThemeMode.dark);
     } else {
       emit(ThemeMode.system);
@@ -26,8 +27,19 @@ class ThemeCubit extends Cubit<ThemeMode> {
     emit(newTheme);
   }
 
-  void setSystemTheme() async {
-    await _storageService.saveThemeMode(ThemeMode.system.name);
-    emit(ThemeMode.system);
+  Future<void> setTheme(AppTheme theme) async {
+    await _storageService.saveThemeMode(theme.name);
+
+    switch (theme) {
+      case AppTheme.light:
+        emit(ThemeMode.light);
+        break;
+      case AppTheme.dark:
+        emit(ThemeMode.dark);
+        break;
+      case AppTheme.system:
+        emit(ThemeMode.system);
+        break;
+    }
   }
 }

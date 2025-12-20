@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:surabhi/core/constants/app_constants.dart';
 import 'package:surabhi/core/services/storage_service.dart';
 import 'package:surabhi/core/theme/theme_cubit.dart';
 
@@ -55,12 +56,5 @@ void main() {
     await Future<void>.delayed(const Duration(milliseconds: 10));
     expect(cubit.state, ThemeMode.dark);
     expect(await storageService.getThemeMode(), 'dark');
-  });
-
-  test('setSystemTheme persists system', () async {
-    cubit.setSystemTheme();
-    await Future<void>.delayed(const Duration(milliseconds: 10));
-    expect(cubit.state, ThemeMode.system);
-    expect(await storageService.getThemeMode(), 'system');
   });
 }

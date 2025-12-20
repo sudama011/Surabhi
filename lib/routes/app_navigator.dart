@@ -1,29 +1,29 @@
-// lib/routes/app_navigator.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:surabhi/core/constants/app_constants.dart';
+import 'package:surabhi/routes/app_routes.dart';
 
 class AppNavigator {
-  AppNavigator._();
+  // 1. Create a GlobalKey. This acts as our "Remote Control" for the Navigator.
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-  static String getDashboardPath(Role role) {
-    switch (role) {
-      case Role.admin:
-        return '/admin-dashboard';
-      case Role.employee:
-        return '/employee-dashboard';
-      case Role.preacher:
-        return '/preacher-dashboard';
-      case Role.approver:
-        return '/approver-dashboard';
-      case Role.volunteer:
-        return '/volunteer-dashboard';
-      case Role.social:
-        return '/social-dashboard';
+  // 2. Helper to get context without needing it passed in
+  BuildContext get _context => navigatorKey.currentContext!;
+
+  // 3. Navigation Methods (Abstracting GoRouter)
+  void go(String routeName, {Object? extra}) {
+    _context.go(routeName, extra: extra);
+  }
+
+  void push(String routeName, {Object? extra}) {
+    _context.push(routeName, extra: extra);
+  }
+
+  void pop<T extends Object?>([T? result]) {
+    if (_context.canPop()) {
+      _context.pop(result);
     }
   }
 
-  static void navigateBasedOnRole(BuildContext context, Role role) {
-    context.go(getDashboardPath(role));
-  }
+  // Example of a specific action (Cleaner usage in Bloc)
+  void navigateToLogin() => go(AppRoutes.login);
 }
