@@ -5,6 +5,7 @@ import 'package:surabhi/core/theme/app_colors.dart';
 import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:surabhi/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:surabhi/features/profile/presentation/widgets/change_password_dialog.dart';
+import 'package:surabhi/routes/app_routes.dart';
 
 class ProfileActionsSection extends StatelessWidget {
   const ProfileActionsSection({super.key});
@@ -31,7 +32,7 @@ class ProfileActionsSection extends StatelessWidget {
             onPressed: () {
               Navigator.pop(dialogContext);
               context.read<AuthBloc>().add(LogoutRequested());
-              context.go('/', extra: false);
+              context.push(AppRoutes.login, extra: false);
             },
             child: const Text('Logout', style: TextStyle(color: Colors.red)),
           ),

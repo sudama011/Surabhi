@@ -46,8 +46,8 @@ A comprehensive Flutter application designed for role-based management across An
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/praveenkumargurrala/vhkmsurabhi_flutter.git
-   cd vhkmsurabhi_flutter
+   git clone https://github.com/praveenkumargurrala/surabhi_ui.git
+   cd surabhi_ui
    ```
 
 2. **Install Dependencies**
@@ -199,8 +199,8 @@ See [LICENSE](LICENSE) for details.
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/praveenkumargurrala/vhkmsurabhi_flutter/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/praveenkumargurrala/vhkmsurabhi_flutter/discussions)
+- **Issues**: [GitHub Issues](https://github.com/praveenkumargurrala/surabhi_ui/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/praveenkumargurrala/surabhi_ui/discussions)
 - **Email**: Contact maintainers for urgent matters
 
 ---

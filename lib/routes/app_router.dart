@@ -60,49 +60,61 @@ class AppRouter {
         },
         routes: [
           // 1. Global Pages
-          GoRoute(path: AppRoutes.settings, name: 'Settings', builder: (context, state) => const SettingsPage()),
-          GoRoute(path: AppRoutes.profile, name: 'Profile', builder: (context, state) => const ProfilePage()),
+          GoRoute(
+            path: AppRoutes.settings,
+            name: 'Settings',
+            pageBuilder: (context, state) => const NoTransitionPage(child: SettingsPage()),
+          ),
+          GoRoute(
+            path: AppRoutes.profile,
+            name: 'Profile',
+            pageBuilder: (context, state) => const NoTransitionPage(child: ProfilePage()),
+          ),
 
           // 2. Admin Dashboard & Sub-routes
           GoRoute(
             path: AppRoutes.adminDashboard,
             name: 'AdminDashboard',
-            builder: (context, state) => const admin_dashboard.HomePage(),
+            pageBuilder: (context, state) => const NoTransitionPage(child: admin_dashboard.HomePage()),
+
             routes: [
               GoRoute(
                 path: 'users',
-                builder: (context, state) {
-                  return BlocProvider(
+                pageBuilder: (context, state) => NoTransitionPage(
+                  child: BlocProvider(
                     create: (context) => di.sl<UsersBloc>(),
                     child: const admin_dashboard.UsersListPage(),
-                  );
-                },
+                  ),
+                ),
               ),
               GoRoute(
                 path: 'register-user',
-                builder: (context, state) {
-                  return BlocProvider(
+                pageBuilder: (context, state) => NoTransitionPage(
+                  child: BlocProvider(
                     create: (context) => di.sl<UsersBloc>(),
                     child: const admin_dashboard.CreateUserPage(),
-                  );
-                },
+                  ),
+                ),
               ),
-              GoRoute(path: 'devotees', builder: (context, state) => const admin_dashboard.DevoteesPage()),
+              GoRoute(
+                path: 'devotees',
+                pageBuilder: (context, state) => const NoTransitionPage(child: admin_dashboard.DevoteesPage()),
+              ),
               GoRoute(
                 path: 'donors',
-                builder: (context, state) => const Center(child: Text('Donors Page')),
+                pageBuilder: (context, state) => const NoTransitionPage(child: Center(child: Text('Donors Page'))),
               ),
               GoRoute(
                 path: 'donate',
-                builder: (context, state) => const Center(child: Text('Donate Page')),
+                pageBuilder: (context, state) => const NoTransitionPage(child: Center(child: Text('Donate Page'))),
               ),
               GoRoute(
                 path: 'donations',
-                builder: (context, state) => const Center(child: Text('Donations Page')),
+                pageBuilder: (context, state) => const NoTransitionPage(child: Center(child: Text('Donations Page'))),
               ),
               GoRoute(
                 path: 'reports',
-                builder: (context, state) => const Center(child: Text('Reports Page')),
+                pageBuilder: (context, state) => const NoTransitionPage(child: Center(child: Text('Reports Page'))),
               ),
             ],
           ),

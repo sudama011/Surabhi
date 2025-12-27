@@ -25,8 +25,8 @@ Please follow these guidelines to help us maintain a high-quality codebase and s
 
 2. **Clone Your Fork**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/vhkmsurabhi_flutter.git
-   cd vhkmsurabhi_flutter
+   git clone https://github.com/YOUR_USERNAME/surabhi_ui.git
+   cd surabhi_ui
    ```
 3. **Setup Project** (Recommended - using Makefile):
    ```bash
@@ -146,7 +146,7 @@ Please follow these guidelines to help us maintain a high-quality codebase and s
 
 ## Reporting Bugs
 
-If you find a bug, please [open an issue](https://github.com/praveenkumargurrala/vhkmsurabhi_flutter/issues) and include:
+If you find a bug, please [open an issue](https://github.com/praveenkumargurrala/surabhi_ui/issues) and include:
 
 - Clear description of the bug
 - Steps to reproduce

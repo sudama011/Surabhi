@@ -131,7 +131,7 @@ class _AppShellState extends State<AppShell> {
                 return Padding(
                   padding: const EdgeInsets.only(right: 16, left: 8),
                   child: GestureDetector(
-                    onTap: () => context.go(AppRoutes.profile),
+                    onTap: () => context.push(AppRoutes.profile),
                     child: CircleAvatar(
                       radius: 18,
                       backgroundColor: AppColors.secondaryColor,
@@ -148,7 +148,7 @@ class _AppShellState extends State<AppShell> {
               }
               return IconButton(
                 icon: const Icon(Icons.person_outline),
-                onPressed: () => widget.appNavigator.go(AppRoutes.profile),
+                onPressed: () => widget.appNavigator.push(AppRoutes.profile),
               );
             },
           ),
@@ -204,7 +204,7 @@ class _AppShellState extends State<AppShell> {
                           contentPadding: const EdgeInsets.symmetric(horizontal: 28),
                           onTap: () {
                             Navigator.pop(context);
-                            widget.appNavigator.go(item.route);
+                            widget.appNavigator.push(item.route);
                           },
                         );
                       }),
@@ -222,7 +222,7 @@ class _AppShellState extends State<AppShell> {
                     contentPadding: const EdgeInsets.symmetric(horizontal: 28),
                     onTap: () {
                       Navigator.pop(context);
-                      widget.appNavigator.go(AppRoutes.settings);
+                      widget.appNavigator.push(AppRoutes.settings);
                     },
                   ),
                 ],
@@ -250,9 +250,9 @@ class _AppShellState extends State<AppShell> {
                           if (index < railItems.length) {
                             final route = railItems[index].route;
                             if (route == AppRoutes.settings) {
-                              widget.appNavigator.go(AppRoutes.settings);
+                              widget.appNavigator.push(AppRoutes.settings);
                             } else {
-                              widget.appNavigator.go(route);
+                              widget.appNavigator.push(route);
                             }
                           }
                         },
@@ -282,7 +282,7 @@ class _AppShellState extends State<AppShell> {
               selectedIndex: bottomNavIndex ?? 0,
               onDestinationSelected: (index) {
                 if (index < widget.bottomNavigationitems.length) {
-                  widget.appNavigator.go(widget.bottomNavigationitems[index].route);
+                  widget.appNavigator.push(widget.bottomNavigationitems[index].route);
                 }
               },
               destinations: widget.bottomNavigationitems.map((item) {

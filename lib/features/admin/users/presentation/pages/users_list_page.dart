@@ -59,7 +59,7 @@ class _UsersListPageState extends State<UsersListPage> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       floatingActionButton: FloatingActionButton(
-        onPressed: () => context.go(AppRoutes.adminCreateUser),
+        onPressed: () => context.push(AppRoutes.adminCreateUser),
         child: const Icon(Icons.add),
       ),
       body: RefreshIndicator(
