@@ -38,31 +38,25 @@ class UserDetailsPage extends StatelessWidget {
           );
         }
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('User Details'),
-          leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.pop()),
-        ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildUserHeader(context, theme),
-              const SizedBox(height: 24),
-              _buildInfoCard(context, 'Personal Information', [
-                _buildInfoRow('Email', user.email),
-                _buildInfoRow('Mobile', user.mobileNumber),
-              ]),
-              const SizedBox(height: 16),
-              _buildInfoCard(context, 'Account Information', [
-                _buildInfoRow('User ID', user.id.toString()),
-                _buildInfoRow('Role', user.role.name.toUpperCase()),
-              ]),
-              const SizedBox(height: 24),
-              _buildActionButtons(context),
-            ],
-          ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildUserHeader(context, theme),
+            const SizedBox(height: 24),
+            _buildInfoCard(context, 'Personal Information', [
+              _buildInfoRow('Email', user.email),
+              _buildInfoRow('Mobile', user.mobileNumber),
+            ]),
+            const SizedBox(height: 16),
+            _buildInfoCard(context, 'Account Information', [
+              _buildInfoRow('User ID', user.id.toString()),
+              _buildInfoRow('Role', user.role.name.toUpperCase()),
+            ]),
+            const SizedBox(height: 24),
+            _buildActionButtons(context),
+          ],
         ),
       ),
     );

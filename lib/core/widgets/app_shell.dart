@@ -26,12 +26,37 @@ class AppShell extends StatefulWidget {
 }
 
 class _AppShellState extends State<AppShell> {
-  int? _getSelectedIndex(String currentRoute, List<NavigationItem> items) {
-    int index = items.indexWhere((item) => currentRoute == item.route);
-    if (index == -1) {
-      index = items.indexWhere((item) => currentRoute.startsWith(item.route) && item.route != '/');
+
+  NavigationItem? _findMatchingItem(String currentRoute, List<NavigationItem> items) {
+    NavigationItem? bestMatch;
+    int maxMatchLength = -1;
+
+    for (var item in items) {
+      // 1. Exact Match (Best case)
+      if (item.route == currentRoute) return item;
+
+      // 2. Prefix Match
+      if (currentRoute.startsWith(item.route)) {
+        // Prevent partial word matches (e.g. /users matching /userslist)
+        // Only match if the next char is '/' or it's the end of string
+        bool isBoundaryCorrect = currentRoute.length == item.route.length || 
+                                 currentRoute[item.route.length] == '/';
+        
+        if (isBoundaryCorrect && item.route.length > maxMatchLength) {
+          maxMatchLength = item.route.length;
+          bestMatch = item;
+        }
+      }
     }
-    return index != -1 ? index : null;
+    return bestMatch;
+  }
+
+  int? _getSelectedIndex(String currentRoute, List<NavigationItem> items) {
+    final match = _findMatchingItem(currentRoute, items);
+    if (match != null) {
+      return items.indexOf(match);
+    }
+    return null;
   }
 
   String _getPageTitle(String currentRoute) {
@@ -39,9 +64,11 @@ class _AppShellState extends State<AppShell> {
     if (currentRoute == AppRoutes.profile) return 'Profile';
 
     final allItems = [...widget.sideNavigationItems, ...widget.bottomNavigationitems];
-    for (var item in allItems) {
-      if (currentRoute.startsWith(item.route) && item.route != '/') return item.label;
-    }
+    
+    // FIX: Use the smart matcher
+    final match = _findMatchingItem(currentRoute, allItems);
+    if (match != null) return match.label;
+    
     return AppConstants.appName;
   }
 
@@ -104,7 +131,7 @@ class _AppShellState extends State<AppShell> {
                 return Padding(
                   padding: const EdgeInsets.only(right: 16, left: 8),
                   child: GestureDetector(
-                    onTap: () => context.push(AppRoutes.profile),
+                    onTap: () => context.go(AppRoutes.profile),
                     child: CircleAvatar(
                       radius: 18,
                       backgroundColor: AppColors.secondaryColor,
@@ -121,7 +148,7 @@ class _AppShellState extends State<AppShell> {
               }
               return IconButton(
                 icon: const Icon(Icons.person_outline),
-                onPressed: () => widget.appNavigator.push(AppRoutes.profile),
+                onPressed: () => widget.appNavigator.go(AppRoutes.profile),
               );
             },
           ),
@@ -177,7 +204,7 @@ class _AppShellState extends State<AppShell> {
                           contentPadding: const EdgeInsets.symmetric(horizontal: 28),
                           onTap: () {
                             Navigator.pop(context);
-                            widget.appNavigator.push(item.route);
+                            widget.appNavigator.go(item.route);
                           },
                         );
                       }),
@@ -195,7 +222,7 @@ class _AppShellState extends State<AppShell> {
                     contentPadding: const EdgeInsets.symmetric(horizontal: 28),
                     onTap: () {
                       Navigator.pop(context);
-                      widget.appNavigator.push(AppRoutes.settings);
+                      widget.appNavigator.go(AppRoutes.settings);
                     },
                   ),
                 ],
@@ -223,9 +250,9 @@ class _AppShellState extends State<AppShell> {
                           if (index < railItems.length) {
                             final route = railItems[index].route;
                             if (route == AppRoutes.settings) {
-                              widget.appNavigator.push(AppRoutes.settings);
+                              widget.appNavigator.go(AppRoutes.settings);
                             } else {
-                              widget.appNavigator.push(route);
+                              widget.appNavigator.go(route);
                             }
                           }
                         },
@@ -255,7 +282,7 @@ class _AppShellState extends State<AppShell> {
               selectedIndex: bottomNavIndex ?? 0,
               onDestinationSelected: (index) {
                 if (index < widget.bottomNavigationitems.length) {
-                  widget.appNavigator.push(widget.bottomNavigationitems[index].route);
+                  widget.appNavigator.go(widget.bottomNavigationitems[index].route);
                 }
               },
               destinations: widget.bottomNavigationitems.map((item) {

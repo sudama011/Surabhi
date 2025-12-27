@@ -2,10 +2,13 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/foundation.dart';
+import 'package:surabhi/features/admin/users/presentation/bloc/users_bloc.dart';
 import 'package:surabhi/routes/app_navigator.dart';
 import 'package:surabhi/routes/app_routes.dart';
+import 'package:surabhi/injector.dart' as di;
 
 import 'package:surabhi/core/constants/app_constants.dart';
 import 'package:surabhi/core/models/navigation_item.dart';
@@ -66,8 +69,24 @@ class AppRouter {
             name: 'AdminDashboard',
             builder: (context, state) => const admin_dashboard.HomePage(),
             routes: [
-              GoRoute(path: 'users', builder: (context, state) => const admin_dashboard.UsersListPage()),
-              GoRoute(path: 'register-user', builder: (context, state) => const admin_dashboard.CreateUserPage()),
+              GoRoute(
+                path: 'users',
+                builder: (context, state) {
+                  return BlocProvider(
+                    create: (context) => di.sl<UsersBloc>(),
+                    child: const admin_dashboard.UsersListPage(),
+                  );
+                },
+              ),
+              GoRoute(
+                path: 'register-user',
+                builder: (context, state) {
+                  return BlocProvider(
+                    create: (context) => di.sl<UsersBloc>(),
+                    child: const admin_dashboard.CreateUserPage(),
+                  );
+                },
+              ),
               GoRoute(path: 'devotees', builder: (context, state) => const admin_dashboard.DevoteesPage()),
               GoRoute(
                 path: 'donors',
