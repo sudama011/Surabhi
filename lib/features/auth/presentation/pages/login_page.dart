@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:surabhi/core/services/biometric_service.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
 import 'package:surabhi/core/utils/ui_utils.dart';
 import 'package:surabhi/features/auth/models/twofa_provider_model.dart';
@@ -10,6 +11,7 @@ import 'package:surabhi/features/auth/presentation/widgets/auth_page_layout.dart
 import 'package:surabhi/features/auth/presentation/widgets/login_form.dart';
 import 'package:surabhi/features/auth/presentation/widgets/two_fa_selection_form.dart';
 import 'package:surabhi/features/auth/presentation/widgets/two_fa_verification_form.dart';
+import 'package:surabhi/injector.dart' as di;
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -26,12 +28,24 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
+    _checkBiometricAutoLogin();
     if (_isCheckingAuth) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          context.read<AuthBloc>().add(AppStarted());
-        }
+        if (!mounted) return;
+        context.read<AuthBloc>().add(AppStarted());
       });
+    }
+  }
+
+  Future<void> _checkBiometricAutoLogin() async {
+    final biometricService = di.sl<BiometricService>();
+    final isEnabled = await biometricService.isBiometricEnabled;
+
+    if (!mounted) return;
+    final authState = context.read<AuthBloc>().state;
+
+    if (isEnabled && authState is! AuthAuthenticated) {
+      context.read<AuthBloc>().add(BiometricLoginRequested());
     }
   }
 
@@ -61,16 +75,21 @@ class _LoginPageState extends State<LoginPage> {
             }
           } else if (state is Auth2FAError) {
             UiUtils.showSnackBar(context, state.message, backgroundColor: AppColors.errorColor);
+          } else if (state is AuthBiometricFailure) {
+            // Handle Biometric Cancel/Error
+            UiUtils.showSnackBar(context, state.message, backgroundColor: AppColors.errorColor);
           }
         },
-        // Use the Wrapper Widget here!
         child: AuthPageLayout(child: _isCheckingAuth ? _buildLoadingState() : _buildDynamicContent()),
       ),
     );
   }
 
   Widget _buildLoadingState() {
-    return const Column(children: [CircularProgressIndicator(), SizedBox(height: 16), Text('Verifying session...')]);
+    return const Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [CircularProgressIndicator(), SizedBox(height: 16), Text('Verifying session...')],
+    );
   }
 
   Widget _buildDynamicContent() {
@@ -83,17 +102,14 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _getContentForState(AuthState state) {
     // 1. VERIFICATION VIEW (Priority)
-    // Show this if a method is selected AND (OTP Sent OR Loading OR *Error*)
     if (_selectedProvider != null) {
       if (state is Auth2FAOTPSent || state is Auth2FALoading || state is Auth2FAError) {
         return TwoFAVerificationForm(
           provider: _selectedProvider!,
           onBack: () {
             if (_availableProviders.length > 1) {
-              // Yes: Go back to list selection
               setState(() => _selectedProvider = null);
             } else {
-              // No: Only 1 option exists, so 'Back' means Cancel/Logout
               context.read<AuthBloc>().add(LogoutRequested());
             }
           },
@@ -102,7 +118,6 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     // 2. SELECTION VIEW
-    // Show this if 2FA is Required OR (Loading/Error occurred during selection)
     if (state is Auth2FARequired ||
         (state is Auth2FAError && _selectedProvider == null) ||
         (state is Auth2FALoading && _selectedProvider == null)) {
@@ -114,17 +129,32 @@ class _LoginPageState extends State<LoginPage> {
       }
     }
 
-    // 2. SELECTION VIEW
-    // Show this if we have providers loaded, but no specific provider is selected yet.
-    // We check `state is! AuthUnauthenticated` to prevent it from showing briefly during logout.
-    if (_availableProviders.isNotEmpty && _selectedProvider == null && state is! AuthUnauthenticated) {
-      return TwoFASelectionForm(
-        providers: _availableProviders,
-        onBack: () => context.read<AuthBloc>().add(LogoutRequested()),
-      );
-    }
+    // 3. DEFAULT: Login Form + Manual Biometric Button
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const LoginForm(),
 
-    // 3. DEFAULT: Login Form
-    return const LoginForm();
+        // ADDED: Manual Biometric Trigger (In case user cancels the auto-popup)
+        const SizedBox(height: 20),
+        FutureBuilder<bool>(
+          future: di.sl<BiometricService>().isBiometricEnabled,
+          builder: (context, snapshot) {
+            if (snapshot.data == true) {
+              return Column(
+                children: [
+                  const Text('Or login with', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                  IconButton(
+                    icon: const Icon(Icons.fingerprint, size: 48, color: AppColors.primaryColor),
+                    onPressed: () => context.read<AuthBloc>().add(BiometricLoginRequested()),
+                  ),
+                ],
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
+      ],
+    );
   }
 }

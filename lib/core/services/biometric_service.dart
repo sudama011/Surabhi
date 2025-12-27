@@ -27,7 +27,7 @@ class BiometricService {
   }
 
   Future<void> disableBiometric() async {
-    await _secureStorage.write(key: _biometricEnabledKey, value: 'false');
+    await _secureStorage.delete(key: _biometricEnabledKey);
   }
 
   Future<bool> get isBiometricEnabled async {

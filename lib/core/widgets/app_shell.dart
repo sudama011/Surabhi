@@ -26,7 +26,6 @@ class AppShell extends StatefulWidget {
 }
 
 class _AppShellState extends State<AppShell> {
-
   NavigationItem? _findMatchingItem(String currentRoute, List<NavigationItem> items) {
     NavigationItem? bestMatch;
     int maxMatchLength = -1;
@@ -39,9 +38,8 @@ class _AppShellState extends State<AppShell> {
       if (currentRoute.startsWith(item.route)) {
         // Prevent partial word matches (e.g. /users matching /userslist)
         // Only match if the next char is '/' or it's the end of string
-        bool isBoundaryCorrect = currentRoute.length == item.route.length || 
-                                 currentRoute[item.route.length] == '/';
-        
+        bool isBoundaryCorrect = currentRoute.length == item.route.length || currentRoute[item.route.length] == '/';
+
         if (isBoundaryCorrect && item.route.length > maxMatchLength) {
           maxMatchLength = item.route.length;
           bestMatch = item;
@@ -64,11 +62,11 @@ class _AppShellState extends State<AppShell> {
     if (currentRoute == AppRoutes.profile) return 'Profile';
 
     final allItems = [...widget.sideNavigationItems, ...widget.bottomNavigationitems];
-    
+
     // FIX: Use the smart matcher
     final match = _findMatchingItem(currentRoute, allItems);
     if (match != null) return match.label;
-    
+
     return AppConstants.appName;
   }
 
