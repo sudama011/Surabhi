@@ -17,12 +17,21 @@ class AppShell extends StatefulWidget {
   final Widget child;
   final List<NavigationItem> sideNavigationItems;
   final List<NavigationItem> bottomNavigationitems;
-  final AppNavigator appNavigator = sl<AppNavigator>();
 
-  AppShell({super.key, required this.child, required this.sideNavigationItems, required this.bottomNavigationitems});
+  const AppShell({
+    super.key,
+    required this.child,
+    required this.sideNavigationItems,
+    required this.bottomNavigationitems,
+  });
 
   @override
   State<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellStateHelper {
+  static final AppNavigator _appNavigator = sl<AppNavigator>();
+  static AppNavigator get appNavigator => _appNavigator;
 }
 
 class _AppShellState extends State<AppShell> {
@@ -149,7 +158,7 @@ class _AppShellState extends State<AppShell> {
                 }
                 return IconButton(
                   icon: const Icon(Icons.person_outline),
-                  onPressed: () => widget.appNavigator.push(AppRoutes.profile),
+                  onPressed: () => _AppShellStateHelper.appNavigator.push(AppRoutes.profile),
                 );
               },
             ),
@@ -192,22 +201,29 @@ class _AppShellState extends State<AppShell> {
                         .map((dest) {
                           // Manual mapping to ListTile for the 'Drawer' widget
                           // (Since NavigationDrawer widget is strict about its children)
-                          final item = widget.sideNavigationItems.firstWhere(
-                            (i) => Text(i.label).data == (dest.label as Text).data,
-                          );
-                          final isSelected = currentRoute == item.route;
+                          try {
+                            final item = widget.sideNavigationItems.firstWhere(
+                              (i) => Text(i.label).data == (dest.label as Text).data,
+                            );
 
-                          return ListTile(
-                            leading: isSelected ? dest.selectedIcon : dest.icon,
-                            title: dest.label,
-                            selected: isSelected,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)), // Material 3 style
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 28),
-                            onTap: () {
-                              Navigator.pop(context);
-                              widget.appNavigator.push(item.route);
-                            },
-                          );
+                            final isSelected = currentRoute == item.route;
+
+                            return ListTile(
+                              leading: isSelected ? dest.selectedIcon : dest.icon,
+                              title: dest.label,
+                              selected: isSelected,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(28),
+                              ), // Material 3 style
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 28),
+                              onTap: () {
+                                Navigator.pop(context);
+                                _AppShellStateHelper.appNavigator.push(item.route);
+                              },
+                            );
+                          } catch (_) {
+                            return const SizedBox.shrink();
+                          }
                         }),
 
                     const Divider(indent: 28, endIndent: 28, height: 32),
@@ -223,7 +239,7 @@ class _AppShellState extends State<AppShell> {
                       contentPadding: const EdgeInsets.symmetric(horizontal: 28),
                       onTap: () {
                         Navigator.pop(context);
-                        widget.appNavigator.push(AppRoutes.settings);
+                        _AppShellStateHelper.appNavigator.push(AppRoutes.settings);
                       },
                     ),
                   ],
@@ -251,9 +267,9 @@ class _AppShellState extends State<AppShell> {
                             if (index < railItems.length) {
                               final route = railItems[index].route;
                               if (route == AppRoutes.settings) {
-                                widget.appNavigator.push(AppRoutes.settings);
+                                _AppShellStateHelper.appNavigator.push(AppRoutes.settings);
                               } else {
-                                widget.appNavigator.push(route);
+                                _AppShellStateHelper.appNavigator.push(route);
                               }
                             }
                           },
@@ -283,7 +299,7 @@ class _AppShellState extends State<AppShell> {
                 selectedIndex: bottomNavIndex ?? 0,
                 onDestinationSelected: (index) {
                   if (index < widget.bottomNavigationitems.length) {
-                    widget.appNavigator.push(widget.bottomNavigationitems[index].route);
+                    _AppShellStateHelper.appNavigator.push(widget.bottomNavigationitems[index].route);
                   }
                 },
                 destinations: widget.bottomNavigationitems.map((item) {

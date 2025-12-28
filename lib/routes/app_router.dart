@@ -397,13 +397,28 @@ String _getDashboardRoute(Role role) {
 }
 
 class GoRouterRefreshStream extends ChangeNotifier {
-  late final StreamSubscription _subscription;
+  late final StreamSubscription<dynamic> _subscription;
+
   GoRouterRefreshStream(Stream<dynamic> stream) {
     notifyListeners();
-    _subscription = stream.asBroadcastStream().listen((_) => notifyListeners());
+    _subscription = stream.asBroadcastStream().listen(
+      (_) {
+        if (!_disposed) {
+          notifyListeners();
+        }
+      },
+      onError: (error) {
+        // Log error but don't crash
+        debugPrint('GoRouterRefreshStream error: $error');
+      },
+    );
   }
+
+  bool _disposed = false;
+
   @override
   void dispose() {
+    _disposed = true;
     _subscription.cancel();
     super.dispose();
   }

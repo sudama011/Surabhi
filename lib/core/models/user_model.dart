@@ -30,7 +30,13 @@ class UserModel {
   @JsonKey(includeFromJson: false, includeToJson: false)
   String get displayName => (name != null && name!.isNotEmpty) ? name! : email;
   @JsonKey(includeFromJson: false, includeToJson: false)
-  String get avatarInitial => name?.isNotEmpty ?? false ? name![0] : email[0];
+  String get avatarInitial {
+    if (name != null && name!.isNotEmpty) {
+      return name![0].toUpperCase();
+    }
+    return email.isNotEmpty ? email[0].toUpperCase() : '?';
+  }
+
   @JsonKey(includeFromJson: false, includeToJson: false)
   String get phoneNumber => mobileNumber ?? '';
 

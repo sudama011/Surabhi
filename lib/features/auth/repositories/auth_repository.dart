@@ -141,8 +141,10 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, bool>> logout() async {
     try {
-      authRemoteDataSource.logout(); // Fire and forget
-    } catch (_) {}
+      await authRemoteDataSource.logout();
+    } catch (_) {
+      // Ignore logout failures, proceed with local cleanup
+    }
     await storageService.clearAuthData();
     return const Right(true);
   }

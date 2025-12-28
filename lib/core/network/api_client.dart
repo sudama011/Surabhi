@@ -23,10 +23,7 @@ class ApiClient {
       _dio.options.receiveTimeout = const Duration(seconds: 10);
     }
 
-    _dio.options.headers = {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    };
+    _dio.options.headers = {'Accept': 'application/json', 'Content-Type': 'application/json'};
     _dio.options.followRedirects = false;
     _dio.options.receiveDataWhenStatusError = true;
 

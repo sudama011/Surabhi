@@ -6,24 +6,37 @@ class AppNavigator {
   // 1. Create a GlobalKey. This acts as our "Remote Control" for the Navigator.
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-  // 2. Helper to get context without needing it passed in
-  BuildContext get _context => navigatorKey.currentContext!;
+  // 2. Helper to safely get context (returns null if not available)
+  BuildContext? get _context => navigatorKey.currentContext;
 
-  // 3. Navigation Methods (Abstracting GoRouter)
+  // 3. Check if navigator is ready
+  bool get _isReady => navigatorKey.currentState != null && _context != null;
+
+  // 4. Navigation Methods (Abstracting GoRouter)
   void go(String routeName, {Object? extra}) {
-    _context.go(routeName, extra: extra);
-  }
-
-  void push(String routeName, {Object? extra}) {
-    _context.push(routeName, extra: extra);
-  }
-
-  void pop<T extends Object?>([T? result]) {
-    if (_context.canPop()) {
-      _context.pop(result);
+    final context = _context;
+    if (context != null && context.mounted) {
+      context.go(routeName, extra: extra);
     }
   }
 
-  // Example of a specific action (Cleaner usage in Bloc)
+  void push(String routeName, {Object? extra}) {
+    final context = _context;
+    if (context != null && context.mounted) {
+      context.push(routeName, extra: extra);
+    }
+  }
+
+  void pop<T extends Object?>([T? result]) {
+    if (_isReady) {
+      try {
+        navigatorKey.currentState!.pop(result);
+      } catch (e) {
+        // Ignore if pop fails
+      }
+    }
+  }
+
+  // Specific action (Cleaner usage in Bloc)
   void navigateToLogin() => go(AppRoutes.login);
 }

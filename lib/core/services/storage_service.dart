@@ -8,10 +8,10 @@ class StorageService {
   final FlutterSecureStorage _secureStorage;
 
   static const String _accessTokenKey = 'accessToken';
-  static const _accessTokenExpiryKey = 'access_token_expiry';
+  static const String _accessTokenExpiryKey = 'access_token_expiry';
   static const String _refreshTokenKey = 'refreshToken';
   static const String _refreshTokenExpiryKey = 'refresh_token_expiry';
-  static const String userDataKey = 'user_data';
+  static const String _userDataKey = 'user_data';
   static const String _themeModeKey = 'themeMode';
 
   StorageService(this._prefs, this._secureStorage);
@@ -53,11 +53,11 @@ class StorageService {
   }
 
   Future<void> saveUserJson(String jsonString) async {
-    await _prefs.setString(userDataKey, jsonString);
+    await _prefs.setString(_userDataKey, jsonString);
   }
 
   Future<String?> getUserJson() async {
-    return _prefs.getString(userDataKey);
+    return _prefs.getString(_userDataKey);
   }
 
   Future<void> saveThemeMode(String themeMode) async {
@@ -71,7 +71,7 @@ class StorageService {
   Future<void> clearAuthData() async {
     await _secureStorage.delete(key: _accessTokenKey);
     await _secureStorage.delete(key: _refreshTokenKey);
-    // await _secureStorage.delete(key: userDataKey);
+    await _prefs.remove(_userDataKey);
     await _prefs.remove(_accessTokenExpiryKey);
     await _prefs.remove(_refreshTokenExpiryKey);
   }

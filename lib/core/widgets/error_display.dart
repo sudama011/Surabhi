@@ -28,7 +28,7 @@ class _ErrorDisplayState extends State<ErrorDisplay> {
     widget.onRetry!();
 
     // Reset the retry state after a delay
-    Future.delayed(const Duration(seconds: 2), () {
+    await Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
         setState(() => _isRetrying = false);
       }

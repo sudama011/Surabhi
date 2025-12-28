@@ -21,7 +21,7 @@ class ThemeCubit extends Cubit<ThemeMode> {
     }
   }
 
-  void toggleTheme(bool isDark) async {
+  Future<void> toggleTheme(bool isDark) async {
     final newTheme = isDark ? ThemeMode.dark : ThemeMode.light;
     await _storageService.saveThemeMode(newTheme.name);
     emit(newTheme);

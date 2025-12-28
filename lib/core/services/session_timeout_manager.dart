@@ -61,6 +61,8 @@ class _SessionTimeoutManagerState extends State<SessionTimeoutManager> {
 
   // 2. Check actual Token Expiry (in case app was in background)
   Future<void> _checkTokenExpiry() async {
+    if (!mounted) return;
+
     final prefs = sl<StorageService>();
     final expiry = prefs.getTokenExpiry();
 
@@ -69,13 +71,20 @@ class _SessionTimeoutManagerState extends State<SessionTimeoutManager> {
 
       // If token expires in less than warning duration, show dialog
       if (timeUntilExpiry < widget.warningDuration && timeUntilExpiry > Duration.zero) {
-        if (mounted && Navigator.of(context).canPop() == false) {
-          // check canPop to ensure we don't stack dialogs
-          _showExtendSessionDialog();
+        if (mounted) {
+          try {
+            final navigator = Navigator.of(context);
+            // Only show if no other dialogs are open
+            if (!navigator.canPop() || navigator.userGestureInProgress == false) {
+              _showExtendSessionDialog();
+            }
+          } catch (e) {
+            // Ignore errors if navigator is not available
+          }
         }
       }
       // If already expired, force logout
-      if (timeUntilExpiry.isNegative) {
+      if (timeUntilExpiry.isNegative && mounted) {
         context.read<AuthBloc>().add(LogoutRequested());
       }
     }
@@ -83,36 +92,46 @@ class _SessionTimeoutManagerState extends State<SessionTimeoutManager> {
 
   // 3. The Dialog
   void _showExtendSessionDialog() {
+    if (!mounted) return;
+
     // Only show if user is authenticated
     final authState = context.read<AuthBloc>().state;
     if (authState is! AuthAuthenticated) return;
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Session Expiring'),
-        content: const Text('Your session is about to expire due to inactivity. Would you like to extend it?'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              context.read<AuthBloc>().add(LogoutRequested());
-            },
-            child: const Text('Logout', style: TextStyle(color: Colors.red)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              // Trigger Refresh Logic
-              context.read<AuthBloc>().add(SessionExtendRequested());
-              _resetIdleTimer();
-            },
-            child: const Text('Extend Session'),
-          ),
-        ],
-      ),
-    );
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Session Expiring'),
+          content: const Text('Your session is about to expire due to inactivity. Would you like to extend it?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                if (mounted) {
+                  context.read<AuthBloc>().add(LogoutRequested());
+                }
+              },
+              child: const Text('Logout', style: TextStyle(color: Colors.red)),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                // Trigger Refresh Logic
+                if (mounted) {
+                  context.read<AuthBloc>().add(SessionExtendRequested());
+                  _resetIdleTimer();
+                }
+              },
+              child: const Text('Extend Session'),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      // Ignore errors if context is no longer available
+    }
   }
 
   @override

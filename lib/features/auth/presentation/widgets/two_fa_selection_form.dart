@@ -86,7 +86,16 @@ class _TwoFASelectionFormState extends State<TwoFASelectionForm> {
       child: RadioListTile<String>(
         value: provider.type,
         groupValue: _selectedProvider!.type,
-        onChanged: (val) => setState(() => _selectedProvider = widget.providers.firstWhere((p) => p.type == val)),
+        onChanged: (val) {
+          if (val != null) {
+            try {
+              final selected = widget.providers.firstWhere((p) => p.type == val);
+              setState(() => _selectedProvider = selected);
+            } catch (_) {
+              // Provider not found, ignore
+            }
+          }
+        },
         title: Text(provider.type), // e.g. "Email"
         subtitle: Text(provider.maskedValue), // e.g. "a***@gmail.com"
         secondary: Icon(
