@@ -1,6 +1,6 @@
-// lib/features/admin/devotees/presentation/cubit/devotees_state.dart
+// lib/features/admin/devotees/presentation/bloc/devotees_state.dart
 
-part of 'devotees_cubit.dart';
+part of 'devotees_bloc.dart';
 
 abstract class DevoteesState extends Equatable {
   const DevoteesState();
@@ -18,7 +18,7 @@ class DevoteesLoading extends DevoteesState {
 }
 
 class DevoteesLoaded extends DevoteesState {
-  final List<DevoteeEntity> devotees;
+  final List<DevoteeModel> devotees;
 
   const DevoteesLoaded({required this.devotees});
 

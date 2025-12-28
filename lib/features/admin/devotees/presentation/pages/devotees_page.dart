@@ -2,55 +2,39 @@
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:surabhi/core/constants/api_constants.dart';
-import 'package:surabhi/core/network/api_client.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
-import 'package:surabhi/features/admin/devotees/domain/entities/devotee_entity.dart';
-import 'package:surabhi/injector.dart' as di;
+import 'package:surabhi/features/admin/devotees/models/devotee_model.dart';
+import 'package:surabhi/features/admin/devotees/presentation/bloc/devotees_bloc.dart';
 
-class DevoteesPage extends StatefulWidget {
+class DevoteesPage extends StatelessWidget {
   const DevoteesPage({super.key});
 
   @override
-  State<DevoteesPage> createState() => _DevoteesPageState();
-}
-
-class _DevoteesPageState extends State<DevoteesPage> {
-  late Future<List<DevoteeEntity>> _devoteesFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _devoteesFuture = _fetchDevotees();
-  }
-
-  Future<List<DevoteeEntity>> _fetchDevotees() async {
-    final api = di.sl<ApiClient>();
-    final response = await api.dio.get(ApiConstants.devoteeListPath);
-
-    List<dynamic> devoteesList;
-    if (response.data is List) {
-      devoteesList = response.data as List<dynamic>;
-    } else if (response.data is Map && response.data['devotees'] != null) {
-      devoteesList = response.data['devotees'] as List<dynamic>;
-    } else {
-      devoteesList = [];
-    }
-
-    return devoteesList.map((devotee) => DevoteeEntity.fromJson(devotee as Map<String, dynamic>)).toList();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<DevoteeEntity>>(
-      future: _devoteesFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+    return BlocBuilder<DevoteesBloc, DevoteesState>(
+      builder: (context, state) {
+        if (state is DevoteesLoading) {
           return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        } else if (snapshot.hasData) {
-          final devotees = snapshot.data ?? [];
+        } else if (state is DevoteesError) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Error: ${state.message}'),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => context.read<DevoteesBloc>().add(const GetDevoteesEvent()),
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          );
+        } else if (state is DevoteesLoaded) {
+          final devotees = state.devotees;
+          if (devotees.isEmpty) {
+            return const Center(child: Text('No devotees found'));
+          }
           return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: devotees.length,
@@ -62,7 +46,7 @@ class _DevoteesPageState extends State<DevoteesPage> {
     );
   }
 
-  Widget _buildDevoteeCard(DevoteeEntity devotee) {
+  Widget _buildDevoteeCard(DevoteeModel devotee) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -79,7 +63,7 @@ class _DevoteesPageState extends State<DevoteesPage> {
                 children: [
                   // Name (bold, higher font)
                   Text(
-                    devotee.name,
+                    devotee.name ?? 'Unknown',
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -95,7 +79,7 @@ class _DevoteesPageState extends State<DevoteesPage> {
                   const SizedBox(height: 4),
                   // Mobile (small)
                   Text(
-                    devotee.mobileNumber,
+                    devotee.mobileNumber ?? 'N/A',
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -109,7 +93,7 @@ class _DevoteesPageState extends State<DevoteesPage> {
     );
   }
 
-  Widget _buildAvatar(DevoteeEntity devotee) {
+  Widget _buildAvatar(DevoteeModel devotee) {
     return Container(
       width: 56,
       height: 56,
@@ -117,10 +101,7 @@ class _DevoteesPageState extends State<DevoteesPage> {
       child: devotee.avatar != null && devotee.avatarContentType != null
           ? ClipOval(child: Image.memory(base64Decode(devotee.avatar!), fit: BoxFit.cover))
           : Center(
-              child: Text(
-                devotee.name.isNotEmpty ? devotee.name[0].toUpperCase() : '?',
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
+              child: Text(devotee.avatarInitial, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             ),
     );
   }

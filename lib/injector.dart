@@ -11,6 +11,9 @@ import 'package:surabhi/features/auth/repositories/auth_repository.dart';
 import 'package:surabhi/features/admin/users/datasources/users_remote_datasource.dart' as admin_users;
 import 'package:surabhi/features/admin/users/repositories/users_repository.dart' as admin_users;
 import 'package:surabhi/features/admin/users/presentation/bloc/users_bloc.dart' as admin_users;
+import 'package:surabhi/features/admin/devotees/datasources/devotees_remote_datasource.dart' as admin_devotees;
+import 'package:surabhi/features/admin/devotees/repositories/devotees_repository.dart' as admin_devotees;
+import 'package:surabhi/features/admin/devotees/presentation/bloc/devotees_bloc.dart' as admin_devotees;
 import 'package:surabhi/features/profile/datasources/profile_remote_datasource.dart';
 import 'package:surabhi/features/profile/repositories/profile_repository.dart';
 import 'package:surabhi/features/profile/presentation/bloc/profile_bloc.dart';
@@ -60,9 +63,14 @@ Future<void> init() async {
   sl.registerFactory(() => ProfileBloc(sl(), sl()));
 
   // Admin Users
-  sl.registerLazySingleton<admin_users.UsersRemoteDataSource>(
-    () => admin_users.UsersRemoteDataSourceImpl(apiClient: sl()),
-  );
+  sl.registerLazySingleton<admin_users.UsersRemoteDataSource>(() => admin_users.UsersRemoteDataSourceImpl(sl()));
   sl.registerLazySingleton<admin_users.UsersRepository>(() => admin_users.UsersRepositoryImpl(remoteDataSource: sl()));
-  sl.registerFactory(() => admin_users.UsersBloc(usersRepository: sl()));
+  sl.registerFactory(() => admin_users.UsersBloc(sl()));
+
+  // Admin Devotees
+  sl.registerLazySingleton<admin_devotees.DevoteesRemoteDataSource>(
+    () => admin_devotees.DevoteesRemoteDataSourceImpl(sl()),
+  );
+  sl.registerLazySingleton<admin_devotees.DevoteesRepository>(() => admin_devotees.DevoteesRepositoryImpl(sl()));
+  sl.registerFactory(() => admin_devotees.DevoteesBloc(sl()));
 }

@@ -10,12 +10,12 @@ part 'users_event.dart';
 part 'users_state.dart';
 
 class UsersBloc extends Bloc<UsersEvent, UsersState> {
-  final UsersRepository usersRepository;
+  final UsersRepository _usersRepository;
 
   static const _pageSize = 20;
   int _currentPage = 1;
 
-  UsersBloc({required this.usersRepository}) : super(const UsersState()) {
+  UsersBloc(this._usersRepository) : super(const UsersState()) {
     on<GetUsersEvent>(_onGetUsers);
     on<LoadMoreUsersEvent>(_onLoadMoreUsers);
     on<ResetUserPasswordEvent>(_onResetUserPassword);
@@ -30,7 +30,7 @@ class UsersBloc extends Bloc<UsersEvent, UsersState> {
     emit(state.copyWith(status: UsersStatus.loading));
     _currentPage = 1; // Reset page
 
-    final result = await usersRepository.getUsers(page: _currentPage, size: _pageSize);
+    final result = await _usersRepository.getUsers(page: _currentPage, size: _pageSize);
 
     result.fold(
       (failure) => emit(state.copyWith(status: UsersStatus.error, errorMessage: failure.message)),
@@ -45,7 +45,7 @@ class UsersBloc extends Bloc<UsersEvent, UsersState> {
     // For now, we just keep it 'loaded' and append data
 
     final nextPage = _currentPage + 1;
-    final result = await usersRepository.getUsers(page: nextPage, size: _pageSize);
+    final result = await _usersRepository.getUsers(page: nextPage, size: _pageSize);
 
     result.fold(
       (failure) => emit(
@@ -67,7 +67,7 @@ class UsersBloc extends Bloc<UsersEvent, UsersState> {
   Future<void> _onResetUserPassword(ResetUserPasswordEvent event, Emitter<UsersState> emit) async {
     emit(state.copyWith(adminOpStatus: AdminOpStatus.loading));
 
-    final result = await usersRepository.resetUserPassword(event.email, event.newPassword);
+    final result = await _usersRepository.resetUserPassword(event.email, event.newPassword);
 
     result.fold(
       (failure) => emit(state.copyWith(adminOpStatus: AdminOpStatus.failure, adminOpMessage: failure.message)),
@@ -78,7 +78,7 @@ class UsersBloc extends Bloc<UsersEvent, UsersState> {
   Future<void> _onRemoveUser(RemoveUserEvent event, Emitter<UsersState> emit) async {
     emit(state.copyWith(adminOpStatus: AdminOpStatus.loading));
 
-    final result = await usersRepository.removeUser(event.email);
+    final result = await _usersRepository.removeUser(event.email);
 
     result.fold(
       (failure) => emit(state.copyWith(adminOpStatus: AdminOpStatus.failure, adminOpMessage: failure.message)),
@@ -100,7 +100,7 @@ class UsersBloc extends Bloc<UsersEvent, UsersState> {
   Future<void> _onChangeUserRole(ChangeUserRoleEvent event, Emitter<UsersState> emit) async {
     emit(state.copyWith(adminOpStatus: AdminOpStatus.loading));
 
-    final result = await usersRepository.changeUserRole(event.email, event.newRole);
+    final result = await _usersRepository.changeUserRole(event.email, event.newRole);
 
     result.fold(
       (failure) => emit(state.copyWith(adminOpStatus: AdminOpStatus.failure, adminOpMessage: failure.message)),
@@ -124,7 +124,7 @@ class UsersBloc extends Bloc<UsersEvent, UsersState> {
   Future<void> _onCreateUser(CreateUserRequested event, Emitter<UsersState> emit) async {
     emit(state.copyWith(adminOpStatus: AdminOpStatus.loading));
 
-    final result = await usersRepository.createUser(
+    final result = await _usersRepository.createUser(
       email: event.email,
       password: event.password,
       phoneNumber: event.phoneNumber,

@@ -5,21 +5,21 @@ import 'package:surabhi/core/network/api_client.dart';
 import 'package:surabhi/core/constants/api_constants.dart';
 import 'package:surabhi/core/errors/exceptions.dart';
 import 'package:surabhi/core/utils/error_utils.dart';
-import 'package:surabhi/features/admin/devotees/data/models/devotee_model.dart';
+import 'package:surabhi/features/admin/devotees/models/devotee_model.dart';
 
 abstract class DevoteesRemoteDataSource {
   Future<List<DevoteeModel>> getDevotees();
 }
 
 class DevoteesRemoteDataSourceImpl implements DevoteesRemoteDataSource {
-  final ApiClient apiClient;
+  final ApiClient _apiClient;
 
-  DevoteesRemoteDataSourceImpl({required this.apiClient});
+  DevoteesRemoteDataSourceImpl(this._apiClient);
 
   @override
   Future<List<DevoteeModel>> getDevotees() async {
     try {
-      final response = await apiClient.dio.get(ApiConstants.devoteeListPath);
+      final response = await _apiClient.dio.get(ApiConstants.devoteeListPath);
 
       // Handle both array and map response formats
       List<dynamic> devoteesList;

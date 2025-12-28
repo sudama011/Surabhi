@@ -25,14 +25,14 @@ abstract class UsersRemoteDataSource {
 }
 
 class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
-  final ApiClient apiClient;
+  final ApiClient _apiClient;
 
-  UsersRemoteDataSourceImpl({required this.apiClient});
+  UsersRemoteDataSourceImpl(this._apiClient);
 
   @override
   Future<List<RegisteredUserModel>> getUsers({int page = 1, int size = 20}) async {
     try {
-      final response = await apiClient.dio.get(ApiConstants.userListPath);
+      final response = await _apiClient.dio.get(ApiConstants.userListPath);
 
       // Handle both array and paginated response formats
       List<dynamic> itemsList;
@@ -70,7 +70,7 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
         'userRole': role,
       };
 
-      await apiClient.dio.post(
+      await _apiClient.dio.post(
         ApiConstants.registerPath,
         data: data,
         options: Options(contentType: Headers.jsonContentType),
@@ -87,7 +87,7 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
   Future<void> resetUserPassword(String email, String newPassword) async {
     try {
       final data = {'email': email, 'newPassword': newPassword};
-      await apiClient.dio.post(
+      await _apiClient.dio.post(
         ApiConstants.adminResetPasswordPath,
         data: data,
         options: Options(contentType: Headers.jsonContentType),
@@ -104,7 +104,7 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
   Future<void> removeUser(String email) async {
     try {
       final data = {'email': email};
-      await apiClient.dio.post(
+      await _apiClient.dio.post(
         ApiConstants.adminRemoveUserPath,
         data: data,
         options: Options(contentType: Headers.jsonContentType),
@@ -121,7 +121,7 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
   Future<void> changeUserRole(String email, String newRole) async {
     try {
       final data = {'email': email, 'userRole': newRole};
-      await apiClient.dio.post(
+      await _apiClient.dio.post(
         ApiConstants.adminChangeRolePath,
         data: data,
         options: Options(contentType: Headers.jsonContentType),
