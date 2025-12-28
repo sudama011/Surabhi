@@ -33,7 +33,7 @@ class RegisteredUserModel {
 
   Map<String, dynamic> toJson() => _$RegisteredUserModelToJson(this);
 
-  copyWith({String? id, String? email, String? phoneNumber, Role? role}) {
+  RegisteredUserModel copyWith({String? id, String? email, String? phoneNumber, Role? role}) {
     return RegisteredUserModel(
       id: id ?? this.id,
       email: email ?? this.email,

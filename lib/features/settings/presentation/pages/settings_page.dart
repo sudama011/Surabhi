@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:surabhi/core/constants/app_constants.dart';
 import 'package:surabhi/core/theme/theme_cubit.dart';
+import 'package:surabhi/core/utils/string_extensions.dart';
 import 'package:surabhi/features/settings/presentation/bloc/settings_cubit.dart';
 import 'package:surabhi/injector.dart' as di;
 
@@ -75,53 +75,52 @@ class _SettingsView extends StatelessWidget {
 class _ThemeDropdownCard extends StatelessWidget {
   const _ThemeDropdownCard();
 
-  AppTheme _getAppThemeFromMode(ThemeMode mode) {
-    switch (mode) {
-      case ThemeMode.light:
-        return AppTheme.light;
-      case ThemeMode.dark:
-        return AppTheme.dark;
-      case ThemeMode.system:
-        return AppTheme.system;
-    }
-  }
-
-  String _getThemeDisplayName(AppTheme theme) {
-    switch (theme) {
-      case AppTheme.light:
-        return 'Light Mode';
-      case AppTheme.dark:
-        return 'Dark Mode';
-      case AppTheme.system:
-        return 'System Default';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     // We watch ThemeCubit here to update the Dropdown value
-    final themeMode = context.watch<ThemeCubit>().state;
-    final currentAppTheme = _getAppThemeFromMode(themeMode);
+    final currentTheme = context.watch<ThemeCubit>().state;
 
     return Card(
       child: ListTile(
         leading: const Icon(Icons.palette_outlined),
         title: const Text('App Theme'),
-        trailing: DropdownButtonHideUnderline(
-          child: DropdownButton<AppTheme>(
-            value: currentAppTheme,
-            borderRadius: BorderRadius.circular(12),
-            onChanged: (AppTheme? newTheme) {
-              if (newTheme != null) {
-                context.read<ThemeCubit>().setTheme(newTheme);
-              }
-            },
-            items: AppTheme.values.map((theme) {
-              return DropdownMenuItem(
-                value: theme,
-                child: Text(_getThemeDisplayName(theme), style: const TextStyle(fontWeight: FontWeight.w500)),
-              );
-            }).toList(),
+        trailing: SizedBox(
+          width: 180,
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<ThemeMode>(
+              value: currentTheme,
+              isExpanded: true,
+              borderRadius: BorderRadius.circular(12),
+              onChanged: (ThemeMode? newTheme) {
+                if (newTheme != null) {
+                  context.read<ThemeCubit>().setTheme(newTheme);
+                }
+              },
+              items: ThemeMode.values.map((theme) {
+                final selected = theme == currentTheme;
+                return DropdownMenuItem(
+                  value: theme,
+                  child: Container(
+                    decoration: selected
+                        ? BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(8),
+                          )
+                        : null,
+                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
+                    child: Row(
+                      children: [
+                        Flexible(
+                          fit: FlexFit.loose,
+                          child: Text(theme.name.toCapitalized, style: const TextStyle(fontWeight: FontWeight.w500)),
+                        ),
+                        if (selected) Icon(Icons.check, color: Theme.of(context).colorScheme.primary, size: 18),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
           ),
         ),
       ),

@@ -25,6 +25,7 @@ import 'package:surabhi/features/profile/presentation/pages/profile_page.dart';
 import 'package:surabhi/features/admin/home/presentation/pages/home_page.dart' as admin_dashboard;
 import 'package:surabhi/features/admin/users/presentation/pages/create_user_page.dart' as admin_dashboard;
 import 'package:surabhi/features/admin/users/presentation/pages/users_list_page.dart' as admin_dashboard;
+import 'package:surabhi/features/admin/users/presentation/pages/user_details_page.dart' as admin_dashboard;
 import 'package:surabhi/features/admin/devotees/presentation/pages/devotees_page.dart' as admin_dashboard;
 
 import 'package:surabhi/features/employee/home/presentation/pages/home_page.dart' as employee_dashboard;
@@ -91,6 +92,20 @@ class AppRouter {
                     child: const admin_dashboard.UsersListPage(),
                   ),
                 ),
+                routes: [
+                  GoRoute(
+                    path: ':userId',
+                    pageBuilder: (context, state) {
+                      final userId = state.pathParameters['userId'] ?? '';
+                      return NoTransitionPage(
+                        child: BlocProvider.value(
+                          value: di.sl<UsersBloc>(),
+                          child: admin_dashboard.UserDetailsPage(userId: userId),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
               GoRoute(
                 path: 'register-user',

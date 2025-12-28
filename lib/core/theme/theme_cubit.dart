@@ -12,9 +12,9 @@ class ThemeCubit extends Cubit<ThemeMode> {
 
   Future<void> _loadTheme() async {
     final savedTheme = await _storageService.getThemeMode();
-    if (savedTheme == AppTheme.light.name) {
+    if (savedTheme == ThemeMode.light.name) {
       emit(ThemeMode.light);
-    } else if (savedTheme == AppTheme.dark.name) {
+    } else if (savedTheme == ThemeMode.dark.name) {
       emit(ThemeMode.dark);
     } else {
       emit(ThemeMode.system);
@@ -27,19 +27,8 @@ class ThemeCubit extends Cubit<ThemeMode> {
     emit(newTheme);
   }
 
-  Future<void> setTheme(AppTheme theme) async {
+  Future<void> setTheme(ThemeMode theme) async {
     await _storageService.saveThemeMode(theme.name);
-
-    switch (theme) {
-      case AppTheme.light:
-        emit(ThemeMode.light);
-        break;
-      case AppTheme.dark:
-        emit(ThemeMode.dark);
-        break;
-      case AppTheme.system:
-        emit(ThemeMode.system);
-        break;
-    }
+    emit(theme);
   }
 }

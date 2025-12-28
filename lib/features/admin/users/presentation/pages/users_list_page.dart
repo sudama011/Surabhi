@@ -5,7 +5,6 @@ import 'package:surabhi/core/widgets/user_card.dart';
 import 'package:surabhi/core/widgets/error_display.dart';
 import 'package:surabhi/features/admin/users/models/registered_user_model.dart';
 import 'package:surabhi/features/admin/users/presentation/bloc/users_bloc.dart';
-import 'package:surabhi/features/admin/users/presentation/pages/user_details_page.dart';
 import 'package:surabhi/routes/app_routes.dart';
 
 class UsersListPage extends StatefulWidget {
@@ -113,21 +112,7 @@ class _UsersListPageState extends State<UsersListPage> {
         }
 
         final user = users[index];
-        return UserCard(
-          user: user,
-          onTap: () {
-            // Pass the EXISTING bloc to the new screen so it can update the list (e.g. after delete)
-            final usersBloc = context.read<UsersBloc>();
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => BlocProvider.value(
-                  value: usersBloc,
-                  child: UserDetailsPage(user: user),
-                ),
-              ),
-            );
-          },
-        );
+        return UserCard(user: user, onTap: () => context.push('${AppRoutes.adminUsers}/${user.id}'));
       },
     );
   }

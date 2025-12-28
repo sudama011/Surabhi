@@ -9,31 +9,66 @@ import 'package:surabhi/features/admin/users/models/registered_user_model.dart';
 import 'package:surabhi/features/admin/users/presentation/bloc/users_bloc.dart';
 
 class UserDetailsPage extends StatelessWidget {
-  final RegisteredUserModel user;
+  final String userId;
 
-  const UserDetailsPage({super.key, required this.user});
+  const UserDetailsPage({super.key, required this.userId});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    return BlocBuilder<UsersBloc, UsersState>(
+      builder: (context, state) {
+        // If users list is not loaded yet, trigger load and show loader
+        if (state.status == UsersStatus.initial || (state.status == UsersStatus.error && state.users.isEmpty)) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            context.read<UsersBloc>().add(const GetUsersEvent());
+          });
+
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
+
+        if (state.status == UsersStatus.loading) {
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
+
+        // Find the user in the loaded users list
+        RegisteredUserModel? user;
+        if (state.status == UsersStatus.loaded && state.users.isNotEmpty) {
+          try {
+            user = state.users.firstWhere((u) => u.id.toString() == userId);
+          } catch (e) {
+            // User not found in list
+          }
+        }
+
+        if (user == null) {
+          return const Scaffold(body: Center(child: Text('User not found')));
+        }
+
+        return _buildUserDetailsView(context, theme, user, state);
+      },
+    );
+  }
+
+  Widget _buildUserDetailsView(BuildContext context, ThemeData theme, RegisteredUserModel user, UsersState state) {
     return BlocListener<UsersBloc, UsersState>(
       listenWhen: (previous, current) => previous.adminOpStatus != current.adminOpStatus,
-      listener: (context, state) {
-        if (state.adminOpStatus == AdminOpStatus.success) {
+      listener: (context, blockState) {
+        if (blockState.adminOpStatus == AdminOpStatus.success) {
           UiUtils.showSnackBar(
             context,
-            state.adminOpMessage ?? 'Operation successful',
+            blockState.adminOpMessage ?? 'Operation successful',
             backgroundColor: AppColors.successColor,
           );
 
           if (context.canPop()) {
             context.pop(); // Go back to list on success (e.g. after delete)
           }
-        } else if (state.adminOpStatus == AdminOpStatus.failure) {
+        } else if (blockState.adminOpStatus == AdminOpStatus.failure) {
           UiUtils.showSnackBar(
             context,
-            state.adminOpMessage ?? 'Operation failed',
+            blockState.adminOpMessage ?? 'Operation failed',
             backgroundColor: AppColors.errorColor,
           );
         }
@@ -43,7 +78,7 @@ class UserDetailsPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildUserHeader(context, theme),
+            _buildUserHeader(context, theme, user),
             const SizedBox(height: 24),
             _buildInfoCard(context, 'Personal Information', [
               _buildInfoRow('Email', user.email),
@@ -55,14 +90,14 @@ class UserDetailsPage extends StatelessWidget {
               _buildInfoRow('Role', user.role.name.toUpperCase()),
             ]),
             const SizedBox(height: 24),
-            _buildActionButtons(context),
+            _buildActionButtons(context, user),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildUserHeader(BuildContext context, ThemeData theme) {
+  Widget _buildUserHeader(BuildContext context, ThemeData theme, RegisteredUserModel user) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -85,7 +120,9 @@ class UserDetailsPage extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     user.email,
-                    style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: .7)),
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: .7),
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Container(
@@ -147,13 +184,13 @@ class UserDetailsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context) {
+  Widget _buildActionButtons(BuildContext context, RegisteredUserModel user) {
     return Column(
       children: [
         SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(
-            onPressed: () => _showChangeRoleDialog(context),
+            onPressed: () => _showChangeRoleDialog(context, user),
             icon: const Icon(Icons.security),
             label: const Text('Change Role'),
           ),
@@ -162,7 +199,7 @@ class UserDetailsPage extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(
-            onPressed: () => _showEditPasswordDialog(context),
+            onPressed: () => _showEditPasswordDialog(context, user),
             icon: const Icon(Icons.lock_reset),
             label: const Text('Reset Password'),
           ),
@@ -171,7 +208,7 @@ class UserDetailsPage extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(
-            onPressed: () => _showRemoveUserDialog(context),
+            onPressed: () => _showRemoveUserDialog(context, user),
             icon: const Icon(Icons.delete_outline),
             label: const Text('Remove User'),
             style: OutlinedButton.styleFrom(
@@ -184,7 +221,7 @@ class UserDetailsPage extends StatelessWidget {
     );
   }
 
-  void _showChangeRoleDialog(BuildContext context) {
+  void _showChangeRoleDialog(BuildContext context, RegisteredUserModel user) {
     // Capture bloc before showing dialog
     final usersBloc = context.read<UsersBloc>();
     Role selectedRole = user.role;
@@ -227,7 +264,7 @@ class UserDetailsPage extends StatelessWidget {
     );
   }
 
-  void _showEditPasswordDialog(BuildContext context) {
+  void _showEditPasswordDialog(BuildContext context, RegisteredUserModel user) {
     final usersBloc = context.read<UsersBloc>();
     final formKey = GlobalKey<FormState>();
     final passwordController = TextEditingController();
@@ -273,7 +310,7 @@ class UserDetailsPage extends StatelessWidget {
     );
   }
 
-  void _showRemoveUserDialog(BuildContext context) {
+  void _showRemoveUserDialog(BuildContext context, RegisteredUserModel user) {
     final usersBloc = context.read<UsersBloc>();
     showDialog(
       context: context,

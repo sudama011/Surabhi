@@ -108,13 +108,13 @@ class UsersBloc extends Bloc<UsersEvent, UsersState> {
         // Optimistically update user role locally
         final updatedUsers = state.users.map((u) {
           return u.email == event.email ? u.copyWith(role: event.newRole) : u;
-        });
+        }).toList();
 
         emit(
           state.copyWith(
             adminOpStatus: AdminOpStatus.success,
             adminOpMessage: 'Role changed successfully',
-            users: updatedUsers as List<RegisteredUserModel>,
+            users: updatedUsers,
           ),
         );
       },
