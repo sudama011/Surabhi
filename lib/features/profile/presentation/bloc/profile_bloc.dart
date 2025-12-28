@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:surabhi/features/profile/repositories/profile_repository.dart';
 
 // Events
@@ -57,8 +58,9 @@ class ProfilePasswordChangeFailure extends ProfileState {
 // BLoC
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final ProfileRepository profileRepository;
+  final AuthBloc authBloc;
 
-  ProfileBloc({required this.profileRepository}) : super(ProfileInitial()) {
+  ProfileBloc(this.profileRepository, this.authBloc) : super(ProfileInitial()) {
     on<ProfileAvatarUploadRequested>(_onAvatarUploadRequested);
     on<ChangePasswordRequested>(_onChangePasswordRequested);
   }
@@ -67,10 +69,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     emit(ProfileLoading());
     final result = await profileRepository.uploadAvatar(event.file);
 
-    result.fold(
-      (failure) => emit(ProfileAvatarUploadFailure(failure.message)),
-      (_) => emit(ProfileAvatarUploadSuccess()),
-    );
+    result.fold((failure) => emit(ProfileAvatarUploadFailure(failure.message)), (updateUser) {
+      emit(ProfileAvatarUploadSuccess());
+      authBloc.add(UserUpdated(user: updateUser));
+    });
   }
 
   Future<void> _onChangePasswordRequested(ChangePasswordRequested event, Emitter<ProfileState> emit) async {

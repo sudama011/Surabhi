@@ -18,6 +18,8 @@ dependencies:
 
   # Navigation
   go_router: ^14.0.0
+  flutter_web_plugins:
+    sdk: flutter
 
   # Storage
   shared_preferences: ^2.2.3

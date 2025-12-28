@@ -56,8 +56,8 @@ Future<void> init() async {
 
   // Profile Feature
   sl.registerLazySingleton<ProfileRemoteDataSource>(() => ProfileRemoteDataSourceImpl(sl()));
-  sl.registerLazySingleton<ProfileRepository>(() => ProfileRepositoryImpl(remoteDataSource: sl()));
-  sl.registerFactory(() => ProfileBloc(profileRepository: sl()));
+  sl.registerLazySingleton<ProfileRepository>(() => ProfileRepositoryImpl(sl(), sl()));
+  sl.registerFactory(() => ProfileBloc(sl(), sl()));
 
   // Admin Users
   sl.registerLazySingleton<admin_users.UsersRemoteDataSource>(
@@ -65,5 +65,4 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<admin_users.UsersRepository>(() => admin_users.UsersRepositoryImpl(remoteDataSource: sl()));
   sl.registerFactory(() => admin_users.UsersBloc(usersRepository: sl()));
-  // register
 }

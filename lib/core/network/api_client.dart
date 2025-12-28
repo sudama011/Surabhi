@@ -25,9 +25,7 @@ class ApiClient {
 
     _dio.options.headers = {
       'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      // Add CORS headers for web
-      if (kIsWeb) 'Access-Control-Allow-Origin': '*',
+      'Content-Type': 'application/json'
     };
     _dio.options.followRedirects = false;
     _dio.options.receiveDataWhenStatusError = true;

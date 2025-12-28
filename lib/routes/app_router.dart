@@ -51,12 +51,16 @@ class AppRouter {
       // --- Authenticated Shell ---
       ShellRoute(
         builder: (context, state, child) {
-          final user = (authBloc.state as AuthAuthenticated).user;
-          return AppShell(
-            sideNavigationItems: _getSideNavItems(user.role),
-            bottomNavigationitems: _getBottomNavItems(user.role),
-            child: SessionTimeoutManager(child: child),
-          );
+          final authState = authBloc.state;
+          if (authState is AuthAuthenticated) {
+            final user = authState.user;
+            return AppShell(
+              sideNavigationItems: _getSideNavItems(user.role),
+              bottomNavigationitems: _getBottomNavItems(user.role),
+              child: SessionTimeoutManager(child: child),
+            );
+          }
+          return const LoginPage();
         },
         routes: [
           // 1. Global Pages

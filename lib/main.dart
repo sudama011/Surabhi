@@ -7,9 +7,11 @@ import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:surabhi/routes/app_router.dart';
 import 'package:surabhi/injector.dart' as di; // di for dependency injection
 import 'package:surabhi/core/theme/theme_cubit.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  usePathUrlStrategy();
   await di.init(); // Initialize all dependencies
   runApp(const MyApp());
 }

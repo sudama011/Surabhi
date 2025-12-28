@@ -109,189 +109,193 @@ class _AppShellState extends State<AppShell> {
       return const Center(child: Text('No navigation items configured'));
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(pageTitle),
-        centerTitle: false,
-        leading: isMobile
-            ? Builder(
-                builder: (context) =>
-                    IconButton(icon: const Icon(Icons.menu), onPressed: () => Scaffold.of(context).openDrawer()),
-              )
-            : null,
-        actions: [
-          IconButton(icon: const Icon(Icons.notifications_outlined), onPressed: () {}),
+    return Title(
+      title: pageTitle,
+      color: AppColors.primaryColor,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(pageTitle),
+          centerTitle: false,
+          leading: isMobile
+              ? Builder(
+                  builder: (context) =>
+                      IconButton(icon: const Icon(Icons.menu), onPressed: () => Scaffold.of(context).openDrawer()),
+                )
+              : null,
+          actions: [
+            IconButton(icon: const Icon(Icons.notifications_outlined), onPressed: () {}),
 
-          BlocBuilder<AuthBloc, AuthState>(
-            builder: (context, authState) {
-              if (authState is AuthAuthenticated) {
-                final user = authState.user;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 16, left: 8),
-                  child: GestureDetector(
-                    onTap: () => context.push(AppRoutes.profile),
-                    child: CircleAvatar(
-                      radius: 18,
-                      backgroundColor: AppColors.secondaryColor,
-                      backgroundImage: _getAvatarImage(user),
-                      child: _getAvatarImage(user) == null
-                          ? Text(
-                              user.avatarInitial,
-                              style: const TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.bold),
-                            )
-                          : null,
+            BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, authState) {
+                if (authState is AuthAuthenticated) {
+                  final user = authState.user;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 16, left: 8),
+                    child: GestureDetector(
+                      onTap: () => context.push(AppRoutes.profile),
+                      child: CircleAvatar(
+                        radius: 18,
+                        backgroundColor: AppColors.secondaryColor,
+                        backgroundImage: _getAvatarImage(user),
+                        child: _getAvatarImage(user) == null
+                            ? Text(
+                                user.avatarInitial,
+                                style: const TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.bold),
+                              )
+                            : null,
+                      ),
                     ),
-                  ),
+                  );
+                }
+                return IconButton(
+                  icon: const Icon(Icons.person_outline),
+                  onPressed: () => widget.appNavigator.push(AppRoutes.profile),
                 );
-              }
-              return IconButton(
-                icon: const Icon(Icons.person_outline),
-                onPressed: () => widget.appNavigator.push(AppRoutes.profile),
-              );
-            },
-          ),
-        ],
-      ),
-
-      // NOTE: NavigationDrawer's 'children' list allows mixing Destinations and Widgets.
-      // However, if we mix them, the 'selectedIndex' might visually misalign if we aren't careful.
-      // A cleaner way for the Drawer manual item is strictly using standard ListTiles below the NavigationDrawerDestination list.
-      // Let's refine the Drawer above to be safe:
-
-      /* REFINED DRAWER IMPLEMENTATION */
-      /* Replace the 'drawer:' parameter above with this robust version: */
-      drawer: Drawer(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  // Header or Spacing
-                  const SizedBox(height: kToolbarHeight + 16),
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(28, 16, 16, 10),
-                    child: Text('Menu', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-
-                  // Dynamic Items
-                  ...widget.sideNavigationItems
-                      .map((item) {
-                        return NavigationDrawerDestination(
-                          icon: Icon(item.icon),
-                          selectedIcon: Icon(item.selectedIcon ?? item.icon),
-                          label: Text(item.label),
-                          // We wrap this in a Theme/Config wrapper if we used the NavigationDrawer widget,
-                          // but inside a ListView, we use ListTile for total control.
-                        );
-                        // actually, let's use standard ListTiles to be 100% safe with your custom mix
-                      })
-                      .map((dest) {
-                        // Manual mapping to ListTile for the 'Drawer' widget
-                        // (Since NavigationDrawer widget is strict about its children)
-                        final item = widget.sideNavigationItems.firstWhere(
-                          (i) => Text(i.label).data == (dest.label as Text).data,
-                        );
-                        final isSelected = currentRoute == item.route;
-
-                        return ListTile(
-                          leading: isSelected ? dest.selectedIcon : dest.icon,
-                          title: dest.label,
-                          selected: isSelected,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)), // Material 3 style
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 28),
-                          onTap: () {
-                            Navigator.pop(context);
-                            widget.appNavigator.push(item.route);
-                          },
-                        );
-                      }),
-
-                  const Divider(indent: 28, endIndent: 28, height: 32),
-
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(28, 0, 16, 10),
-                    child: Text('Settings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                  ),
-
-                  ListTile(
-                    leading: const Icon(Icons.settings),
-                    title: const Text('All Settings'),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 28),
-                    onTap: () {
-                      Navigator.pop(context);
-                      widget.appNavigator.push(AppRoutes.settings);
-                    },
-                  ),
-                ],
-              ),
+              },
             ),
           ],
         ),
-      ),
 
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 3. RAIL (Desktop/Tablet)
-          if (!isMobile && railItems.isNotEmpty)
-            LayoutBuilder(
-              builder: (context, constraint) {
-                return SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: constraint.maxHeight),
-                    child: IntrinsicHeight(
-                      child: NavigationRail(
-                        extended: isDesktop,
-                        selectedIndex: railIndex,
-                        onDestinationSelected: (index) {
-                          if (index < railItems.length) {
-                            final route = railItems[index].route;
-                            if (route == AppRoutes.settings) {
-                              widget.appNavigator.push(AppRoutes.settings);
-                            } else {
-                              widget.appNavigator.push(route);
-                            }
-                          }
-                        },
-                        labelType: isDesktop ? NavigationRailLabelType.none : NavigationRailLabelType.all,
-                        destinations: railItems.map((item) {
-                          return NavigationRailDestination(
+        // NOTE: NavigationDrawer's 'children' list allows mixing Destinations and Widgets.
+        // However, if we mix them, the 'selectedIndex' might visually misalign if we aren't careful.
+        // A cleaner way for the Drawer manual item is strictly using standard ListTiles below the NavigationDrawerDestination list.
+        // Let's refine the Drawer above to be safe:
+
+        /* REFINED DRAWER IMPLEMENTATION */
+        /* Replace the 'drawer:' parameter above with this robust version: */
+        drawer: Drawer(
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    // Header or Spacing
+                    const SizedBox(height: kToolbarHeight + 16),
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(28, 16, 16, 10),
+                      child: Text('Menu', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+
+                    // Dynamic Items
+                    ...widget.sideNavigationItems
+                        .map((item) {
+                          return NavigationDrawerDestination(
                             icon: Icon(item.icon),
                             selectedIcon: Icon(item.selectedIcon ?? item.icon),
                             label: Text(item.label),
+                            // We wrap this in a Theme/Config wrapper if we used the NavigationDrawer widget,
+                            // but inside a ListView, we use ListTile for total control.
                           );
-                        }).toList(),
+                          // actually, let's use standard ListTiles to be 100% safe with your custom mix
+                        })
+                        .map((dest) {
+                          // Manual mapping to ListTile for the 'Drawer' widget
+                          // (Since NavigationDrawer widget is strict about its children)
+                          final item = widget.sideNavigationItems.firstWhere(
+                            (i) => Text(i.label).data == (dest.label as Text).data,
+                          );
+                          final isSelected = currentRoute == item.route;
+
+                          return ListTile(
+                            leading: isSelected ? dest.selectedIcon : dest.icon,
+                            title: dest.label,
+                            selected: isSelected,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)), // Material 3 style
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 28),
+                            onTap: () {
+                              Navigator.pop(context);
+                              widget.appNavigator.push(item.route);
+                            },
+                          );
+                        }),
+
+                    const Divider(indent: 28, endIndent: 28, height: 32),
+
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(28, 0, 16, 10),
+                      child: Text('Settings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                    ),
+
+                    ListTile(
+                      leading: const Icon(Icons.settings),
+                      title: const Text('All Settings'),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 28),
+                      onTap: () {
+                        Navigator.pop(context);
+                        widget.appNavigator.push(AppRoutes.settings);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        body: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 3. RAIL (Desktop/Tablet)
+            if (!isMobile && railItems.isNotEmpty)
+              LayoutBuilder(
+                builder: (context, constraint) {
+                  return SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minHeight: constraint.maxHeight),
+                      child: IntrinsicHeight(
+                        child: NavigationRail(
+                          extended: isDesktop,
+                          selectedIndex: railIndex,
+                          onDestinationSelected: (index) {
+                            if (index < railItems.length) {
+                              final route = railItems[index].route;
+                              if (route == AppRoutes.settings) {
+                                widget.appNavigator.push(AppRoutes.settings);
+                              } else {
+                                widget.appNavigator.push(route);
+                              }
+                            }
+                          },
+                          labelType: isDesktop ? NavigationRailLabelType.none : NavigationRailLabelType.all,
+                          destinations: railItems.map((item) {
+                            return NavigationRailDestination(
+                              icon: Icon(item.icon),
+                              selectedIcon: Icon(item.selectedIcon ?? item.icon),
+                              label: Text(item.label),
+                            );
+                          }).toList(),
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
-            ),
+                  );
+                },
+              ),
 
-          if (!isMobile && railItems.isNotEmpty) const VerticalDivider(thickness: 1, width: 1),
+            if (!isMobile && railItems.isNotEmpty) const VerticalDivider(thickness: 1, width: 1),
 
-          Expanded(child: widget.child),
-        ],
+            Expanded(child: widget.child),
+          ],
+        ),
+
+        bottomNavigationBar: (isMobile && widget.bottomNavigationitems.isNotEmpty)
+            ? NavigationBar(
+                selectedIndex: bottomNavIndex ?? 0,
+                onDestinationSelected: (index) {
+                  if (index < widget.bottomNavigationitems.length) {
+                    widget.appNavigator.push(widget.bottomNavigationitems[index].route);
+                  }
+                },
+                destinations: widget.bottomNavigationitems.map((item) {
+                  return NavigationDestination(
+                    icon: Icon(item.icon),
+                    selectedIcon: Icon(item.selectedIcon ?? item.icon),
+                    label: item.label,
+                  );
+                }).toList(),
+              )
+            : null,
       ),
-
-      bottomNavigationBar: (isMobile && widget.bottomNavigationitems.isNotEmpty)
-          ? NavigationBar(
-              selectedIndex: bottomNavIndex ?? 0,
-              onDestinationSelected: (index) {
-                if (index < widget.bottomNavigationitems.length) {
-                  widget.appNavigator.push(widget.bottomNavigationitems[index].route);
-                }
-              },
-              destinations: widget.bottomNavigationitems.map((item) {
-                return NavigationDestination(
-                  icon: Icon(item.icon),
-                  selectedIcon: Icon(item.selectedIcon ?? item.icon),
-                  label: item.label,
-                );
-              }).toList(),
-            )
-          : null,
     );
   }
 }

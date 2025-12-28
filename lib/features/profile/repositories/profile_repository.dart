@@ -1,20 +1,24 @@
+import 'dart:convert';
+
 import 'package:dartz/dartz.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:surabhi/core/errors/failures.dart';
 import 'package:surabhi/core/errors/exceptions.dart';
 import 'package:surabhi/core/models/user_model.dart';
+import 'package:surabhi/core/services/storage_service.dart';
 import 'package:surabhi/features/profile/datasources/profile_remote_datasource.dart';
 
 abstract class ProfileRepository {
   Future<Either<Failure, UserModel>> getProfile();
-  Future<Either<Failure, void>> uploadAvatar(XFile file);
+  Future<Either<Failure, UserModel>> uploadAvatar(XFile file);
   Future<Either<Failure, void>> changePassword(String oldPassword, String newPassword);
 }
 
 class ProfileRepositoryImpl implements ProfileRepository {
   final ProfileRemoteDataSource remoteDataSource;
+  final StorageService storageService;
 
-  ProfileRepositoryImpl({required this.remoteDataSource});
+  ProfileRepositoryImpl(this.remoteDataSource, this.storageService);
 
   @override
   Future<Either<Failure, UserModel>> getProfile() async {
@@ -29,7 +33,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
-  Future<Either<Failure, void>> uploadAvatar(XFile file) async {
+  Future<Either<Failure, UserModel>> uploadAvatar(XFile file) async {
     try {
       // 1. Validate File Type (JPG, JPEG, PNG)
       final extension = file.name.split('.').last.toLowerCase();
@@ -50,7 +54,10 @@ class ProfileRepositoryImpl implements ProfileRepository {
       // 3. Proceed to Upload if valid
       await remoteDataSource.uploadAvatar(bytes, file.name);
 
-      return const Right(null);
+      UserModel updatedProfile = await remoteDataSource.getProfile();
+      await storageService.saveUserJson(json.encode(updatedProfile.toJson()));
+
+      return Right(updatedProfile);
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));
     } catch (e) {

@@ -27,7 +27,6 @@ class _ProfilePageView extends StatelessWidget {
       listener: (context, state) {
         if (state is ProfileAvatarUploadSuccess) {
           UiUtils.showSnackBar(context, 'Avatar updated successfully', backgroundColor: AppColors.successColor);
-          context.read<AuthBloc>().add(AppStarted());
         } else if (state is ProfileAvatarUploadFailure) {
           UiUtils.showSnackBar(context, state.message, backgroundColor: AppColors.errorColor);
         }

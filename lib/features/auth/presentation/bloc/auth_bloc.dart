@@ -27,6 +27,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<BiometricLoginRequested>(_onBiometricLoginRequested);
     on<SessionExtendRequested>(_onSessionExtendRequested);
     on<LogoutRequested>(_onLogoutRequested);
+    on<UserUpdated>(_onUserUpdated);
   }
 
   Future<void> _onLoginRequested(LoginRequested event, Emitter<AuthState> emit) async {
@@ -69,7 +70,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       // We use refreshToken to check if we have a valid session token (30 days)
       final result = await authRepository.refreshToken();
       result.fold(
-        (_) => emit(const AuthUnauthenticated()), // Failed? Go to Login
+        (failure) => emit(AuthUnauthenticated(message: failure.message)), // Failed? Go to Login
         (user) => emit(AuthAuthenticated(user: user)), // Success? Go to Dashboard
       );
     }
@@ -151,5 +152,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(AuthAuthenticated(user: user));
       },
     );
+  }
+
+  Future<void> _onUserUpdated(UserUpdated event, Emitter<AuthState> emit) async {
+    emit(AuthAuthenticated(user: event.user));
   }
 }
