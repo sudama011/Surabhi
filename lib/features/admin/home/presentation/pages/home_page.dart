@@ -1,18 +1,12 @@
-// lib/features/admin/dashboard/presentation/pages/home_page.dart
+// lib/features/admin/home/presentation/pages/home_page.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:surabhi/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:surabhi/features/home/presentation/widgets/home_dashboard.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AuthBloc, AuthState>(
-      builder: (context, state) {
-        final name = (state is AuthAuthenticated) ? state.user.displayName : 'Guest';
-        return Center(child: Text('Hare Krishna $name'));
-      },
-    );
+    return const HomeDashboard();
   }
 }

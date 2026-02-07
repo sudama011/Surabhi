@@ -28,4 +28,6 @@ class ApiConstants {
   // User Management Endpoints (Admin)
   static const String userListPath = '/Admin/registered-users';
   static const String devoteeListPath = '/Admin/devotees';
+
+  static const String homeSummaryPath = '/Home/summary';
 }

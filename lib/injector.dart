@@ -25,6 +25,11 @@ import 'package:surabhi/features/profile/datasources/profile_remote_datasource.d
 import 'package:surabhi/features/profile/repositories/profile_repository.dart';
 import 'package:surabhi/features/profile/presentation/bloc/profile_bloc.dart';
 
+// Home Feature Imports
+import 'package:surabhi/features/home/datasources/home_remote_datasource.dart';
+import 'package:surabhi/features/home/repositories/home_repository.dart';
+import 'package:surabhi/features/home/presentation/bloc/home_bloc.dart';
+
 // Admin Feature Imports (Aliased)
 import 'package:surabhi/features/admin/users/datasources/users_remote_datasource.dart' as admin_users;
 import 'package:surabhi/features/admin/users/repositories/users_repository.dart' as admin_users;
@@ -67,6 +72,11 @@ Future<void> init() async {
   sl.registerLazySingleton<ProfileRemoteDataSource>(() => ProfileRemoteDataSourceImpl(sl()));
   sl.registerLazySingleton<ProfileRepository>(() => ProfileRepositoryImpl(sl(), sl()));
   sl.registerFactory(() => ProfileBloc(sl(), sl()));
+
+  // Home Feature
+  sl.registerLazySingleton<HomeRemoteDataSource>(() => HomeRemoteDataSourceImpl(sl()));
+  sl.registerLazySingleton<HomeRepository>(() => HomeRepositoryImpl(sl()));
+  sl.registerFactory(() => HomeBloc(sl()));
 
   // Admin Users
   sl.registerLazySingleton<admin_users.UsersRemoteDataSource>(() => admin_users.UsersRemoteDataSourceImpl(sl()));
