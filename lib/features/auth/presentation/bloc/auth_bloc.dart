@@ -77,8 +77,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onBiometricLoginRequested(BiometricLoginRequested event, Emitter<AuthState> emit) async {
-    // We don't emit AuthLoading here to avoid flickering the whole screen
-    // or use a specific AuthBiometricLoading if you want a spinner.
+    emit(AuthBiometricLoading());
 
     final result = await authRepository.loginWithBiometrics();
 

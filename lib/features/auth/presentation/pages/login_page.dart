@@ -129,7 +129,21 @@ class _LoginPageState extends State<LoginPage> {
       }
     }
 
-    // 3. DEFAULT: Login Form + Manual Biometric Button
+    // 3. BIOMETRIC LOADING
+    if (state is AuthBiometricLoading) {
+      return const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.fingerprint, size: 64, color: AppColors.primaryColor),
+          SizedBox(height: 24),
+          CircularProgressIndicator(),
+          SizedBox(height: 16),
+          Text('Authenticating...', style: TextStyle(color: Colors.grey, fontSize: 14)),
+        ],
+      );
+    }
+
+    // 4. DEFAULT: Login Form + Manual Biometric Button
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [

@@ -75,6 +75,8 @@ class TwoFactorRequiredFailure extends Failure {
     : super(message: '2FA Required');
 }
 
+class AuthBiometricLoading extends AuthState {}
+
 class AuthBiometricFailure extends AuthState {
   final String message;
 
