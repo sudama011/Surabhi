@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>.value(value: di.sl<AuthBloc>()),
-        BlocProvider<ThemeCubit>(create: (_) => di.sl<ThemeCubit>()),
+        BlocProvider<ThemeCubit>.value(value: di.sl<ThemeCubit>()),
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {

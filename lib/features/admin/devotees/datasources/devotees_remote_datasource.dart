@@ -1,10 +1,7 @@
 // lib/features/admin/devotees/data/datasources/devotees_remote_datasource.dart
 
-import 'package:dio/dio.dart';
 import 'package:surabhi/core/network/api_client.dart';
 import 'package:surabhi/core/constants/api_constants.dart';
-import 'package:surabhi/core/errors/exceptions.dart';
-import 'package:surabhi/core/utils/error_utils.dart';
 import 'package:surabhi/features/admin/devotees/models/devotee_model.dart';
 
 abstract class DevoteesRemoteDataSource {
@@ -12,31 +9,24 @@ abstract class DevoteesRemoteDataSource {
 }
 
 class DevoteesRemoteDataSourceImpl implements DevoteesRemoteDataSource {
-  final ApiClient _apiClient;
+  final ApiClient apiClient;
 
-  DevoteesRemoteDataSourceImpl(this._apiClient);
+  DevoteesRemoteDataSourceImpl(this.apiClient);
 
   @override
   Future<List<DevoteeModel>> getDevotees() async {
-    try {
-      final response = await _apiClient.dio.get(ApiConstants.devoteeListPath);
+    final response = await apiClient.get(ApiConstants.devoteeListPath);
 
-      // Handle both array and map response formats
-      List<dynamic> devoteesList;
-      if (response.data is List) {
-        devoteesList = response.data as List<dynamic>;
-      } else if (response.data is Map && response.data['devotees'] != null) {
-        devoteesList = response.data['devotees'] as List<dynamic>;
-      } else {
-        devoteesList = [];
-      }
-
-      return devoteesList.map((devotee) => DevoteeModel.fromJson(devotee as Map<String, dynamic>)).toList();
-    } on DioException catch (e) {
-      final errorMessage = ErrorUtils.errorMessageFrom(e, defaultMessage: 'Failed to fetch devotees');
-      throw ServerException(message: errorMessage);
-    } catch (e) {
-      throw ServerException(message: 'Unexpected error occurred: $e');
+    // Handle both array and map response formats
+    List<dynamic> devoteesList;
+    if (response is List) {
+      devoteesList = response;
+    } else if (response is Map && response['devotees'] != null) {
+      devoteesList = response['devotees'] as List<dynamic>;
+    } else {
+      devoteesList = [];
     }
+
+    return devoteesList.map((devotee) => DevoteeModel.fromJson(devotee as Map<String, dynamic>)).toList();
   }
 }

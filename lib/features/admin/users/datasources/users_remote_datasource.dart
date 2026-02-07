@@ -1,11 +1,8 @@
 // lib/features/admin/users/data/datasources/users_remote_datasource.dart
 
-import 'package:dio/dio.dart';
 import 'package:surabhi/core/constants/api_constants.dart';
 import 'package:surabhi/features/admin/users/models/registered_user_model.dart';
-import 'package:surabhi/core/errors/exceptions.dart';
 import 'package:surabhi/core/network/api_client.dart';
-import 'package:surabhi/core/utils/error_utils.dart';
 
 abstract class UsersRemoteDataSource {
   Future<void> createUser({
@@ -31,28 +28,19 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
 
   @override
   Future<List<RegisteredUserModel>> getUsers({int page = 1, int size = 20}) async {
-    try {
-      final response = await _apiClient.dio.get(ApiConstants.userListPath);
+    final response = await _apiClient.get(ApiConstants.userListPath);
 
-      // Handle both array and paginated response formats
-      List<dynamic> itemsList;
-      if (response.data is List) {
-        itemsList = response.data as List<dynamic>;
-      } else if (response.data is Map && response.data['users'] != null) {
-        itemsList = response.data['users'] as List<dynamic>;
-      } else {
-        itemsList = [];
-      }
-
-      final items = itemsList.map((e) => RegisteredUserModel.fromJson(e as Map<String, dynamic>)).toList();
-
-      return items;
-    } on DioException catch (e) {
-      final errorMessage = ErrorUtils.errorMessageFrom(e, defaultMessage: 'Failed to fetch users');
-      throw ServerException(message: errorMessage);
-    } catch (e) {
-      throw ServerException(message: 'Unexpected error occurred: $e');
+    // Handle both array and paginated response formats
+    List<dynamic> itemsList;
+    if (response is List) {
+      itemsList = response;
+    } else if (response is Map && response['users'] != null) {
+      itemsList = response['users'] as List<dynamic>;
+    } else {
+      itemsList = [];
     }
+
+    return itemsList.map((e) => RegisteredUserModel.fromJson(e as Map<String, dynamic>)).toList();
   }
 
   @override
@@ -62,75 +50,25 @@ class UsersRemoteDataSourceImpl implements UsersRemoteDataSource {
     required String phoneNumber,
     required String role,
   }) async {
-    try {
-      final data = <String, dynamic>{
-        'email': email,
-        'password': password,
-        'phoneNumber': phoneNumber,
-        'userRole': role,
-      };
-
-      await _apiClient.dio.post(
-        ApiConstants.registerPath,
-        data: data,
-        options: Options(contentType: Headers.jsonContentType),
-      );
-    } on DioException catch (e) {
-      final errorMessage = ErrorUtils.errorMessageFrom(e, defaultMessage: 'Failed to create user');
-      throw ServerException(message: errorMessage);
-    } catch (e) {
-      throw ServerException(message: 'Unexpected error occurred: $e');
-    }
+    final data = <String, dynamic>{'email': email, 'password': password, 'phoneNumber': phoneNumber, 'userRole': role};
+    await _apiClient.post(ApiConstants.registerPath, data: data);
   }
 
   @override
   Future<void> resetUserPassword(String email, String newPassword) async {
-    try {
-      final data = {'email': email, 'newPassword': newPassword};
-      await _apiClient.dio.post(
-        ApiConstants.adminResetPasswordPath,
-        data: data,
-        options: Options(contentType: Headers.jsonContentType),
-      );
-    } on DioException catch (e) {
-      final errorMessage = ErrorUtils.errorMessageFrom(e, defaultMessage: 'Failed to reset password');
-      throw ServerException(message: errorMessage);
-    } catch (e) {
-      throw ServerException(message: 'Unexpected error occurred: $e');
-    }
+    final data = {'email': email, 'newPassword': newPassword};
+    await _apiClient.post(ApiConstants.adminResetPasswordPath, data: data);
   }
 
   @override
   Future<void> removeUser(String email) async {
-    try {
-      final data = {'email': email};
-      await _apiClient.dio.post(
-        ApiConstants.adminRemoveUserPath,
-        data: data,
-        options: Options(contentType: Headers.jsonContentType),
-      );
-    } on DioException catch (e) {
-      final errorMessage = ErrorUtils.errorMessageFrom(e, defaultMessage: 'Failed to remove user');
-      throw ServerException(message: errorMessage);
-    } catch (e) {
-      throw ServerException(message: 'Unexpected error occurred: $e');
-    }
+    final data = {'email': email};
+    await _apiClient.post(ApiConstants.adminRemoveUserPath, data: data);
   }
 
   @override
   Future<void> changeUserRole(String email, String newRole) async {
-    try {
-      final data = {'email': email, 'userRole': newRole};
-      await _apiClient.dio.post(
-        ApiConstants.adminChangeRolePath,
-        data: data,
-        options: Options(contentType: Headers.jsonContentType),
-      );
-    } on DioException catch (e) {
-      final errorMessage = ErrorUtils.errorMessageFrom(e, defaultMessage: 'Failed to change user role');
-      throw ServerException(message: errorMessage);
-    } catch (e) {
-      throw ServerException(message: 'Unexpected error occurred: $e');
-    }
+    final data = {'email': email, 'userRole': newRole};
+    await _apiClient.post(ApiConstants.adminChangeRolePath, data: data);
   }
 }

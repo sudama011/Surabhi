@@ -7,14 +7,32 @@ import 'package:surabhi/core/services/storage_service.dart';
 class ApiInterceptor extends Interceptor {
   final StorageService _storageService;
 
+  String? _inMemoryToken;
+
   ApiInterceptor(this._storageService);
+
+  void setToken(String token) {
+    _inMemoryToken = token;
+  }
+
+  void clearToken() {
+    _inMemoryToken = null;
+  }
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
     final requiresAuth = options.extra['requiresAuth'] as bool? ?? true;
 
     if (requiresAuth) {
-      final accessToken = await _storageService.getAccessToken();
+      String? accessToken = _inMemoryToken;
+
+      if (accessToken == null) {
+        accessToken = await _storageService.getAccessToken();
+        if (accessToken != null) {
+          _inMemoryToken = accessToken;
+        }
+      }
+
       if (accessToken == null) {
         return handler.reject(
           DioException(
@@ -30,7 +48,10 @@ class ApiInterceptor extends Interceptor {
   }
 
   @override
-  void onError(DioException err, ErrorInterceptorHandler handler) async {
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    if (err.response?.statusCode == 401) {
+      clearToken();
+    }
     return handler.next(err);
   }
 }

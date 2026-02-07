@@ -1,6 +1,7 @@
 // lib/injector.dart
 import 'package:get_it/get_it.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:surabhi/core/network/dio_factory.dart';
 import 'package:surabhi/core/network/api_client.dart';
 import 'package:surabhi/core/services/biometric_service.dart';
 import 'package:surabhi/core/services/device_id_service.dart';
@@ -35,16 +36,16 @@ Future<void> init() async {
   sl.registerLazySingleton(() => sharedPreferences);
   sl.registerLazySingleton(() => LocalAuthentication());
   sl.registerLazySingleton(() => const FlutterSecureStorage());
-  sl.registerLazySingleton(() => Dio());
 
   // --- 2. Core Services (Depend on External) ---
   sl.registerLazySingleton<StorageService>(() => StorageService(sl<SharedPreferences>(), sl<FlutterSecureStorage>()));
+  sl.registerLazySingleton<ApiInterceptor>(() => ApiInterceptor(sl()));
+  sl.registerLazySingleton<Dio>(() => DioFactory.create(sl()));
   sl.registerLazySingleton(() => BiometricService(sl(), sl()));
   sl.registerLazySingleton(() => DeviceIdService(sl<FlutterSecureStorage>()));
   sl.registerLazySingleton(() => AppNavigator());
   sl.registerLazySingleton(() => ThemeCubit(sl<StorageService>()));
-  sl.registerLazySingleton<ApiInterceptor>(() => ApiInterceptor(sl()));
-  sl.registerLazySingleton<ApiClient>(() => ApiClient(sl(), sl()));
+  sl.registerLazySingleton<ApiClient>(() => ApiClient(sl()));
 
   // --- 3. Features ---
 
