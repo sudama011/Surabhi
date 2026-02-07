@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter/foundation.dart';
 import 'package:surabhi/features/admin/users/presentation/bloc/users_bloc.dart';
 import 'package:surabhi/features/admin/devotees/presentation/bloc/devotees_bloc.dart';
+import 'package:surabhi/features/donors/presentation/bloc/donors_bloc.dart';
+import 'package:surabhi/features/donors/presentation/pages/donors_page.dart';
 import 'package:surabhi/routes/app_navigator.dart';
 import 'package:surabhi/routes/app_routes.dart';
 import 'package:surabhi/injector.dart' as di;
@@ -127,7 +129,9 @@ class AppRouter {
               ),
               GoRoute(
                 path: 'donors',
-                pageBuilder: (context, state) => const NoTransitionPage(child: Center(child: Text('Donors Page'))),
+                pageBuilder: (context, state) => NoTransitionPage(
+                  child: BlocProvider(create: (context) => di.sl<DonorsBloc>(), child: const DonorsPage()),
+                ),
               ),
               GoRoute(
                 path: 'donate',

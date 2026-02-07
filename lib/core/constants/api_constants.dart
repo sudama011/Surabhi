@@ -30,4 +30,5 @@ class ApiConstants {
   static const String devoteeListPath = '/Admin/devotees';
 
   static const String homeSummaryPath = '/Home/summary';
+  static const String donorSearchPath = '/Donor/search';
 }

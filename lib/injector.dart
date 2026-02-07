@@ -30,6 +30,11 @@ import 'package:surabhi/features/home/datasources/home_remote_datasource.dart';
 import 'package:surabhi/features/home/repositories/home_repository.dart';
 import 'package:surabhi/features/home/presentation/bloc/home_bloc.dart';
 
+// Donors Feature Imports
+import 'package:surabhi/features/donors/datasources/donors_remote_datasource.dart';
+import 'package:surabhi/features/donors/repositories/donors_repository.dart';
+import 'package:surabhi/features/donors/presentation/bloc/donors_bloc.dart';
+
 // Admin Feature Imports (Aliased)
 import 'package:surabhi/features/admin/users/datasources/users_remote_datasource.dart' as admin_users;
 import 'package:surabhi/features/admin/users/repositories/users_repository.dart' as admin_users;
@@ -77,6 +82,11 @@ Future<void> init() async {
   sl.registerLazySingleton<HomeRemoteDataSource>(() => HomeRemoteDataSourceImpl(sl()));
   sl.registerLazySingleton<HomeRepository>(() => HomeRepositoryImpl(sl()));
   sl.registerFactory(() => HomeBloc(sl()));
+
+  // Donors Feature
+  sl.registerLazySingleton<DonorsRemoteDataSource>(() => DonorsRemoteDataSourceImpl(sl()));
+  sl.registerLazySingleton<DonorsRepository>(() => DonorsRepositoryImpl(sl()));
+  sl.registerFactory(() => DonorsBloc(sl()));
 
   // Admin Users
   sl.registerLazySingleton<admin_users.UsersRemoteDataSource>(() => admin_users.UsersRemoteDataSourceImpl(sl()));
