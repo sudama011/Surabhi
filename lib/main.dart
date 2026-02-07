@@ -8,11 +8,14 @@ import 'package:surabhi/routes/app_router.dart';
 import 'package:surabhi/injector.dart' as di; // di for dependency injection
 import 'package:surabhi/core/theme/theme_cubit.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await di.init(); // Initialize all dependencies
+  FlutterNativeSplash.remove();
   runApp(const MyApp());
 }
 
