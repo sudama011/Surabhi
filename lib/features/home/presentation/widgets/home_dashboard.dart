@@ -88,18 +88,25 @@ class _LoadedView extends StatelessWidget {
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Greeting
             _GreetingSection(),
             const SizedBox(height: 20),
-            // Total Contribution Card
-            _TotalContributionCard(grandTotal: summary.grandTotalAmount),
-            const SizedBox(height: 16),
-            // Source Type Breakdown Card
-            if (summary.sourceTypeDonations.isNotEmpty) _SourceTypeCard(sources: summary.sourceTypeDonations),
+            // Total Contribution + Source Type side by side
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: _TotalContributionCard(grandTotal: summary.grandTotalAmount)),
+                  const SizedBox(width: 0),
+                  if (summary.sourceTypeDonations.isNotEmpty)
+                    Expanded(child: _SourceTypeCard(sources: summary.sourceTypeDonations)),
+                ],
+              ),
+            ),
             const SizedBox(height: 16),
             // Quarterly Donations Pie Chart
             if (summary.quarterlyDonations.isNotEmpty) _QuarterlyPieChart(quarters: summary.quarterlyDonations),
@@ -139,7 +146,7 @@ class _TotalContributionCard extends StatelessWidget {
       elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -147,19 +154,22 @@ class _TotalContributionCard extends StatelessWidget {
               'Total Lakshmi Contribution',
               style: Theme.of(
                 context,
-              ).textTheme.titleMedium?.copyWith(color: AppColors.onAccent, fontWeight: FontWeight.w600),
+              ).textTheme.bodySmall?.copyWith(color: AppColors.onAccent, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 4),
             Text(
               '(Last 12 months)',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.onAccent.withValues(alpha: 0.7)),
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.onAccent.withValues(alpha: 0.7)),
             ),
-            const SizedBox(height: 12),
-            Text(
-              '₹$grandTotal',
-              style: Theme.of(
-                context,
-              ).textTheme.headlineMedium?.copyWith(color: AppColors.onAccent, fontWeight: FontWeight.bold),
+            const SizedBox(height: 8),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                '₹$grandTotal',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(color: AppColors.onAccent, fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -181,34 +191,31 @@ class _SourceTypeCard extends StatelessWidget {
       elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Donation by Source',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(color: AppColors.onPrimary, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 16),
             ...sources.map(
               (source) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      source.sourceType,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyLarge?.copyWith(color: AppColors.onPrimary.withValues(alpha: 0.9)),
+                    Flexible(
+                      child: Text(
+                        source.sourceType,
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(color: AppColors.onPrimary.withValues(alpha: 0.9)),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
+                    const SizedBox(width: 4),
                     Text(
                       '₹${source.totalAmount}',
                       style: Theme.of(
                         context,
-                      ).textTheme.bodyLarge?.copyWith(color: AppColors.onPrimary, fontWeight: FontWeight.bold),
+                      ).textTheme.bodySmall?.copyWith(color: AppColors.onPrimary, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),

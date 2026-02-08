@@ -1,9 +1,9 @@
 // lib/features/donors/presentation/pages/donors_page.dart
 
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:surabhi/core/theme/app_colors.dart';
+import 'package:surabhi/core/widgets/pagination_widget.dart';
 import 'package:surabhi/features/donors/models/donor_model.dart';
 import 'package:surabhi/features/donors/presentation/bloc/donors_bloc.dart';
 
@@ -15,44 +15,23 @@ class DonorsPage extends StatefulWidget {
 }
 
 class _DonorsPageState extends State<DonorsPage> {
-  final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
-  Timer? _debounce;
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
     // Trigger initial load
     context.read<DonorsBloc>().add(const SearchDonorsEvent());
   }
 
   @override
   void dispose() {
-    _scrollController.dispose();
     _searchController.dispose();
-    _debounce?.cancel();
     super.dispose();
   }
 
-  void _onScroll() {
-    if (_isBottom) {
-      context.read<DonorsBloc>().add(const LoadMoreDonorsEvent());
-    }
-  }
-
-  bool get _isBottom {
-    if (!_scrollController.hasClients) return false;
-    final maxScroll = _scrollController.position.maxScrollExtent;
-    final currentScroll = _scrollController.offset;
-    return currentScroll >= (maxScroll - 200);
-  }
-
-  void _onSearchChanged(String query) {
-    _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 500), () {
-      context.read<DonorsBloc>().add(SearchDonorsEvent(searchText: query));
-    });
+  void _onSearch() {
+    context.read<DonorsBloc>().add(SearchDonorsEvent(searchText: _searchController.text));
   }
 
   @override
@@ -61,9 +40,9 @@ class _DonorsPageState extends State<DonorsPage> {
       body: Column(
         children: [
           // Search bar
-          _SearchBar(controller: _searchController, onChanged: _onSearchChanged),
-          // Patron mode toggle
-          const _PatronModeToggle(),
+          _SearchBar(controller: _searchController, onSearch: _onSearch),
+          // Add button + Patron mode toggle row
+          const _ActionRow(),
           // Donor list
           Expanded(
             child: BlocBuilder<DonorsBloc, DonorsState>(
@@ -84,62 +63,51 @@ class _DonorsPageState extends State<DonorsPage> {
                   return const _EmptyView();
                 }
 
-                return RefreshIndicator(
-                  onRefresh: () async {
-                    context.read<DonorsBloc>().add(SearchDonorsEvent(searchText: _searchController.text));
-                  },
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
-                    itemCount: state.donors.length + 1,
-                    itemBuilder: (context, index) {
-                      if (index >= state.donors.length) {
-                        return _buildBottomWidget(state);
-                      }
-                      return _DonorCard(donor: state.donors[index]);
-                    },
-                  ),
+                return Column(
+                  children: [
+                    Expanded(
+                      child: RefreshIndicator(
+                        onRefresh: () async {
+                          context.read<DonorsBloc>().add(SearchDonorsEvent(searchText: _searchController.text));
+                        },
+                        child: ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                          itemCount: state.donors.length,
+                          itemBuilder: (context, index) {
+                            return _DonorCard(donor: state.donors[index]);
+                          },
+                        ),
+                      ),
+                    ),
+                    PaginationWidget(
+                      currentPage: state.currentPage,
+                      totalRecords: state.totalRecordsCount,
+                      pageSize: state.pageSize,
+                      onPageChanged: (page) {
+                        context.read<DonorsBloc>().add(GoToPageEvent(page));
+                      },
+                      onPageSizeChanged: (newSize) {
+                        context.read<DonorsBloc>().add(ChangePageSizeEvent(newSize));
+                      },
+                    ),
+                  ],
                 );
               },
             ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: Navigate to Add Donor screen
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Add Donor - Coming soon')));
-        },
-        backgroundColor: AppColors.successColor,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
     );
-  }
-
-  Widget _buildBottomWidget(DonorsState state) {
-    if (state.hasReachedLimit) {
-      return const _LimitReachedMessage();
-    }
-    if (state.hasReachedMax) {
-      return const SizedBox.shrink();
-    }
-    if (state.status == DonorsStatus.loadingMore) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 16),
-        child: Center(child: CircularProgressIndicator()),
-      );
-    }
-    return const SizedBox.shrink();
   }
 }
 
 // --- Search Bar ---
 class _SearchBar extends StatelessWidget {
   final TextEditingController controller;
-  final ValueChanged<String> onChanged;
+  final VoidCallback onSearch;
 
-  const _SearchBar({required this.controller, required this.onChanged});
+  const _SearchBar({required this.controller, required this.onSearch});
 
   @override
   Widget build(BuildContext context) {
@@ -147,11 +115,15 @@ class _SearchBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: TextField(
         controller: controller,
-        onChanged: onChanged,
+        textInputAction: TextInputAction.search,
+        onSubmitted: (_) => onSearch(),
         decoration: InputDecoration(
           hintText: 'Mobile Number/ Donor Name/ Donor ID',
           hintStyle: TextStyle(color: Colors.grey[600], fontSize: 14),
-          prefixIcon: const Icon(Icons.search, color: AppColors.primaryColor),
+          suffixIcon: IconButton(
+            icon: const Icon(Icons.search, color: AppColors.primaryColor),
+            onPressed: onSearch,
+          ),
           filled: true,
           fillColor: AppColors.accentColor.withValues(alpha: 0.3),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -162,32 +134,60 @@ class _SearchBar extends StatelessWidget {
   }
 }
 
-// --- Patron Mode Toggle ---
-class _PatronModeToggle extends StatelessWidget {
-  const _PatronModeToggle();
+// --- Action Row: Add Button + Patron Toggle ---
+class _ActionRow extends StatelessWidget {
+  const _ActionRow();
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<DonorsBloc, DonorsState>(
-      buildWhen: (previous, current) => previous.isPatronMode != current.isPatronMode,
-      builder: (context, state) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Patron Mode', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
-              Switch(
-                value: state.isPatronMode,
-                onChanged: (_) {
-                  context.read<DonorsBloc>().add(const TogglePatronModeEvent());
-                },
-                activeColor: AppColors.primaryColor,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Row(
+        children: [
+          // Add Donor button
+          SizedBox(
+            height: 36,
+            child: FilledButton.icon(
+              onPressed: () {
+                // TODO: Navigate to Add Donor screen
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Add Donor - Coming soon')));
+              },
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('Add', style: TextStyle(fontSize: 13)),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.successColor,
+                padding: const EdgeInsets.symmetric(horizontal: 18),
               ),
-            ],
+            ),
           ),
-        );
-      },
+          const Spacer(),
+          // Patron Mode toggle
+          BlocBuilder<DonorsBloc, DonorsState>(
+            buildWhen: (previous, current) => previous.isPatronMode != current.isPatronMode,
+            builder: (context, state) {
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Patron Mode',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600, color: AppColors.primaryColor),
+                  ),
+                  Switch(
+                    value: state.isPatronMode,
+                    onChanged: (_) {
+                      context.read<DonorsBloc>().add(const TogglePatronModeEvent());
+                    },
+                    activeColor: AppColors.primaryColor,
+                    inactiveTrackColor: AppColors.primaryColor.withValues(alpha: 0.2),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }
@@ -198,6 +198,8 @@ class _DonorCard extends StatelessWidget {
 
   const _DonorCard({required this.donor});
 
+  bool get _hasPatronId => donor.patronId != null && donor.patronId!.isNotEmpty && donor.patronId!.trim().isNotEmpty;
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -205,133 +207,94 @@ class _DonorCard extends StatelessWidget {
       elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       color: AppColors.primaryColor.withValues(alpha: 0.06),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Left content
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Top row: Patron/Donor ID + Donor ID
-                  Row(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () {
+          // TODO: Navigate to donor details
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('View ${donor.donorName}')));
+        },
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Left content
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (donor.patronId != null && donor.patronId!.isNotEmpty)
-                        Expanded(
-                          child: Text(
-                            donor.patronId!,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primaryColor,
-                            ),
-                          ),
-                        ),
+                      // Top row: PatronID if available, otherwise DonorID
                       Text(
-                        donor.donorId,
+                        _hasPatronId ? donor.patronId! : donor.donorId,
                         style: Theme.of(
                           context,
-                        ).textTheme.bodySmall?.copyWith(color: AppColors.errorColor, fontWeight: FontWeight.w600),
+                        ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: AppColors.primaryColor),
+                      ),
+                      const SizedBox(height: 6),
+                      // Donor Name
+                      Text(
+                        donor.donorName,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      // Email
+                      if (donor.emailId != null && donor.emailId!.isNotEmpty)
+                        Row(
+                          children: [
+                            Icon(Icons.email_outlined, size: 14, color: Colors.grey[600]),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                donor.emailId!,
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[700]),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      const SizedBox(height: 2),
+                      // Phone
+                      if (donor.mobileNumber != null && donor.mobileNumber!.isNotEmpty)
+                        Row(
+                          children: [
+                            Icon(Icons.phone_outlined, size: 14, color: Colors.grey[600]),
+                            const SizedBox(width: 4),
+                            Text(
+                              donor.mobileNumber!,
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[700]),
+                            ),
+                          ],
+                        ),
+                      const SizedBox(height: 6),
+                      // Total Amount
+                      Text(
+                        donor.formattedAmount,
+                        style: Theme.of(
+                          context,
+                        ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold, color: AppColors.successColor),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
-                  // Donor Name
-                  Text(
-                    donor.donorName,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  // Email
-                  if (donor.emailId != null && donor.emailId!.isNotEmpty)
-                    Row(
-                      children: [
-                        Icon(Icons.email_outlined, size: 14, color: Colors.grey[600]),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            donor.emailId!,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[700]),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  const SizedBox(height: 2),
-                  // Phone
-                  if (donor.mobileNumber != null && donor.mobileNumber!.isNotEmpty)
-                    Row(
-                      children: [
-                        Icon(Icons.phone_outlined, size: 14, color: Colors.grey[600]),
-                        const SizedBox(width: 4),
-                        Text(
-                          donor.mobileNumber!,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[700]),
-                        ),
-                      ],
-                    ),
-                  const SizedBox(height: 6),
-                  // Total Amount
-                  Text(
-                    donor.formattedAmount,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold, color: AppColors.successColor),
-                  ),
-                ],
-              ),
-            ),
-            // Right: VIEW button
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: 20),
-                TextButton(
-                  onPressed: () {
-                    // TODO: Navigate to donor details
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('View ${donor.donorName}')));
-                  },
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.primaryColor,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  ),
-                  child: const Text('VIEW', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                 ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// --- Limit Reached Message ---
-class _LimitReachedMessage extends StatelessWidget {
-  const _LimitReachedMessage();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.warningColor.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.warningColor.withValues(alpha: 0.4)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.info_outline, color: AppColors.warningColor),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'Showing first 100 results. Please use the search bar to find specific donors.',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500),
-            ),
+              ),
+              // Right: EnrolledBy (rotated 90° anti-clockwise, vertically centered, primary bg)
+              if (donor.enrolledBy != null && donor.enrolledBy!.isNotEmpty)
+                Container(
+                  color: AppColors.primaryColor,
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                  alignment: Alignment.center,
+                  child: RotatedBox(
+                    quarterTurns: 3,
+                    child: Text(
+                      donor.enrolledBy!,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 11),
+                    ),
+                  ),
+                ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

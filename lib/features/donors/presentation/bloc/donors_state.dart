@@ -2,7 +2,7 @@
 
 part of 'donors_bloc.dart';
 
-enum DonorsStatus { initial, loading, loaded, loadingMore, error }
+enum DonorsStatus { initial, loading, loaded, error }
 
 class DonorsState extends Equatable {
   final DonorsStatus status;
@@ -11,8 +11,7 @@ class DonorsState extends Equatable {
   final int totalRecordsCount;
   final bool isPatronMode;
   final String searchText;
-  final bool hasReachedMax;
-  final bool hasReachedLimit;
+  final int pageSize;
   final String errorMessage;
 
   const DonorsState({
@@ -22,16 +21,9 @@ class DonorsState extends Equatable {
     this.totalRecordsCount = 0,
     this.isPatronMode = false,
     this.searchText = '',
-    this.hasReachedMax = false,
-    this.hasReachedLimit = false,
+    this.pageSize = 20,
     this.errorMessage = '',
   });
-
-  /// Maximum number of elements to load via infinite scroll
-  static const int maxElements = 100;
-
-  /// Page size for each API call
-  static const int pageSize = 20;
 
   DonorsState copyWith({
     DonorsStatus? status,
@@ -40,8 +32,7 @@ class DonorsState extends Equatable {
     int? totalRecordsCount,
     bool? isPatronMode,
     String? searchText,
-    bool? hasReachedMax,
-    bool? hasReachedLimit,
+    int? pageSize,
     String? errorMessage,
   }) {
     return DonorsState(
@@ -51,8 +42,7 @@ class DonorsState extends Equatable {
       totalRecordsCount: totalRecordsCount ?? this.totalRecordsCount,
       isPatronMode: isPatronMode ?? this.isPatronMode,
       searchText: searchText ?? this.searchText,
-      hasReachedMax: hasReachedMax ?? this.hasReachedMax,
-      hasReachedLimit: hasReachedLimit ?? this.hasReachedLimit,
+      pageSize: pageSize ?? this.pageSize,
       errorMessage: errorMessage ?? this.errorMessage,
     );
   }
@@ -65,8 +55,7 @@ class DonorsState extends Equatable {
     totalRecordsCount,
     isPatronMode,
     searchText,
-    hasReachedMax,
-    hasReachedLimit,
+    pageSize,
     errorMessage,
   ];
 }

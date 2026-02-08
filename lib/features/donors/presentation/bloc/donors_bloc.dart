@@ -13,126 +13,101 @@ class DonorsBloc extends Bloc<DonorsEvent, DonorsState> {
 
   DonorsBloc(this._donorsRepository) : super(const DonorsState()) {
     on<SearchDonorsEvent>(_onSearchDonors);
-    on<LoadMoreDonorsEvent>(_onLoadMoreDonors);
+    on<GoToPageEvent>(_onGoToPage);
+    on<ChangePageSizeEvent>(_onChangePageSize);
     on<TogglePatronModeEvent>(_onTogglePatronMode);
   }
 
   Future<void> _onSearchDonors(SearchDonorsEvent event, Emitter<DonorsState> emit) async {
-    emit(
-      state.copyWith(
-        status: DonorsStatus.loading,
-        searchText: event.searchText,
-        currentPage: 1,
-        donors: [],
-        hasReachedMax: false,
-        hasReachedLimit: false,
-      ),
-    );
+    emit(state.copyWith(status: DonorsStatus.loading, searchText: event.searchText, currentPage: 1, donors: []));
 
     final result = await _donorsRepository.searchDonors(
       pageNumber: 1,
-      pageSize: DonorsState.pageSize,
+      pageSize: state.pageSize,
       searchText: event.searchText,
       isPatron: state.isPatronMode,
     );
 
-    result.fold((failure) => emit(state.copyWith(status: DonorsStatus.error, errorMessage: failure.message)), (
-      response,
-    ) {
-      final hasReachedMax = response.donors.length >= response.totalRecordsCount;
-      final hasReachedLimit = response.donors.length >= DonorsState.maxElements;
-      emit(
+    result.fold(
+      (failure) => emit(state.copyWith(status: DonorsStatus.error, errorMessage: failure.message)),
+      (response) => emit(
         state.copyWith(
           status: DonorsStatus.loaded,
           donors: response.donors,
           totalRecordsCount: response.totalRecordsCount,
           currentPage: 1,
-          hasReachedMax: hasReachedMax,
-          hasReachedLimit: hasReachedLimit,
         ),
-      );
-    });
+      ),
+    );
   }
 
-  Future<void> _onLoadMoreDonors(LoadMoreDonorsEvent event, Emitter<DonorsState> emit) async {
-    if (state.hasReachedMax || state.hasReachedLimit || state.status == DonorsStatus.loadingMore) {
-      return;
-    }
+  Future<void> _onGoToPage(GoToPageEvent event, Emitter<DonorsState> emit) async {
+    emit(state.copyWith(status: DonorsStatus.loading, currentPage: event.pageNumber, donors: []));
 
-    // Check if loading more would exceed the limit
-    if (state.donors.length >= DonorsState.maxElements) {
-      emit(state.copyWith(hasReachedLimit: true));
-      return;
-    }
-
-    emit(state.copyWith(status: DonorsStatus.loadingMore));
-
-    final nextPage = state.currentPage + 1;
     final result = await _donorsRepository.searchDonors(
-      pageNumber: nextPage,
-      pageSize: DonorsState.pageSize,
+      pageNumber: event.pageNumber,
+      pageSize: state.pageSize,
       searchText: state.searchText,
       isPatron: state.isPatronMode,
     );
 
-    result.fold((failure) => emit(state.copyWith(status: DonorsStatus.loaded, errorMessage: failure.message)), (
-      response,
-    ) {
-      final allDonors = [...state.donors, ...response.donors];
-      final hasReachedMax = allDonors.length >= response.totalRecordsCount;
-      final hasReachedLimit = allDonors.length >= DonorsState.maxElements;
-
-      // Trim to max elements if exceeded
-      final trimmedDonors = hasReachedLimit ? allDonors.take(DonorsState.maxElements).toList() : allDonors;
-
-      emit(
+    result.fold(
+      (failure) => emit(state.copyWith(status: DonorsStatus.error, errorMessage: failure.message)),
+      (response) => emit(
         state.copyWith(
           status: DonorsStatus.loaded,
-          donors: trimmedDonors,
+          donors: response.donors,
           totalRecordsCount: response.totalRecordsCount,
-          currentPage: nextPage,
-          hasReachedMax: hasReachedMax,
-          hasReachedLimit: hasReachedLimit,
+          currentPage: event.pageNumber,
         ),
-      );
-    });
-  }
-
-  Future<void> _onTogglePatronMode(TogglePatronModeEvent event, Emitter<DonorsState> emit) async {
-    final newPatronMode = !state.isPatronMode;
-    emit(
-      state.copyWith(
-        isPatronMode: newPatronMode,
-        status: DonorsStatus.loading,
-        currentPage: 1,
-        donors: [],
-        hasReachedMax: false,
-        hasReachedLimit: false,
       ),
     );
+  }
+
+  Future<void> _onChangePageSize(ChangePageSizeEvent event, Emitter<DonorsState> emit) async {
+    emit(state.copyWith(status: DonorsStatus.loading, pageSize: event.newPageSize, currentPage: 1, donors: []));
 
     final result = await _donorsRepository.searchDonors(
       pageNumber: 1,
-      pageSize: DonorsState.pageSize,
+      pageSize: event.newPageSize,
       searchText: state.searchText,
-      isPatron: newPatronMode,
+      isPatron: state.isPatronMode,
     );
 
-    result.fold((failure) => emit(state.copyWith(status: DonorsStatus.error, errorMessage: failure.message)), (
-      response,
-    ) {
-      final hasReachedMax = response.donors.length >= response.totalRecordsCount;
-      final hasReachedLimit = response.donors.length >= DonorsState.maxElements;
-      emit(
+    result.fold(
+      (failure) => emit(state.copyWith(status: DonorsStatus.error, errorMessage: failure.message)),
+      (response) => emit(
         state.copyWith(
           status: DonorsStatus.loaded,
           donors: response.donors,
           totalRecordsCount: response.totalRecordsCount,
           currentPage: 1,
-          hasReachedMax: hasReachedMax,
-          hasReachedLimit: hasReachedLimit,
         ),
-      );
-    });
+      ),
+    );
+  }
+
+  Future<void> _onTogglePatronMode(TogglePatronModeEvent event, Emitter<DonorsState> emit) async {
+    final newPatronMode = !state.isPatronMode;
+    emit(state.copyWith(isPatronMode: newPatronMode, status: DonorsStatus.loading, currentPage: 1, donors: []));
+
+    final result = await _donorsRepository.searchDonors(
+      pageNumber: 1,
+      pageSize: state.pageSize,
+      searchText: state.searchText,
+      isPatron: newPatronMode,
+    );
+
+    result.fold(
+      (failure) => emit(state.copyWith(status: DonorsStatus.error, errorMessage: failure.message)),
+      (response) => emit(
+        state.copyWith(
+          status: DonorsStatus.loaded,
+          donors: response.donors,
+          totalRecordsCount: response.totalRecordsCount,
+          currentPage: 1,
+        ),
+      ),
+    );
   }
 }

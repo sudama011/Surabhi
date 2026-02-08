@@ -19,9 +19,24 @@ class SearchDonorsEvent extends DonorsEvent {
   List<Object?> get props => [searchText];
 }
 
-/// Load next page (infinite scroll)
-class LoadMoreDonorsEvent extends DonorsEvent {
-  const LoadMoreDonorsEvent();
+/// Navigate to a specific page
+class GoToPageEvent extends DonorsEvent {
+  final int pageNumber;
+
+  const GoToPageEvent(this.pageNumber);
+
+  @override
+  List<Object?> get props => [pageNumber];
+}
+
+/// Change the page size (resets to page 1)
+class ChangePageSizeEvent extends DonorsEvent {
+  final int newPageSize;
+
+  const ChangePageSizeEvent(this.newPageSize);
+
+  @override
+  List<Object?> get props => [newPageSize];
 }
 
 /// Toggle patron mode on/off
